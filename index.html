@@ -295,8 +295,11 @@
   // بدون این بلوک، فایل sw.js هیچ‌وقت واقعاً فعال نمی‌شد و برنامه‌ی نصب‌شده هیچ‌چیزی
   // رو کش نمی‌کرد — همین، دلیل اصلی اجرا نشدنش بدون اینترنت بود.
   if ('serviceWorker' in navigator) {
+    window.addEventListener('pageshow', function () { try { navigator.serviceWorker.getRegistration().then(function(r){ if(r) r.update(); }); } catch(e){} });
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js').catch(function (err) {
+      navigator.serviceWorker.register('./sw.js').then(function (reg) {
+        try { reg.update(); } catch (e) {}
+      }).catch(function (err) {
         console.warn('Namello: service worker registration failed', err);
       });
     });
@@ -2432,10 +2435,10 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.11.0";
-const NM_VERSION_CODE = 21;
+const NM_VERSION_NAME = "1.11.1";
+const NM_VERSION_CODE = 22;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "۱۰ مهر ۱۴۰۵";
+const NM_VERSION_DATE = "۱۱ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
     "نسخه 1.11: داشبورد عملکرد جدید با فیلترهای سراسری، کارت‌های KPI، منحنی سرمایه و کشف Edge بر اساس سشن و سیستم اضافه شد.",
     "نسخه 1.11: از هر نتیجه‌ی داشبورد می‌توان مستقیماً به معاملات سازنده‌ی آن نتیجه Drill-down کرد.",
@@ -4340,7 +4343,7 @@ function nmDashMetrics(trades, startingBalance=0) {
     return { closed, pnl, wins, losses, winRate: closed.length ? wins/closed.length*100 : 0, pf, avgR, expectancy, maxDD, curve };
 }
 function NmDashboard({ trades, startingBalance, todayStr, onEditTrade, onPersistTrades, activeAccount }) {
-    const [filters,setFilters]=React.useState(()=>{try{return {...{range:"month",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")};}catch(e){return {range:"month",session:"all",setup:"all",direction:"all"};}});
+    const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")};}catch(e){return {range:"all",session:"all",setup:"all",direction:"all"};}});
     const [selected,setSelected]=React.useState(null);
     const [reviewOpen,setReviewOpen]=React.useState(null);
     const [showTrades,setShowTrades]=React.useState(false);
@@ -4373,10 +4376,13 @@ function NmDashboard({ trades, startingBalance, todayStr, onEditTrade, onPersist
         onPersistTrades(next); setReviewOpen(null); setSelected({...trade,review:{...(trade.review||{}),...patch}});
     };
     const maxAbs=Math.max(1,...m.curve.map(x=>Math.abs(x.balance-(Number(startingBalance)||0))));
+    const totalClosed=(trades||[]).filter(t=>t.status==="closed" && Number.isFinite(Number(t.pnl))).length;
+    const hasAccount=!!activeAccount;
+    const noData=!hasAccount || filtered.length===0;
     return React.createElement("div",{className:"px-4 mt-4 pb-24"},
       React.createElement("div",{className:"flex items-center justify-between mb-3"},
-        React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},activeAccount?`حساب ${activeAccount}`:"بدون حساب")),
-        React.createElement("button",{onClick:()=>persistFilters({range:"month",session:"all",setup:"all",direction:"all"}),className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"پاک‌سازی فیلتر")),
+        React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},activeAccount?`حساب ${activeAccount} · ${totalClosed} معامله بسته‌شده`:`بدون حساب · ${totalClosed} معامله`)),
+        React.createElement("button",{onClick:()=>persistFilters({range:"all",session:"all",setup:"all",direction:"all"}),className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"پاک‌سازی فیلتر")),
       React.createElement("div",{className:"rounded-2xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
         React.createElement("div",{className:"text-[11px] font-semibold mb-2",style:{color:"var(--accent-gold)"}},"فیلترهای سراسری"),
         React.createElement("div",{className:"grid grid-cols-2 gap-2"},
@@ -4384,6 +4390,13 @@ function NmDashboard({ trades, startingBalance, todayStr, onEditTrade, onPersist
            ["session","سشن",[["all","همه"],...sessions.map(x=>[x,x])]],
            ["setup","سیستم/Setup",[["all","همه"],...setups.map(x=>[x,x])]],
            ["direction","جهت",[["all","همه"],["buy","خرید"],["sell","فروش"]]]].map(([key,label,opts])=>React.createElement("label",{key,className:"text-[10px]",style:{color:"var(--text-muted)"}},label,React.createElement("select",{value:filters[key],onChange:e=>persistFilters({...filters,[key]:e.target.value}),className:"w-full mt-1 rounded-lg px-2 py-2 text-[11px] outline-none",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)",color:"var(--text-primary)"}},opts.map(([v,l])=>React.createElement("option",{key:v,value:v},l))))))),
+      noData && React.createElement("div",{className:"rounded-2xl p-4 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+        React.createElement("div",{className:"flex items-start gap-3"},
+          React.createElement("div",{className:"w-10 h-10 rounded-xl flex items-center justify-center shrink-0",style:{background:"color-mix(in srgb, var(--accent-gold) 13%, transparent)",color:"var(--accent-gold)"}},React.createElement(LineChartIcon,{size:20})),
+          React.createElement("div",{className:"flex-1"},
+            React.createElement("div",{className:"text-[13px] font-bold",style:{color:"var(--text-primary)"}},hasAccount?"برای فیلتر فعلی معامله بسته‌شده‌ای پیدا نشد":"ابتدا یک حساب معاملاتی را انتخاب کن"),
+            React.createElement("div",{className:"text-[10px] leading-5 mt-1",style:{color:"var(--text-muted)"}},hasAccount?`کل معاملات بسته‌شده این حساب: ${totalClosed} — برای دیدن همه، فیلتر بازه را روی «کل» بگذار.`:"Dashboard به حساب فعال متصل است؛ از بخش حساب‌ها یک حساب را فعال کن تا معاملات و شاخص‌های آن نمایش داده شوند."),
+            hasAccount && totalClosed>0 && filters.range!=="all" && React.createElement("button",{onClick:()=>persistFilters({...filters,range:"all"}),className:"mt-2 px-3 py-1.5 rounded-lg text-[10px] font-semibold",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"نمایش کل معاملات"))),
       React.createElement("div",{className:"grid grid-cols-2 gap-2 mb-3"},
         card("P&L",nmDashPnl(m.pnl),`${m.closed.length} معامله`,m.pnl>=0?"#34D399":"#F87171"),
         card("Win Rate",`${nmDashNum(m.winRate,1)}%`,`${m.wins} برد / ${m.losses} باخت`,m.winRate>=50?"#34D399":"#F87171"),
@@ -4413,7 +4426,7 @@ function NmDashboard({ trades, startingBalance, todayStr, onEditTrade, onPersist
           React.createElement("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[11px] font-semibold mb-2",style:{color:"var(--text-primary)"}},"Rule Compliance"),React.createElement("div",{className:"flex items-center gap-2"},React.createElement("div",{className:"text-xl font-bold mono",style:{color:"var(--accent-gold)",fontFamily:"JetBrains Mono, monospace"}},selected.review?.compliance!=null?`${selected.review.compliance}%`:"—"),React.createElement("span",{className:"text-[10px]",style:{color:"var(--text-muted)"}},"برای ثبت، مرور معامله را باز کن."))),
           React.createElement("div",{className:"flex gap-2"},React.createElement("button",{onClick:()=>setReviewOpen(selected),className:"flex-1 py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ثبت Review"),React.createElement("button",{onClick:()=>{setSelected(null);onEditTrade(selected);},className:"flex-1 py-2.5 rounded-xl text-[11px]",style:{background:"var(--bg-card2)",color:"var(--text-primary)"}},"ویرایش معامله")),
           React.createElement("div",{className:"mt-3 text-[10px] leading-5",style:{color:"var(--text-muted)"}},"MFE/MAE در این نسخه برای معاملات جدید در مدل داده آماده شده‌اند؛ برای محاسبه واقعی به مسیر قیمت نیاز است و برای داده‌های قدیمی خالی می‌مانند."))),
-      reviewOpen&&React.createElement(NmDashboardReviewModal,{trade:reviewOpen,onClose:()=>setReviewOpen(null),onSave:(patch)=>reviewSave(reviewOpen,patch)}));
+      reviewOpen&&React.createElement(NmDashboardReviewModal,{trade:reviewOpen,onClose:()=>setReviewOpen(null),onSave:(patch)=>reviewSave(reviewOpen,patch)})));
 }
 function NmDashboardReviewModal({trade,onClose,onSave}) {
     const [compliance,setCompliance]=React.useState(trade.review?.compliance ?? "");
@@ -4434,7 +4447,7 @@ function NmDashboardReviewModal({trade,onClose,onSave}) {
 
 function App() {
     const [, forceTick] = useState(0);
-    const [tab, setTab] = useState("live");
+    const [tab, setTab] = useState("dashboard");
     const [showRef, setShowRef] = useState(false);
     const [config, setConfig] = useState(DEFAULT_CONFIG);
     const [showSessionSettings, setShowSessionSettings] = useState(false);
@@ -8406,8 +8419,8 @@ function App() {
                     React.createElement(Plus, { size: 16 }),
                     " \u0627\u0641\u0632\u0648\u062F\u0646 \u0628\u062E\u0634")))),
         navLayout !== "vertical" && (React.createElement("div", { className: "fixed bottom-0 left-0 right-0 flex overflow-x-auto", style: { background: "var(--bg-card)", borderTop: "1px solid var(--border-1)" } }, [
-            { key: "user", label: t("tab_user"), Icon: User },
             { key: "dashboard", label: t("tab_dashboard"), Icon: LineChartIcon },
+            { key: "user", label: t("tab_user"), Icon: User },
             { key: "live", label: t("tab_live"), Icon: Clock },
             { key: "news", label: t("tab_news"), Icon: Newspaper },
             { key: "prep", label: t("tab_prep"), Icon: Check },
@@ -8433,8 +8446,8 @@ function App() {
         navLayout === "vertical" && navMenuOpen && (React.createElement(React.Fragment, null,
             React.createElement("div", { className: "fixed inset-0 z-40", style: { background: "#000000AA" }, onClick: () => setNavMenuOpen(false) }),
             React.createElement("div", { className: "fixed top-16 z-50 rounded-2xl overflow-y-auto", style: { insetInlineStart: 12, background: "var(--bg-card)", border: "1px solid var(--border-2)", maxHeight: "70vh", minWidth: 220, boxShadow: "0 10px 40px #000000AA" } }, [
-                { key: "user", label: t("tab_user"), Icon: User },
                 { key: "dashboard", label: t("tab_dashboard"), Icon: LineChartIcon },
+                { key: "user", label: t("tab_user"), Icon: User },
                 { key: "live", label: t("tab_live"), Icon: Clock },
                 { key: "news", label: t("tab_news"), Icon: Newspaper },
                 { key: "prep", label: t("tab_prep"), Icon: Check },
