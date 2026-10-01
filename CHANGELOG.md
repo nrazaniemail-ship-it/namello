@@ -1,3 +1,15 @@
+# Namello 1.12.0 — Real Excursion & Modular Dashboard
+
+- MFE/MAE واقعی از مسیر قیمت OHLC معامله
+- Best Exit واقعی بر اساس بیشترین حرکت مطلوب
+- Exit Efficiency واقعی از مسیر OHLC
+- MFE/MAE و Best Exit بر مبنای R در صورت وجود Stop
+- ورود مسیر قیمت با CSV/TXT برای هر معامله
+- Dashboard Widgetهای قابل جابه‌جایی با Drag & Drop
+- ذخیره چیدمان Dashboard در دستگاه
+- Widgetهای KPI، Equity، MFE/MAE، Session Edge، Setup Edge، Discipline و Trade Drill-down
+- Version Code 23
+
 # Namello 1.11.1
 
 - رفع مشکل cache و به‌روزرسانی نسخه نصب‌شده/PWA.
