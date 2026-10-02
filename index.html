@@ -2439,11 +2439,13 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.18.0";
-const NM_VERSION_CODE = 29;
+const NM_VERSION_NAME = "1.21.0";
+const NM_VERSION_CODE = 32;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data",
+    "نسخه 1.19: Advanced Edge Discovery، کنترل حداقل نمونه، پایداری نیمه‌دوره و تحلیل چندبعدی Edge اضافه شد.",
     "نسخه 1.18: Namello Intelligence، ماتریس Setup×Session×Plan×Mistake، گزارش هفتگی و Coach قابل‌اقدام اضافه شد.",
     "نسخه 1.17: Analytics Engine، تحلیل Correlation بین Plan/Discipline و عملکرد، و Journal Coach مبتنی بر داده‌های واقعی اضافه شد.",
     "نسخه 1.16: Trade Replay با مسیر OHLC، اسکراب زمانی، MFE/MAE تا لحظه و خروج فرضی اضافه شد.",
@@ -4299,7 +4301,7 @@ const NM_DISCIPLINE_OPTIONS = [
  ["high_risk","معامله پر ریسک"], ["wrong_sl","حدضرر اشتباه"], ["wrong_tp","حد سود اشتباه"],
  ["overtrade","over trade"], ["bad_session_event","نشست/رویداد نامناسب"], ["not_ready","عدم آمادگی"]
 ];
-const NM_DASH_DEFAULT_LAYOUT = ["kpi","equity","advanced","analytics","intelligence","coach","excursion","session","setup","tags","discipline","plans","dayplan","trades"];
+const NM_DASH_DEFAULT_LAYOUT = ["kpi","equity","advanced","analytics","edge","intelligence","coach","excursion","session","setup","tags","discipline","plans","dayplan","trades"];
 function nmDashNum(v,digits=2){const n=Number(v);return Number.isFinite(n)?n.toLocaleString("en-US",{maximumFractionDigits:digits}):"—";}
 function nmDashPnl(v){const n=Number(v)||0;return `${n>=0?"+":""}${n.toLocaleString("en-US",{maximumFractionDigits:2})}`;}
 function nmDashR(t){if(t&&t.rMultiple!==undefined&&t.rMultiple!==null&&Number.isFinite(Number(t.rMultiple)))return Number(t.rMultiple);const p=Number(t&&t.pnl),r=Number(t&&t.riskDollar);return Number.isFinite(p)&&Number.isFinite(r)&&r>0?p/r:null;}
@@ -4530,14 +4532,67 @@ function nmCorrelationAnalytics(trades,plans){
  return {closed,plan:rows,discipline,exit:{count:exit.length,early:early.length,earlyAvg:early.length?early.reduce((s,t)=>s+(Number(t.pnl)||0),0)/early.length:null,strong:strong.length,strongAvg:strong.length?strong.reduce((s,t)=>s+(Number(t.pnl)||0),0)/strong.length:null}};
 }
 function nmCoachInsights(trades,plans){
- const a=nmCorrelationAnalytics(trades,plans),out=[];
+ const a=nmCorrelationAnalytics(trades,plans),edge=nmEdgeCandidates(trades,plans),out=[];
  if(!a.closed.length)return [{kind:"info",title:"داده کافی نیست",text:"برای Coach حداقل چند معامله بسته‌شده با P&L و Review ثبت کن."}];
+ if(edge.candidates?.length){const stable=edge.candidates.filter(x=>x.stable).slice(0,2);stable.forEach(x=>out.push({kind:x.delta>=0?"positive":"attention",title:"Edge candidate · "+x.dim,text:`الگوی ${x.value} در ${x.count} معامله دیده شده؛ میانگین P&L ${nmDashPnl(x.avg)} در برابر ${nmDashPnl(x.baseAvg)} برای بقیه معاملات است. این اختلاف در دو نیمه دوره هم‌جهت بوده و هنوز نیاز به نمونه بیشتر دارد.`}));}
  a.plan.filter(x=>x.delta!==null&&x.answered>=3).sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta)).slice(0,4).forEach(x=>out.push({kind:x.delta>=0?"positive":"attention",title:"Plan · "+x.label,text:`در ${x.yes} معامله رعایت شده و ${x.no} معامله نقض شده؛ میانگین P&L رعایت ${nmDashPnl(x.yesAvg)} در برابر ${nmDashPnl(x.noAvg)} هنگام نقض است. اختلاف مشاهده‌شده ${x.delta>=0?"به نفع رعایت":"به زیان رعایت"} است.`}));
  a.discipline.filter(x=>x.count>=2).sort((x,y)=>x.avg-y.avg).slice(0,4).forEach(x=>out.push({kind:x.avg<0?"attention":"info",title:"Discipline · "+x.key,text:`این مورد در ${x.count} معامله ثبت شده و میانگین P&L معاملات دارای آن ${nmDashPnl(x.avg)} بوده است.`}));
  if(a.exit.count>=3){if(a.exit.early>=2)out.push({kind:"attention",title:"Exit Efficiency",text:`${a.exit.early} معامله با Exit Efficiency زیر 25٪ ثبت شده‌اند؛ این الگو می‌تواند برای بررسی خروج زودهنگام در Replay استفاده شود.`});if(a.exit.strong>=2)out.push({kind:"positive",title:"Best-exit capture",text:`${a.exit.strong} معامله حداقل 75٪ از MFE ثبت‌شده را در خروج واقعی گرفته‌اند.`});}
  const bySetup=nmAnalyticsGroup(a.closed,nmDashSetup).filter(x=>x.count>=3).sort((x,y)=>y.avgPnl-x.avgPnl);if(bySetup.length)out.push({kind:"info",title:"Setup consistency",text:`برای هر Setup حداقل 3 معامله در نظر گرفته شده؛ این بخش را برای مقایسه ثبات P&L و Avg R هر Setup بررسی کن.`});
  return out.slice(0,8);
 }
+
+function nmEdgeDimensions(trades,plans){
+ const closed=(trades||[]).filter(t=>t.status==="closed"&&Number.isFinite(Number(t.pnl)));
+ const planLabels={};(plans||[]).forEach(p=>(p.conditions||[]).forEach(c=>planLabels[c.id]=c.label));
+ const rows=[];
+ closed.forEach(t=>{
+   const add=(dim,val)=>{if(val!==undefined&&val!==null&&String(val)!=="")rows.push({t,dim,val:String(val)});};
+   add("Setup",nmDashSetup(t)); add("Session",nmDashSession(t)); add("Direction",t.direction||t.type);
+   const ans=t.review?.planAnswers?.answers||{};
+   Object.entries(ans).forEach(([id,v])=>{if(v===true||v===false)add("Plan: "+(planLabels[id]||id),v?"رعایت":"نقض"); else if(typeof v==="string"&&v.trim())add("Plan: "+(planLabels[id]||id),v.trim()); else if(Number.isFinite(Number(v)))add("Plan: "+(planLabels[id]||id),"عدد "+Math.round(Number(v)*10)/10);});
+   (t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>add("Mistake",(NM_DISCIPLINE_OPTIONS.find(x=>x[0]===k)||NM_REVIEW_MISTAKES.find(x=>x[0]===k)||[k,k])[1]));
+   const r=nmDashR(t); if(r!==null)add("R bucket",r>=1?"R ≥ +1":r<0?"R < 0":"0 تا +1R");
+   const mfe=Number(t.mfe),mae=Number(t.mae),eff=Number(t.exitEfficiency); if(Number.isFinite(mfe)&&Number.isFinite(mae))add("Excursion","MFE/MAE ثبت‌شده"); if(Number.isFinite(eff))add("Exit Efficiency",eff<25?"<25%":eff>=75?"≥75%":"25–75%");
+ });
+ return {closed,rows};
+}
+function nmEdgeCandidates(trades,plans){
+ const {closed,rows}=nmEdgeDimensions(trades,plans); const MIN=5, MIN_TOTAL=10;
+ if(closed.length<MIN_TOTAL)return {candidates:[],sample:closed.length,min:MIN_TOTAL,warning:"برای کشف Edge حداقل ۱۰ معامله بسته‌شده لازم است."};
+ const groups={};rows.forEach(x=>{const k=x.dim+"|||"+x.val;(groups[k]??=[]).push(x.t)});
+ const out=[];
+ Object.entries(groups).forEach(([key,ts])=>{
+   if(ts.length<MIN||ts.length>closed.length-MIN)return;
+   const rest=closed.filter(t=>!ts.includes(t));
+   const avg=a=>a.length?a.reduce((s,t)=>s+(Number(t.pnl)||0),0)/a.length:0;
+   const avgR=a=>{const v=a.map(nmDashR).filter(Number.isFinite);return v.length?v.reduce((x,y)=>x+y,0)/v.length:null};
+   const win=a=>a.length?a.filter(t=>Number(t.pnl)>0).length/a.length*100:0;
+   const a=avg(ts),b=avg(rest), ar=avgR(ts),br=avgR(rest), delta=a-b, rdelta=ar!==null&&br!==null?ar-br:null;
+   const half=Math.max(2,Math.floor(ts.length/2));const ordered=ts.slice().sort((x,y)=>String(x.date||x.closeTime||"").localeCompare(String(y.date||y.closeTime||"")));const h1=avg(ordered.slice(0,half))-avg(rest.slice(0,Math.min(rest.length,half)));const h2=avg(ordered.slice(half))-avg(rest.slice(0,Math.min(rest.length,ordered.length-half)));
+   const stable=(Math.sign(h1)===Math.sign(delta)&&Math.sign(h2)===Math.sign(delta));
+   const effect=Math.abs(delta)/(Math.abs(b)+Math.abs(a)+1e-9);
+   out.push({dim:key.split("|||")[0],value:key.split("|||")[1],count:ts.length,restCount:rest.length,avg:a,baseAvg:b,delta,win:win(ts),baseWin:win(rest),avgR:ar,baseR:br,rdelta,effect,stable});
+ });
+ out.sort((a,b)=>(Number(b.stable)-Number(a.stable))||(Math.abs(b.rdelta??b.delta)-Math.abs(a.rdelta??a.delta))||b.count-a.count);
+ return {candidates:out.slice(0,20),sample:closed.length,min:MIN_TOTAL,warning:null};
+}
+function NmEdgeDiscovery({trades,plans}){
+ const data=React.useMemo(()=>nmEdgeCandidates(trades,plans),[trades,plans]);
+ const [stableOnly,setStableOnly]=React.useState(true);
+ const rows=data.candidates.filter(x=>!stableOnly||x.stable).slice(0,10);
+ const rowView=rows.map((x,i)=>React.createElement("div",{key:i,className:"rounded-lg p-2 mb-1.5",style:{background:"var(--bg-card2)"}},
+   React.createElement("div",{className:"flex justify-between text-[9px]"},React.createElement("span",null,x.dim+" · "+x.value),React.createElement("span",{style:{color:x.delta>=0?"#34D399":"#F87171"}},(x.delta>=0?"+":"")+nmDashPnl(x.delta)+" avg")),
+   React.createElement("div",{className:"flex flex-wrap gap-2 text-[8px] mt-1",style:{color:"var(--text-muted)"}},
+     React.createElement("span",null,x.count+" vs "+x.restCount),React.createElement("span",null,"WR "+nmDashNum(x.win,0)+"% vs "+nmDashNum(x.baseWin,0)+"%"),React.createElement("span",null,"ΔR "+(x.rdelta===null?"—":(x.rdelta>=0?"+":"")+nmDashNum(x.rdelta,2))),React.createElement("span",{style:{color:x.stable?"#34D399":"var(--text-muted)"}},x.stable?"پایدار":"ناپایدار"))));
+ return React.createElement("div",{className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+   React.createElement("div",{className:"flex justify-between items-center mb-2"},React.createElement("b",{className:"text-[12px]",style:{color:"var(--accent-gold)"}},"Advanced Edge Discovery"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},data.sample+" معامله")),
+   data.warning?React.createElement("div",{className:"text-[10px] p-2 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--text-muted)"}},data.warning):React.createElement(React.Fragment,null,
+     React.createElement("label",{className:"flex items-center gap-2 text-[9px] mb-2",style:{color:"var(--text-secondary)"}},React.createElement("input",{type:"checkbox",checked:stableOnly,onChange:e=>setStableOnly(e.target.checked)}),"فقط الگوهایی که در دو نیمهٔ دوره هم‌جهت بوده‌اند"),
+     rows.length?rowView:React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"با حداقل نمونه و فیلتر پایداری، Edge قابل‌نمایش پیدا نشد."),
+     React.createElement("div",{className:"text-[8px] mt-2",style:{color:"var(--text-muted)"}},"این بخش کشف الگو است، نه اثبات Edge؛ حجم نمونه، سوگیری انتخاب و تغییر رژیم بازار باید جداگانه بررسی شود.")));
+}
+
 function NmAnalyticsEngine({trades,plans}){
  const a=React.useMemo(()=>nmCorrelationAnalytics(trades,plans),[trades,plans]);
  const setups=React.useMemo(()=>nmAnalyticsGroup(a.closed,nmDashSetup).filter(x=>x.count>=2).sort((x,y)=>y.avgPnl-x.avgPnl),[a.closed]);
@@ -4596,6 +4651,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
   equity:React.createElement(NmDashWidget,{id:"equity",title:"Equity Curve",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"flex items-end gap-1 h-28 overflow-hidden"},m.curve.slice(-40).map((x,i)=>React.createElement("div",{key:i,className:"flex-1 rounded-t",title:`${x.date} · ${nmDashNum(x.balance,2)}`,style:{height:`${Math.max(5,Math.min(100,((x.balance-(Number(startingBalance)||0))/Math.max(1,...m.curve.map(q=>Math.abs(q.balance-(Number(startingBalance)||0))))*45)+50))}%`,background:x.balance>=(Number(startingBalance)||0)?"var(--accent-gold)":"#ef4444",opacity:.8}}))),React.createElement("div",{className:"text-[9px] mt-2",style:{color:"var(--text-muted)"}},"نوارها به ترتیب زمانی معاملات بسته‌شده هستند.")),
   advanced:React.createElement(NmDashWidget,{id:"advanced",title:"Advanced Risk & Exit Analytics",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},card("Sharpe",advanced.sharpe===null?"—":nmDashNum(advanced.sharpe,2),"annualized proxy"),card("Sortino",advanced.sortino===null?"—":nmDashNum(advanced.sortino,2),"downside-adjusted"),card("Calmar",advanced.calmar===null?"—":nmDashNum(advanced.calmar,2),"return / max DD"),card("Recovery",advanced.recovery===null?"—":nmDashNum(advanced.recovery,2),"net P&L / max DD"),card("Ulcer",nmDashNum(advanced.ulcer,2),"drawdown pressure"),card("Avg Hold",advanced.avgHold===null?"—":nmDashNum(advanced.avgHold,0)+"m","holding time"),card("Early Exit",String(advanced.exits.early),"efficiency < 25%"),card("Round-trip",String(advanced.exits.roundTrip),"MFE then losing exit"))),
   analytics:React.createElement(NmDashWidget,{id:"analytics",title:"Analytics Engine · Correlation",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmAnalyticsEngine,{trades:filtered,plans})),
+  edge:React.createElement(NmDashWidget,{id:"edge",title:"Advanced Edge Discovery",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmEdgeDiscovery,{trades:filtered,plans})),
   intelligence:React.createElement(NmDashWidget,{id:"intelligence",title:"Namello Intelligence · Weekly",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmIntelligenceReport,{trades:filtered,plans,todayStr})), 
   coach:React.createElement(NmDashWidget,{id:"coach",title:"Journal Coach",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"flex items-center justify-between gap-3"},React.createElement("div",{className:"text-[10px] leading-5",style:{color:"var(--text-secondary)"}},"تحلیل خودکار Plan، Discipline، Exit Efficiency و الگوهای عملکرد بر اساس داده‌های ثبت‌شده."),React.createElement("button",{onClick:()=>setCoach(true),className:"rounded-lg px-3 py-2 text-[10px] font-semibold",style:{background:"var(--accent-gold)",color:"#111"}},"اجرای Coach"))),
   excursion:React.createElement(NmDashWidget,{id:"excursion",title:"MFE / MAE / Best Exit",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-3 gap-2"},card("Avg MFE",excursionStats.avgM===null?"—":nmDashNum(excursionStats.avgM,2),"price units"),card("Avg MAE",excursionStats.avgA===null?"—":nmDashNum(excursionStats.avgA,2),"price units"),card("Avg Exit Eff.",excursionStats.avgEff===null?"—":`${nmDashNum(excursionStats.avgEff,1)}%`,"Real OHLC")),React.createElement("div",{className:"text-[9px] mt-2",style:{color:"var(--text-muted)"}},`${excursionStats.count} معامله دارای مسیر قیمت واقعی هستند. برای معامله بدون MFE/MAE روی جزئیات آن، «محاسبه از OHLC» را بزن.`)),
@@ -4654,6 +4710,77 @@ function NmPlanChecklistField({plan,answers,onChange}){
   )
  );
 }
+
+
+
+/* ================= Namello Account & Encrypted Sync v2 ================= */
+const NM_SYNC_STATE_KEY = "namello_sync_state_v2";
+const NM_DEVICE_KEY = "namello_device_id_v1";
+function nmDeviceId(){ let id=localStorage.getItem(NM_DEVICE_KEY); if(!id){ id=(crypto.randomUUID?crypto.randomUUID():"nm-"+Date.now()+"-"+Math.random().toString(16).slice(2)); try{localStorage.setItem(NM_DEVICE_KEY,id)}catch(e){} } return id; }
+function nmSyncState(){ return nmSecRead(NM_SYNC_STATE_KEY,{revision:0,updatedAt:null,lastRemoteAt:null,lastStatus:"local-only",conflictCount:0}); }
+function nmSaveSyncState(p){ const n={...nmSyncState(),...p}; nmSecWrite(NM_SYNC_STATE_KEY,n); return n; }
+async function nmBuildSyncEnvelope(pass){
+  const state=nmSyncState(), data=await nmCollectAllData();
+  const meta={schema:3,revision:Number(state.revision||0)+1,deviceId:nmDeviceId(),updatedAt:new Date().toISOString(),appVersion:NM_VERSION_NAME};
+  const pack=await nmEncryptJson({meta,data},pass); pack.kind="namello-sync"; pack.meta=meta; return pack;
+}
+async function nmDecodeSyncEnvelope(pack,pass){
+  if(!pack||pack.kind!=="namello-sync") throw new Error("این فایل Sync ناملو نیست.");
+  const body=await nmDecryptJson(pack,pass); if(!body?.meta?.revision||!body?.data) throw new Error("ساختار Sync معتبر نیست."); return body;
+}
+function nmCompareSync(local,remote){ if(Number(remote.revision)>Number(local.revision)) return "remote-newer"; if(Number(remote.revision)<Number(local.revision)) return "local-newer"; if(remote.updatedAt===local.updatedAt) return "same"; return "conflict"; }
+
+/* ================= Namello Security & Google Account v1 ================= */
+const NM_SEC_KEY = "namello_security_v1";
+const NM_GOOGLE_CFG_KEY = "namello_google_config_v1";
+const NM_GOOGLE_PROFILE_KEY = "namello_google_profile_v1";
+const NM_SEC_DEFAULT = { autoBackupDays: 7, lastBackupAt: null, privacyMode: false, driveEnabled: false };
+function nmSecRead(key, fallback){ try { const raw=localStorage.getItem(key); return raw?{...fallback,...JSON.parse(raw)}:fallback; } catch(e){ return fallback; } }
+function nmSecWrite(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){} }
+function nmB64(buf){ const a=new Uint8Array(buf); let s=""; for(let i=0;i<a.length;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,i+0x8000)); return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,""); }
+function nmUnb64(s){ s=s.replace(/-/g,"+").replace(/_/g,"/"); while(s.length%4)s+="="; const bin=atob(s), a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return a.buffer; }
+async function nmDeriveKey(pass,salt){ const enc=new TextEncoder(); const base=await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]); return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:210000,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]); }
+async function nmEncryptJson(obj,pass){ if(!window.crypto?.subtle) throw new Error("WebCrypto unavailable"); const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)); const key=await nmDeriveKey(pass,salt); const data=new TextEncoder().encode(JSON.stringify(obj)); const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,data); return {schema:2,alg:"AES-GCM",kdf:"PBKDF2-SHA256",iterations:210000,salt:nmB64(salt),iv:nmB64(iv),data:nmB64(ct)}; }
+async function nmDecryptJson(pack,pass){ if(!pack||pack.alg!=="AES-GCM") throw new Error("فرمت پشتیبان رمزگذاری‌شده معتبر نیست."); const key=await nmDeriveKey(pass,new Uint8Array(nmUnb64(pack.salt))); const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(nmUnb64(pack.iv))},key,nmUnb64(pack.data)); return JSON.parse(new TextDecoder().decode(pt)); }
+async function nmCollectAllData(){ const res=await window.storage.list("namello",false), data={schema:1,exportedAt:new Date().toISOString(),keys:{}}; for(const k of res.keys||[]){ try{ const r=await window.storage.get(k); data.keys[k]=r.value; }catch(e){} } return data; }
+async function nmRestoreAllData(data){ if(!data?.keys) throw new Error("ساختار پشتیبان معتبر نیست."); for(const [k,v] of Object.entries(data.keys)) await window.storage.set(k,v); return Object.keys(data.keys).length; }
+function nmDownloadBlob(name,blob){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000); }
+function nmGoogleCfg(){ return nmSecRead(NM_GOOGLE_CFG_KEY,{clientId:"",driveEnabled:false}); }
+function nmGoogleProfile(){ try{return JSON.parse(localStorage.getItem(NM_GOOGLE_PROFILE_KEY)||"null");}catch(e){return null;} }
+function nmGoogleDecodeJwt(token){ const part=String(token||"").split(".")[1]; if(!part) throw new Error("Google credential نامعتبر است."); return JSON.parse(new TextDecoder().decode(nmUnb64(part))); }
+function nmLoadGoogleScript(){ return new Promise((resolve,reject)=>{ if(window.google?.accounts?.id)return resolve(); const old=document.querySelector('script[data-namello-google]'); if(old){old.addEventListener("load",resolve,{once:true});old.addEventListener("error",reject,{once:true});return;} const sc=document.createElement("script"); sc.src="https://accounts.google.com/gsi/client"; sc.async=true;sc.defer=true;sc.dataset.namelloGoogle="1";sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc); }); }
+async function nmGoogleSignIn(onProfile){ const cfg=nmGoogleCfg(); if(!cfg.clientId) throw new Error("اول Google OAuth Client ID را در تنظیمات وارد کن."); await nmLoadGoogleScript(); await new Promise((resolve,reject)=>{ let done=false; window.__nmGoogleResolve=(credential)=>{try{const p=nmGoogleDecodeJwt(credential); if(!p.sub)throw new Error("شناسه Google یافت نشد."); const profile={sub:p.sub,email:p.email||"",name:p.name||"",picture:p.picture||"",verified:!!p.email_verified,signedAt:new Date().toISOString()}; nmSecWrite(NM_GOOGLE_PROFILE_KEY,profile); onProfile(profile); done=true;resolve();}catch(e){reject(e)}}; google.accounts.id.initialize({client_id:cfg.clientId,callback:r=>window.__nmGoogleResolve(r.credential),auto_select:false,cancel_on_tap_outside:true}); const host=document.createElement("div");host.style.position="fixed";host.style.left="-99999px";document.body.appendChild(host);google.accounts.id.renderButton(host,{theme:"outline",size:"large",text:"signin_with",shape:"pill"});setTimeout(()=>{const btn=host.querySelector("div[role=button]");if(btn)btn.click();},50);setTimeout(()=>{if(!done)reject(new Error("ورود Google در زمان مجاز انجام نشد."));host.remove();},120000); }); }
+async function nmDriveAccessToken(clientId){ await nmLoadGoogleScript(); return await new Promise((resolve,reject)=>{ const tokenClient=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:"https://www.googleapis.com/auth/drive.appdata",callback:r=>r.error?reject(new Error(r.error)):resolve(r.access_token)}); tokenClient.requestAccessToken({prompt:"consent"}); }); }
+async function nmDriveUpload(pack,clientId){ const token=await nmDriveAccessToken(clientId); const boundary="namello_"+Math.random().toString(16).slice(2); const meta=JSON.stringify({name:"namello-secure-backup.json",parents:["appDataFolder"]}); const body=JSON.stringify(pack); const payload='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+body+'\r\n--'+boundary+'--'; const r=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"multipart/related; boundary="+boundary},body:payload}); if(!r.ok) throw new Error("Google Drive: "+r.status); return await r.json(); }
+function NmSecurityAccountCard({showToast}){ const [sec,setSec]=React.useState(()=>nmSecRead(NM_SEC_KEY,NM_SEC_DEFAULT)); const [cfg,setCfg]=React.useState(()=>nmGoogleCfg()); const [profile,setProfile]=React.useState(()=>nmGoogleProfile()); const [busy,setBusy]=React.useState(false); const [pass,setPass]=React.useState(""); const [file,setFile]=React.useState(null); const saveSec=(p)=>{const n={...sec,...p};setSec(n);nmSecWrite(NM_SEC_KEY,n)}; const saveCfg=(p)=>{const n={...cfg,...p};setCfg(n);nmSecWrite(NM_GOOGLE_CFG_KEY,n)};
+ const backup=async()=>{if(pass.length<10){showToast("برای پشتیبان رمزگذاری‌شده یک گذرواژه حداقل ۱۰ کاراکتری وارد کن.");return;}setBusy(true);try{const raw=await nmCollectAllData(),pack=await nmEncryptJson(raw,pass);nmDownloadBlob("namello-secure-backup.json",new Blob([JSON.stringify(pack)],{type:"application/json"}));saveSec({lastBackupAt:new Date().toISOString()});showToast("پشتیبان رمزگذاری‌شده ساخته شد.");}catch(e){showToast("ساخت پشتیبان ناموفق بود: "+e.message)}finally{setBusy(false)}};
+ const restore=async()=>{if(!file||pass.length<10){showToast("فایل پشتیبان و گذرواژه را وارد کن.");return;}if(!confirm("بازیابی، داده‌های فعلی را با داده‌های پشتیبان ادغام می‌کند. ادامه می‌دهی؟"))return;setBusy(true);try{const pack=JSON.parse(await file.text()),data=await nmDecryptJson(pack,pass),n=await nmRestoreAllData(data);showToast(""+n+" بخش داده بازیابی شد. برنامه را یک‌بار بازخوانی کن.");setTimeout(()=>location.reload(),900);}catch(e){showToast("بازیابی ناموفق بود؛ گذرواژه یا فایل را بررسی کن.");}finally{setBusy(false)}};
+ const google=async()=>{setBusy(true);try{await nmGoogleSignIn(setProfile);showToast("حساب Google متصل شد.");}catch(e){showToast(e.message)}finally{setBusy(false)}};
+ const drive=async()=>{if(!cfg.clientId){showToast("ابتدا Client ID را وارد کن.");return;}if(pass.length<10){showToast("برای آپلود امن، گذرواژه پشتیبان حداقل ۱۰ کاراکتر باشد.");return;}setBusy(true);try{const pack=await nmEncryptJson(await nmCollectAllData(),pass);await nmDriveUpload(pack,cfg.clientId);saveSec({lastBackupAt:new Date().toISOString(),driveEnabled:true});showToast("پشتیبان رمزگذاری‌شده در Google Drive ذخیره شد.");}catch(e){showToast("آپلود Google Drive ناموفق بود: "+e.message)}finally{setBusy(false)}};
+ return RE("div",null,
+  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+    RE("div",{className:"flex items-center justify-between mb-2"},
+      RE("div",null,
+        RE("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"حساب Google و پروفایل"),
+        RE("div",{className:"text-[10px]",style:{color:"var(--text-muted)"}},profile?"متصل و محلی ذخیره شده":"برای ورود و بازیابی هویت متصل کن")
+      ),
+      profile ? RE("button",{onClick:()=>{localStorage.removeItem(NM_GOOGLE_PROFILE_KEY);setProfile(null);}},"قطع اتصال") : RE("button",{disabled:busy,onClick:google,className:"px-3 py-2 rounded-lg text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ورود با Google")
+    ),
+    profile && RE("div",{className:"flex items-center gap-3 mt-3"},
+      profile.picture && RE("img",{src:profile.picture,alt:"",className:"w-10 h-10 rounded-full"}),
+      RE("div",null,
+        RE("div",{className:"text-sm font-semibold",style:{color:"var(--text-primary)"}},profile.name||"Google User"),
+        RE("div",{className:"text-[10px]",style:{color:"var(--text-secondary)"}},profile.email||""),
+        RE("div",{className:"text-[9px] mt-1",style:{color:profile.verified?"#34D399":"#FBBF24"}},profile.verified?"ایمیل توسط Google تأیید شده":"وضعیت تأیید ایمیل مشخص نیست")
+      )
+    )
+  ),
+  RE("div",{className:"text-[10px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"این اتصال هویت Google را برای پروفایل نگه می‌دارد؛ رمز Google هرگز در Namello ذخیره نمی‌شود. برای همگام‌سازی واقعی، OAuth Client ID لازم است."),
+  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"امنیت داده و پشتیبان"),RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"پشتیبان با AES-256-GCM و PBKDF2-SHA256 رمزگذاری می‌شود. گذرواژه روی دستگاه ذخیره نمی‌شود؛ اگر فراموش شود، بازیابی رمزگشایی ممکن نیست."),RE("input",{type:"password",value:pass,onChange:e=>setPass(e.target.value),placeholder:"گذرواژه پشتیبان (حداقل ۱۰ کاراکتر)",className:"w-full rounded-lg px-3 py-2 text-[11px] mb-2",style:{background:"var(--bg-card2)",color:"var(--text-primary)",border:"1px solid var(--border-2)"}}),RE("div",{className:"grid grid-cols-2 gap-2"},RE("button",{disabled:busy,onClick:backup,className:"py-2.5 rounded-lg text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ساخت پشتیبان رمزگذاری‌شده"),RE("label",{className:"py-2.5 rounded-lg text-[11px] text-center cursor-pointer",style:{background:"var(--bg-card2)",color:"var(--text-secondary)",border:"1px solid var(--border-2)"}},"انتخاب فایل بازیابی",RE("input",{type:"file",accept:".json",className:"hidden",onChange:e=>setFile(e.target.files?.[0]||null)}))),file&&RE("div",{className:"text-[10px] mt-2",style:{color:"var(--accent-gold)"}},file.name),RE("button",{disabled:busy||!file,onClick:restore,className:"w-full mt-2 py-2.5 rounded-lg text-[11px]",style:{background:"var(--bg-card2)",color:"var(--text-secondary)",border:"1px solid var(--border-2)"}},"بازیابی پشتیبان"),RE("div",{className:"text-[10px] mt-2",style:{color:"var(--text-muted)"}},"آخرین پشتیبان: "+(sec.lastBackupAt?new Date(sec.lastBackupAt).toLocaleString("fa-IR"):"ثبت نشده"))),
+  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"Google Drive · App Data"),RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"فقط پوشه خصوصی App Data قابل دسترسی برای Namello استفاده می‌شود؛ فایل قبل از ارسال رمزگذاری می‌شود. برای فعال‌سازی باید OAuth Client ID وب را از Google Cloud وارد کنی."),RE("input",{value:cfg.clientId,onChange:e=>saveCfg({clientId:e.target.value}),placeholder:"Google OAuth Web Client ID",className:"w-full rounded-lg px-3 py-2 text-[11px] mb-2 mono",style:{background:"var(--bg-card2)",color:"var(--text-primary)",border:"1px solid var(--border-2)"}}),RE("button",{disabled:busy||!cfg.clientId,onClick:drive,className:"w-full py-2.5 rounded-lg text-[11px]",style:{background:cfg.clientId?"var(--accent-gold)":"var(--bg-card2)",color:cfg.clientId?"var(--bg-page)":"var(--text-muted)"}},"پشتیبان‌گیری امن در Google Drive"),RE("p",{className:"text-[9px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"توکن دسترسی Google فقط در حافظه نشست استفاده می‌شود و در storage برنامه ذخیره نمی‌شود.")),
+  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},(()=>{const st=nmSyncState();return RE(React.Fragment,null,RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"مرکز Sync چنددستگاهی"),RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"هر دستگاه شناسه مستقل دارد؛ داده قبل از ارسال رمزگذاری می‌شود و نسخه/زمان برای تشخیص Conflict نگه‌داری می‌شود."),RE("div",{className:"grid grid-cols-2 gap-2 text-[10px] mb-2"},RE("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},"Revision: ",RE("b",null,String(st.revision||0))),RE("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},"وضعیت: ",RE("b",null,String(st.lastStatus||"local-only")))),RE("div",{className:"text-[9px] leading-5",style:{color:"var(--text-muted)"}},"Device ID: ",RE("span",{className:"mono",style:{direction:"ltr"}},nmDeviceId())))}),RE("div",{className:"text-[9px] leading-5 mt-1",style:{color:"var(--text-muted)"}},"برای Sync خودکارِ بدون دخالت کاربر، در نسخه سرورمحور بعدی باید Backend با اعتبارسنجی توکن Google و Conflict API اضافه شود.")),
+  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},RE("div",{className:"flex items-center justify-between"},RE("div",null,RE("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"حریم خصوصی"),RE("div",{className:"text-[10px]",style:{color:"var(--text-muted)"}},"داده‌ها پیش‌فرض محلی هستند")),RE("button",{onClick:()=>saveSec({privacyMode:!sec.privacyMode}),className:"px-3 py-1.5 rounded-full text-[11px]",style:{background:sec.privacyMode?"#34D39922":"var(--bg-card2)",color:sec.privacyMode?"#34D399":"var(--text-muted)"}},sec.privacyMode?"فعال":"غیرفعال")),RE("p",{className:"text-[10px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"حالت حریم خصوصی برای پنهان‌کردن داده‌های حساس در رابط کاربری آماده شده و در نسخه‌های بعدی به نمایشگرهای مالی بیشتری تعمیم پیدا می‌کند."))
+ ); }
 
 function App() {
     const [, forceTick] = useState(0);
@@ -5559,46 +5686,36 @@ function App() {
         setCloudUser(null);
     }
     async function backupToCloud() {
-        if (!googleAccessToken) {
-            showToast("اول با گوگل وارد شو.");
-            return;
-        }
+        if (!googleAccessToken) { showToast("اول با گوگل وارد شو."); return; }
+        const pass=window.prompt("برای Sync رمزگذاری‌شده یک گذرواژه حداقل ۱۰ کاراکتری وارد کن:");
+        if(!pass || pass.length<10){showToast("Sync بدون گذرواژه امن انجام نمی‌شود.");return;}
         setCloudBusy(true);
         try {
-            const data = await gatherAllAppData();
-            const existing = await driveFindBackupFileId(googleAccessToken);
-            await driveUploadBackup(googleAccessToken, existing ? existing.id : null, data);
-            const stamp = new Date().toLocaleString("fa-IR");
-            setLastBackupAt(stamp);
-            showToast("پشتیبان‌گیری تو گوگل‌درایو انجام شد.");
-        }
-        catch (e) {
-            showToast("پشتیبان‌گیری ناموفق بود. دوباره امتحان کن.");
-        }
-        setCloudBusy(false);
+            const pack=await nmBuildSyncEnvelope(pass);
+            const existing=await driveFindBackupFileId(googleAccessToken);
+            await driveUploadBackup(googleAccessToken, existing?existing.id:null, pack);
+            const meta=pack.meta; nmSaveSyncState({revision:meta.revision,updatedAt:meta.updatedAt,lastRemoteAt:meta.updatedAt,lastStatus:"synced"});
+            setLastBackupAt(new Date(meta.updatedAt).toLocaleString("fa-IR"));
+            showToast("Sync رمزگذاری‌شده با Google Drive انجام شد.");
+        } catch(e){ showToast("Sync ناموفق بود: "+(e.message||"خطای ناشناخته")); } finally { setCloudBusy(false); }
     }
     async function restoreFromCloud() {
-        if (!googleAccessToken) {
-            showToast("اول با گوگل وارد شو.");
-            return;
-        }
+        if (!googleAccessToken) { showToast("اول با گوگل وارد شو."); return; }
+        const pass=window.prompt("گذرواژه Sync را وارد کن:");
+        if(!pass){return;}
         setCloudBusy(true);
         try {
-            const existing = await driveFindBackupFileId(googleAccessToken);
-            if (!existing) {
-                showToast("هیچ بکاپی تو گوگل‌درایو پیدا نشد.");
-                setCloudBusy(false);
-                return;
+            const existing=await driveFindBackupFileId(googleAccessToken);
+            if(!existing){showToast("هیچ Syncای در Google Drive پیدا نشد.");setCloudBusy(false);return;}
+            const pack=await driveDownloadBackup(googleAccessToken,existing.id);
+            const body=await nmDecodeSyncEnvelope(pack,pass); const local=nmSyncState(); const cmp=nmCompareSync(local,body.meta);
+            if(cmp==="local-newer" || cmp==="conflict") {
+                const keep=confirm("نسخه Google با داده فعلی تفاوت دارد. اگر ادامه بدهی داده محلی با نسخه Google جایگزین می‌شود. ادامه؟");
+                if(!keep){nmSaveSyncState({conflictCount:Number(local.conflictCount||0)+1,lastStatus:"conflict-preserved-local"});setCloudBusy(false);return;}
             }
-            const data = await driveDownloadBackup(googleAccessToken, existing.id);
-            await restoreAllAppData(data);
-            showToast("بازیابی انجام شد — در حال بارگذاری مجدد برنامه...");
-            setTimeout(() => window.location.reload(), 1200);
-        }
-        catch (e) {
-            showToast("بازیابی ناموفق بود. دوباره امتحان کن.");
-            setCloudBusy(false);
-        }
+            await nmRestoreAllData(body.data); nmSaveSyncState({revision:body.meta.revision,updatedAt:body.meta.updatedAt,lastRemoteAt:body.meta.updatedAt,lastStatus:cmp});
+            showToast("Sync بازیابی شد — برنامه دوباره بارگذاری می‌شود."); setTimeout(()=>window.location.reload(),900);
+        } catch(e){ showToast("بازیابی Sync ناموفق بود؛ گذرواژه یا فایل را بررسی کن."); } finally { setCloudBusy(false); }
     }
     const t = useCallback((key) => translate(appLanguage, key), [appLanguage]);
     const tI18n = t; // alias: داخل map معاملات، پارامتر t (معامله) روی t() سایه می‌اندازد
@@ -8544,6 +8661,7 @@ function App() {
         tab === "library" && RE(NmLibraryLayer, { showToast, askDeleteConfirm }),
         tab === "settings" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_title")),
+            RE(NmSecurityAccountCard, { showToast }),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_theme")),
                 React.createElement("div", { className: "flex gap-2" },
