@@ -309,7 +309,7 @@
   }
 </script>
 <script>
-(function(){let deferred=null;let installSeen=false;window.__nmPwaInstallState=function(){return{ready:!!deferred,installed:!!(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)}};window.__nmPwaInstall=async function(showToast){try{if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches){if(showToast)showToast('Namello همین حالا به‌صورت اپ نصب شده است.');return true;}if(!deferred){try{if(navigator.serviceWorker&&navigator.serviceWorker.ready)await Promise.race([navigator.serviceWorker.ready,new Promise(r=>setTimeout(r,1200))]);}catch(e){}if(!deferred){if(showToast)showToast('Chrome هنوز پنجره نصب را در اختیار برنامه نگذاشته است. از منوی ⋮ Chrome → «Install app / نصب برنامه» استفاده کن؛ «Add to Home screen» فقط میانبر وب است.');return false;}}deferred.prompt();const choice=await deferred.userChoice;deferred=null;installSeen=true;if(showToast)showToast(choice&&choice.outcome==='accepted'?'نصب Namello آغاز شد.':'نصب لغو شد.');return !!(choice&&choice.outcome==='accepted');}catch(e){deferred=null;if(showToast)showToast('پنجره نصب توسط مرورگر در دسترس نیست؛ از Chrome → ⋮ → Install app استفاده کن.');return false;}};window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;installSeen=true;window.dispatchEvent(new CustomEvent('namello-install-ready'))});window.addEventListener('appinstalled',()=>{deferred=null;window.dispatchEvent(new CustomEvent('namello-app-installed'))});window.addEventListener('load',()=>setTimeout(()=>window.dispatchEvent(new CustomEvent('namello-install-state'))),800);})();
+;
 </script>
 <script>document.getElementById('boot-status').textContent = 'Loading libraries…';</script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" onerror="showBootError('Failed to load React', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
@@ -2467,6 +2467,8 @@ const NM_VERSION_CODE = 48;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۰ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.16: گزینه «نصب Namello به‌عنوان اپ» از تنظیمات حذف شد؛ نصب PWA فقط از مسیر استاندارد مرورگر انجام می‌شود. همچنین مسیر Android Native از TWA/Chrome جدا نگه داشته شد تا APK مستقل اجرا شود.",
+    "نسخه 1.22.16: لوگوی لایه ژورنال در منوی لایه‌ها با تصویر اختصاصی ارسالی جایگزین شد و از لوگوی داشبورد جداست.",
     "نسخه 1.22.15: بررسی تطبیقی Trading Journal، FX Journal و TraderSync انجام شد؛ Strategy Checker قبل از ورود، ذخیره پاسخ‌های Plan در Review و محاسبه R:R برنامه‌ریزی‌شده از روی TP/SL قیمتی اضافه شد.",
     "نسخه 1.22.15: قابلیت‌های موجود Namello مثل Psychology، اسکرین‌شات و Voice Note، فیلترهای ژورنال، Replay/What-if، MFE/MAE، Plan Analysis و Journal Coach حفظ و با قابلیت‌های مشابه اپ‌های بررسی‌شده یکپارچه شدند.",
     "نسخه 1.22.14: «ارزیابی استیتمنت» از لایه مستقل به Dashboard منتقل شد؛ برای هر تحلیل آماری/ارزیابی پیشرفته می‌توان منبع ژورنال یا استیتمنت را انتخاب کرد و استیتمنت MT4/MT5/CSV/Excel را مستقیماً به حساب مبنا وارد کرد.",
@@ -9125,8 +9127,7 @@ function App() {
         tab === "settings" && (React.createElement("div", { className: "w-full" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_title")),
             React.createElement("div", { className: "text-[10px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "پروفایل برای هویت و تنظیمات شخصی؛ تمپلت برای ذخیره و بازگردانی مجموعه تنظیمات سفارشی برنامه."),
-            React.createElement("div",{className:"rounded-xl p-3 mb-3",style:{background:"color-mix(in srgb, #0EA5E9 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #0EA5E9 32%, var(--border-1))"}},React.createElement("div",{className:"flex items-center justify-between gap-3"},React.createElement("div",{className:"min-w-0"},React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"نصب Namello به‌عنوان اپ"),React.createElement("div",{className:"text-[9px] mt-1 leading-5",style:{color:"var(--text-muted)"}},"از Install app استفاده کن تا برنامه مستقل از تب Chrome اجرا شود؛ Add to Home screen فقط میانبر وب می‌سازد.")),React.createElement("button",{type:"button",onClick:()=>window.__nmPwaInstall&&window.__nmPwaInstall(showToast),className:"shrink-0 px-3 py-2 rounded-lg text-[10px] font-semibold",style:{background:"#0EA5E9",color:"#fff"}},"نصب اپ"))),
-React.createElement("div", { className: "px-4 mt-4" },
+            React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("div", { className: "rounded-2xl p-3 mb-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "profile" ? "" : "profile"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
                     React.createElement("span", { className: "text-[13px] font-semibold" }, "پروفایل"), settingsProfileSection === "profile" ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" }))
@@ -9294,7 +9295,7 @@ React.createElement("div", { className: "px-4 mt-4" },
             { key: "live", label: t("tab_live"), Icon: Clock },
             { key: "news", label: t("tab_news"), Icon: Newspaper },
             { key: "prep", label: t("tab_prep"), Icon: Check },
-            { key: "journal", label: t("tab_journal"), Icon: TrendingUp },
+            { key: "journal", label: t("tab_journal"), Icon: TrendingUp, journalLogo: true },
             { key: "marketeval", label: t("tab_marketeval"), Icon: Target },
             { key: "calendar", label: t("tab_calendar"), Icon: CalendarIcon },
             { key: "finance", label: t("tab_finance"), Icon: Wallet },
@@ -9308,8 +9309,8 @@ React.createElement("div", { className: "px-4 mt-4" },
             { key: "library", label: t("tab_library"), Icon: BookOpen },
             { key: "settings", label: t("tab_settings"), Icon: SettingsIcon },
             { key: "about", label: t("tab_about"), Icon: Info },
-        ].map(({ key, label, Icon }) => (React.createElement("button", { key: key, onClick: () => setTab(key), className: "flex flex-col items-center gap-1 py-2.5 shrink-0", style: { width: 68, color: tab === key ? "var(--accent-gold)" : "var(--text-muted)" } },
-            React.createElement(Icon, { size: 17 }),
+        ].map(({ key, label, Icon, journalLogo }) => (React.createElement("button", { key: key, onClick: () => setTab(key), className: "flex flex-col items-center gap-1 py-2.5 shrink-0", style: { width: 68, color: tab === key ? "var(--accent-gold)" : "var(--text-muted)" } },
+            journalLogo ? React.createElement("img", { src: "icon-journal.png", alt: "ژورنال", className: "w-[17px] h-[17px] rounded-md object-cover", style: { background: "#000" } }) : React.createElement(Icon, { size: 17 }),
             React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full", style: { background: tab === key ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "transparent", fontWeight: tab === key ? 700 : 400 } }, label)))))),
         navLayout === "vertical" && navMenuOpen && (React.createElement(React.Fragment, null,
             React.createElement("div", { className: "fixed inset-0 z-40", style: { background: "#000000AA" }, onClick: () => setNavMenuOpen(false) }),
@@ -9318,7 +9319,7 @@ React.createElement("div", { className: "px-4 mt-4" },
                     { key: "live", label: t("tab_live"), Icon: Clock },
                 { key: "news", label: t("tab_news"), Icon: Newspaper },
                 { key: "prep", label: t("tab_prep"), Icon: Check },
-                { key: "journal", label: t("tab_journal"), Icon: TrendingUp },
+                { key: "journal", label: t("tab_journal"), Icon: TrendingUp, journalLogo: true },
                 { key: "marketeval", label: t("tab_marketeval"), Icon: Target },
                 { key: "calendar", label: t("tab_calendar"), Icon: CalendarIcon },
                 { key: "finance", label: t("tab_finance"), Icon: Wallet },
@@ -9332,8 +9333,8 @@ React.createElement("div", { className: "px-4 mt-4" },
                 { key: "library", label: t("tab_library"), Icon: BookOpen },
                 { key: "settings", label: t("tab_settings"), Icon: SettingsIcon },
                 { key: "about", label: t("tab_about"), Icon: Info },
-            ].map(({ key, label, Icon }) => (React.createElement("button", { key: key, onClick: () => { setTab(key); setNavMenuOpen(false); }, className: "w-full flex items-center gap-3 px-4 py-3", style: { color: tab === key ? "var(--accent-gold)" : "var(--text-primary)", background: tab === key ? "color-mix(in srgb, var(--accent-gold) 10%, transparent)" : "transparent", borderBottom: "1px solid var(--border-1)" } },
-                React.createElement(Icon, { size: 17 }),
+            ].map(({ key, label, Icon, journalLogo }) => (React.createElement("button", { key: key, onClick: () => { setTab(key); setNavMenuOpen(false); }, className: "w-full flex items-center gap-3 px-4 py-3", style: { color: tab === key ? "var(--accent-gold)" : "var(--text-primary)", background: tab === key ? "color-mix(in srgb, var(--accent-gold) 10%, transparent)" : "transparent", borderBottom: "1px solid var(--border-1)" } },
+                journalLogo ? React.createElement("img", { src: "icon-journal.png", alt: "ژورنال", className: "w-[17px] h-[17px] rounded-md object-cover", style: { background: "#000" } }) : React.createElement(Icon, { size: 17 }),
                 React.createElement("span", { className: "text-[13px]" }, label))))))),
         showSessionSettings && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowSessionSettings(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
