@@ -54,6 +54,16 @@
   #root { min-height: 100vh; }
   #boot-error { display: none; direction: ltr; text-align: left; color: #F87171; background: #1A0B0B; padding: 16px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; min-height: 100vh; }
   #boot-status { color: var(--text-muted); font-family: monospace; font-size: 11px; padding: 16px; direction: ltr; text-align: left; }
+  .nm-nav-item { position: relative; transition: background .18s ease, color .18s ease, transform .18s ease; border-radius: 12px; margin: 3px 2px; }
+  .nm-nav-item.nm-nav-active { background: color-mix(in srgb, var(--accent-gold) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-gold) 18%, transparent); }
+  .nm-nav-item.nm-nav-active::before { content: ''; position: absolute; top: 3px; bottom: 3px; inset-inline-start: 0; width: 2px; border-radius: 2px; background: var(--accent-gold); }
+  .nm-layer-icon { width: 28px; height: 28px; border-radius: 9px; display:flex; align-items:center; justify-content:center; background: color-mix(in srgb, var(--bg-card2) 82%, var(--accent-gold)); border:1px solid color-mix(in srgb, var(--border-2) 80%, var(--accent-gold)); box-shadow: 0 5px 14px #00000033; }
+  .nm-settings-stack > div:nth-child(3n+1) { background: color-mix(in srgb, var(--bg-card) 88%, #3B82F6 12%) !important; }
+  .nm-settings-stack > div:nth-child(3n+2) { background: color-mix(in srgb, var(--bg-card) 88%, #8B5CF6 12%) !important; }
+  .nm-settings-stack > div:nth-child(3n) { background: color-mix(in srgb, var(--bg-card) 90%, #34D399 10%) !important; }
+  .nm-entry-modal .nm-entry-tone > .rounded-lg, .nm-entry-modal .nm-entry-tone .rounded-lg { border-color: color-mix(in srgb, #60A5FA 34%, var(--border-2)) !important; }
+  .nm-result-modal .nm-result-tone > .rounded-lg, .nm-result-modal .nm-result-tone .rounded-lg { border-color: color-mix(in srgb, #34D399 34%, var(--border-2)) !important; }
+  .nm-entry-modal .nm-entry-tone, .nm-result-modal .nm-result-tone { box-shadow: inset 0 2px 0 color-mix(in srgb, currentColor 18%, transparent); }
 </style>
 </head>
 <body>
@@ -315,6 +325,7 @@
 <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" onerror="showBootError('Failed to load React', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" onerror="showBootError('Failed to load ReactDOM', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" onerror="showBootError('Failed to load XLSX', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.32.0/plotly.min.js" onerror="showBootError('Failed to load Plotly', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" onerror="showBootError('Failed to load Tailwind', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1874,31 +1885,81 @@ function Field({ label, children }) {
 /* آپلود عکسِ اسکرین‌شات چارت به‌صورت data URL (base64) داخل خودِ رکورد معامله ذخیره می‌شود — بدون
    نیاز به سرور جدا. عکس به همان اندازه‌ی اصلی روی گوشی معمولاً چند صد کیلوبایته که برای ذخیره‌ی
    محلی مشکلی نداره؛ اگه لازم شد بعداً می‌شه قبل از ذخیره کوچیکش کرد (resize روی canvas). */
-function ChartImageField({ label, value, onChange }) {
+async function nmLoadTesseract() {
+    if (window.Tesseract) return window.Tesseract;
+    await new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-nm-ocr="1"]');
+        if (existing) { existing.addEventListener('load', resolve, { once: true }); existing.addEventListener('error', reject, { once: true }); return; }
+        const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'; sc.async = true; sc.dataset.nmOcr = '1';
+        sc.onload = resolve; sc.onerror = reject; document.head.appendChild(sc);
+    });
+    if (!window.Tesseract) throw new Error('OCR engine unavailable');
+    return window.Tesseract;
+}
+function nmNumToken(v) {
+    const t = String(v || '').replace(/,/g, '').replace(/[Oo]/g, '0').replace(/[Il]/g, '1').replace(/S/g, '5').replace(/[^0-9.\-]/g, '');
+    if (!t || !/^-?\d+(?:\.\d+)?$/.test(t)) return null;
+    const n = Number(t); return Number.isFinite(n) ? n : null;
+}
+async function nmExtractChartPrices(image, direction) {
+    const T = await nmLoadTesseract();
+    const result = await T.recognize(image, 'eng', { logger: () => {} });
+    const words = result?.data?.words || [];
+    const nums = words.map(w => ({ n: nmNumToken(w.text), text: String(w.text || '').toUpperCase(), x: Number(w.bbox?.x0 || 0), y: Number(w.bbox?.y0 || 0), x2: Number(w.bbox?.x1 || 0), y2: Number(w.bbox?.y1 || 0) })).filter(x => x.n !== null);
+    if (!nums.length) throw new Error('هیچ عدد قیمتی از تصویر خوانده نشد.');
+    const width = Math.max(...words.map(w => Number(w.bbox?.x1 || 0)), 1);
+    const right = nums.filter(x => x.x > width * 0.55 && x.n > 0);
+    const candidates = (right.length >= 3 ? right : nums).filter(x => x.n > 0);
+    const uniq = []; const seen = new Set();
+    candidates.sort((a,b)=>a.y-b.y).forEach(x=>{ const k=x.n.toFixed(6); if(!seen.has(k)){seen.add(k);uniq.push(x);} });
+    const labelFind = (rx) => nums.filter(x => rx.test(x.text)).sort((a,b)=>a.x-b.x);
+    const nearest = (word, pool) => pool.slice().sort((a,b)=>Math.abs(a.y-word.y)-Math.abs(b.y-word.y))[0];
+    const tpLabel = labelFind(/\b(TP|TARGET)\b/)[0];
+    const slLabel = labelFind(/\b(SL|STOP)\b/)[0];
+    const entryLabel = labelFind(/\b(ENTRY|ENT)\b/)[0];
+    let entry = entryLabel ? nearest(entryLabel, nums) : null;
+    let target = tpLabel ? nearest(tpLabel, nums) : null;
+    let stop = slLabel ? nearest(slLabel, nums) : null;
+    const pool = uniq.slice(0, 12);
+    if (!entry || !target || !stop) {
+        const three = pool.length >= 3 ? [pool[0], pool[Math.floor((pool.length-1)/2)], pool[pool.length-1]] : pool;
+        if (three.length >= 3) {
+            if (String(direction).toLowerCase() === 'sell') { stop = stop || three[0]; entry = entry || three[1]; target = target || three[2]; }
+            else { target = target || three[0]; entry = entry || three[1]; stop = stop || three[2]; }
+        }
+    }
+    return { entry: entry?.n ?? null, target: target?.n ?? null, stop: stop?.n ?? null, candidates: uniq.slice(0, 8).map(x=>x.n) };
+}
+function ChartImageField({ label, value, onChange, onPriceExtract, direction }) {
     const inputRef = useRef(null);
+    const [ocrBusy, setOcrBusy] = useState(false);
     function handleFile(e) {
         const file = e.target.files && e.target.files[0];
-        if (!file)
-            return;
+        if (!file) return;
         const reader = new FileReader();
         reader.onload = () => onChange(reader.result);
         reader.readAsDataURL(file);
-        e.target.value = "";
+        e.target.value = '';
     }
-    return (React.createElement("div", { className: "mb-2" },
-        React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, label),
-        React.createElement("input", { ref: inputRef, type: "file", accept: "image/*", onChange: handleFile, style: { display: "none" } }),
-        value
-            ? (React.createElement("div", { className: "relative rounded-lg overflow-hidden", style: { border: "1px solid var(--border-2)" } },
-                React.createElement("img", { src: value, alt: label, className: "w-full object-cover", style: { maxHeight: 160 } }),
-                React.createElement("div", { className: "absolute top-1.5 left-1.5 flex gap-1.5" },
-                    React.createElement("button", { type: "button", onClick: () => inputRef.current && inputRef.current.click(), className: "p-1.5 rounded-lg", style: { background: "#0B0E11CC" } },
-                        React.createElement(Edit3, { size: 13, color: "var(--text-primary)" })),
-                    React.createElement("button", { type: "button", onClick: () => onChange(""), className: "p-1.5 rounded-lg", style: { background: "#0B0E11CC" } },
-                        React.createElement(Trash2, { size: 13, color: "#F87171" })))))
-            : (React.createElement("button", { type: "button", onClick: () => inputRef.current && inputRef.current.click(), className: "w-full flex items-center justify-center gap-2 py-3 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--text-secondary)", border: "1px dashed var(--border-2)" } },
-                React.createElement(ImagePlus, { size: 15 }),
-                " آپلود عکس"))));
+    async function runOcr() {
+        if (!value || !onPriceExtract) return;
+        setOcrBusy(true);
+        try { const r = await nmExtractChartPrices(value, direction); onPriceExtract(r); }
+        catch (e) { onPriceExtract({ error: e?.message || 'استخراج قیمت ناموفق بود.' }); }
+        finally { setOcrBusy(false); }
+    }
+    const preview = value ? React.createElement('div',{className:'relative rounded-lg overflow-hidden',style:{border:'1px solid var(--border-2)'}},
+        React.createElement('img',{src:value,alt:label,className:'w-full object-cover',style:{maxHeight:160}}),
+        React.createElement('div',{className:'absolute top-1.5 left-1.5 flex gap-1.5'},
+            React.createElement('button',{type:'button',onClick:()=>inputRef.current&&inputRef.current.click(),className:'p-1.5 rounded-lg',style:{background:'#0B0E11CC'}},React.createElement(Edit3,{size:13,color:'var(--text-primary)'})),
+            React.createElement('button',{type:'button',onClick:()=>onChange(''),className:'p-1.5 rounded-lg',style:{background:'#0B0E11CC'}},React.createElement(Trash2,{size:13,color:'#F87171'}))),
+        onPriceExtract ? React.createElement('button',{type:'button',onClick:runOcr,disabled:ocrBusy,className:'w-full py-2 text-[11px] font-semibold',style:{background:'color-mix(in srgb, #60A5FA 12%, var(--bg-card2))',color:'#60A5FA',borderTop:'1px solid color-mix(in srgb, #60A5FA 28%, var(--border-2))'}},ocrBusy?'در حال پردازش تصویر…':'استخراج Entry / TP / SL از چارت') : null
+    ) : null;
+    return React.createElement('div',{className:'mb-2'},
+        React.createElement('label',{className:'text-[11px] block mb-1',style:{color:'var(--text-muted)'}},label),
+        React.createElement('input',{ref:inputRef,type:'file',accept:'image/*',onChange:handleFile,style:{display:'none'}}),
+        preview || React.createElement('button',{type:'button',onClick:()=>inputRef.current&&inputRef.current.click(),className:'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-[12px]',style:{background:'var(--bg-card2)',color:'var(--text-secondary)',border:'1px dashed var(--border-2)'}},React.createElement(ImagePlus,{size:15}),' آپلود عکس')
+    );
 }
 /* ضبط ارزیابی صوتی با MediaRecorder، و ذخیره‌ی خروجی هم به‌صورت data URL (base64) — دوباره بدون
    نیاز به سرور. روی اکثر مرورگرهای اندروید فرمت خروجی audio/webm است. */
@@ -2462,11 +2523,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.15";
-const NM_VERSION_CODE = 48;
+const NM_VERSION_NAME = "1.22.17";
+const NM_VERSION_CODE = 50;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۰ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.17: بهبود گرافیکی لایه‌ها، پلیر درون آیتم کتابخانه، تفکیک رنگی فرم ورود/نتیجه، باکس‌های تنظیمات، دکمه شناور Native، OCR قیمت از چارت، و مدیریت Chart/Trade/Day Plan اضافه شد.",
     "نسخه 1.22.16: گزینه «نصب Namello به‌عنوان اپ» از تنظیمات حذف شد؛ نصب PWA فقط از مسیر استاندارد مرورگر انجام می‌شود. همچنین مسیر Android Native از TWA/Chrome جدا نگه داشته شد تا APK مستقل اجرا شود.",
     "نسخه 1.22.16: لوگوی لایه ژورنال در منوی لایه‌ها با تصویر اختصاصی ارسالی جایگزین شد و از لوگوی داشبورد جداست.",
     "نسخه 1.22.15: بررسی تطبیقی Trading Journal، FX Journal و TraderSync انجام شد؛ Strategy Checker قبل از ورود، ذخیره پاسخ‌های Plan در Review و محاسبه R:R برنامه‌ریزی‌شده از روی TP/SL قیمتی اضافه شد.",
@@ -3910,7 +3972,7 @@ function NmGlobalPlayer({ tab }) {
     const [centerOpen, setCenterOpen] = useState(false);
     useEffect(() => { setCenterOpen(false); }, [tab]);
     useEffect(() => {
-        const m = document.getElementById("nm-player-mini-slot"), l = document.getElementById("nm-player-lib-slot");
+        const m = document.getElementById("nm-player-mini-slot"), l = document.querySelector("[data-nm-player-lib-slot=\"1\"]");
         if (m !== miniSlot) setMiniSlot(m);
         if (l !== libSlot) setLibSlot(l);
     });
@@ -4223,15 +4285,18 @@ function NmPodcastRow({ podcast, onChange, onRemove, onPlay, askDeleteConfirm })
             RE("button", { type: "button", onClick: () => nmLibConfirmThen(askDeleteConfirm, "پادکست «" + podcast.title + "» و همه‌ی اپیزودهایش حذف شود؟", onRemove), "aria-label": "حذف پادکست" }, RE(Trash2, { size: 13, color: "#F87171" }))),
         open && RE("div", { className: "px-3 pb-3", style: { borderTop: "1px solid var(--border-1)" } },
             episodes.length === 0 && RE("div", { className: "text-[11px] py-2", style: { color: "var(--text-muted)" } }, "هنوز اپیزودی اضافه نشده."),
-            episodes.map((ep, i) => RE("div", { key: ep.id, className: "flex items-center gap-2 py-2", style: { borderBottom: i < episodes.length - 1 ? "1px solid var(--border-1)" : "none" } },
-                RE("button", { type: "button", onClick: () => onPlay(podcast, ep), className: "w-8 h-8 rounded-full flex items-center justify-center shrink-0", style: { background: activeEpisodeId === ep.id ? "var(--accent-gold)" : "var(--bg-card2)", color: activeEpisodeId === ep.id ? "var(--bg-page)" : "var(--text-secondary)" } }, (activeEpisodeId === ep.id && ps.playing) ? "⏸" : "▶"),
-                RE("div", { className: "flex-1 min-w-0" },
-                    editEpId === ep.id
-                        ? RE("input", { type: "text", value: epText, autoFocus: true, onChange: e => setEpText(e.target.value), onKeyDown: e => e.key === "Enter" && saveEpRename(), onBlur: saveEpRename, className: "w-full bg-transparent outline-none text-[12px]", style: { color: "var(--text-primary)", borderBottom: "1px solid var(--accent-gold)" } })
-                        : RE("div", { className: "text-[12px] truncate", style: { color: "var(--text-primary)" } }, (i + 1) + ". " + ep.title),
-                    RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, nmFmtBytes(ep.sizeBytes || 0) + " · " + nmLibFmtDate(ep.addedAt))),
-                RE("button", { type: "button", onClick: () => { setEditEpId(ep.id); setEpText(ep.title); } }, RE(Edit3, { size: 12, color: "var(--text-muted)" })),
-                RE("button", { type: "button", onClick: () => removeEpisode(ep.id) }, RE(X, { size: 13, color: "#F87171" })))),
+            episodes.map((ep, i) => RE("div", { key: ep.id },
+                RE("div", { className: "flex items-center gap-2 py-2", style: { borderBottom: i < episodes.length - 1 ? "1px solid var(--border-1)" : "none" } },
+                    RE("button", { type: "button", onClick: () => onPlay(podcast, ep), className: "w-8 h-8 rounded-full flex items-center justify-center shrink-0", style: { background: activeEpisodeId === ep.id ? "var(--accent-gold)" : "var(--bg-card2)", color: activeEpisodeId === ep.id ? "var(--bg-page)" : "var(--text-secondary)" } }, (activeEpisodeId === ep.id && ps.playing) ? "⏸" : "▶"),
+                    RE("div", { className: "flex-1 min-w-0" },
+                        editEpId === ep.id
+                            ? RE("input", { type: "text", value: epText, autoFocus: true, onChange: e => setEpText(e.target.value), onKeyDown: e => e.key === "Enter" && saveEpRename(), onBlur: saveEpRename, className: "w-full bg-transparent outline-none text-[12px]", style: { color: "var(--text-primary)", borderBottom: "1px solid var(--accent-gold)" } })
+                            : RE("div", { className: "text-[12px] truncate", style: { color: "var(--text-primary)" } }, (i + 1) + ". " + ep.title),
+                        RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, nmFmtBytes(ep.sizeBytes || 0) + " · " + nmLibFmtDate(ep.addedAt))),
+                    RE("button", { type: "button", onClick: () => { setEditEpId(ep.id); setEpText(ep.title); } }, RE(Edit3, { size: 12, color: "var(--text-muted)" })),
+                    RE("button", { type: "button", onClick: () => removeEpisode(ep.id) }, RE(X, { size: 13, color: "#F87171" }))),
+                activeEpisodeId === ep.id && RE("div", { "data-nm-player-lib-slot": "1", className: "mt-1 mb-1" })
+            )),
             RE("button", { type: "button", onClick: addEpisode, className: "w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] mt-1", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } }, RE(Plus, { size: 12 }), "افزودن اپیزود")));
 }
 function NmLibraryPodcastsSection({ showToast, askDeleteConfirm }) {
@@ -4280,7 +4345,6 @@ function NmLibrarySettingsCard({ open, onToggle }) {
 }
 function NmLibraryLayer({ showToast, askDeleteConfirm }) {
     return RE("div", { className: "px-4 mt-4 pb-16" },
-        RE("div", { id: "nm-player-lib-slot" }), // جایگاه باکس کامل پخش‌کننده در لایه‌ی کتابخانه
         RE("h2", { className: "text-sm font-semibold mb-1", style: { color: "var(--text-primary)" } }, "کتابخانه"),
         RE("p", { className: "text-[11px] leading-5 mb-4", style: { color: "var(--text-muted)" } }, "کتاب‌های متنی و پادکست/کتاب‌های صوتی خود را اینجا نگه دارید. فایل‌ها داخل خودِ برنامه ذخیره می‌شوند؛ برای فایل‌های حجیم به فضای ذخیره‌سازی دستگاه توجه کنید (تنظیمات ← فضای ذخیره‌سازی)."),
         RE(NmLibraryBooksSection, { showToast, askDeleteConfirm }),
@@ -4497,29 +4561,40 @@ const NM_DEFAULT_DAY_PLAN = {
     {id:"goal",type:"text",label:"هدف اصلی روز"}
   ]
 };
+const NM_DEFAULT_CHART_PLAN = { id:"core-chart-plan", name:"ارزیابی چارت", scope:"chart", conditions:[] };
 function nmPlanAnswerStatus(v){ return v===true ? "yes" : v===false ? "no" : (v==null||v==="" ? "unanswered" : "answered"); }
 function nmPlanAdherence(trade, plan){
   const a=trade?.review?.planAnswers?.answers||{}; const rows=(plan?.conditions||[]).map(c=>({id:c.id,label:c.label,type:c.type,status:nmPlanAnswerStatus(a[c.id]),value:a[c.id]}));
   const answered=rows.filter(x=>x.status!=="unanswered"), yes=rows.filter(x=>x.status==="yes").length, no=rows.filter(x=>x.status==="no").length;
   return {rows,answered,yes,no,rate:answered.length?Math.round(yes/answered.length*100):null};
 }
-function NmPlanBuilder({plans,setPlans,dayPlans,setDayPlans,onClose}){
-  const [scope,setScope]=React.useState("trade"); const [name,setName]=React.useState(""); const [draft,setDraft]=React.useState([]);
-  const list=scope==="trade"?plans:dayPlans; const setList=scope==="trade"?setPlans:setDayPlans;
-  React.useEffect(()=>{ const base=list[0]||null; setName(base?.name||""); setDraft(base?.conditions||[]); },[scope]);
-  const add=()=>setDraft(a=>[...a,{id:"c"+Date.now(),type:"checkbox",label:"شرط جدید",options:[]}]);
+function NmPlanBuilder({plans,setPlans,dayPlans,setDayPlans,chartPlans,setChartPlans,onClose}){
+  const [scope,setScope]=React.useState('chart');
+  const [selectedId,setSelectedId]=React.useState(null);
+  const [name,setName]=React.useState(''); const [draft,setDraft]=React.useState([]);
+  const list=scope==='trade'?plans:scope==='day'?dayPlans:chartPlans; const setList=scope==='trade'?setPlans:scope==='day'?setDayPlans:setChartPlans;
+  React.useEffect(()=>{ const base=list.find(x=>x.id===selectedId)||list[0]||null; setSelectedId(base?.id||null); setName(base?.name||''); setDraft(base?.conditions||[]); },[scope,list.length,selectedId]);
+  const select=(p)=>{setSelectedId(p.id);setName(p.name);setDraft(p.conditions||[])};
+  const addPlan=()=>{const p={id:'plan-'+Date.now().toString(36),name:scope==='trade'?'برنامه معامله جدید':scope==='day'?'برنامه روزانه جدید':'ارزیابی چارت جدید',scope,conditions:[]};setList([...(list||[]),p]);select(p)};
+  const add=()=>setDraft(a=>[...a,{id:'c'+Date.now(),type:'checkbox',label:'شرط جدید',options:[]}]);
   const update=(i,k,v)=>setDraft(a=>a.map((x,n)=>n===i?{...x,[k]:v}:x));
-  const save=()=>{ if(!name.trim()) return; const existing=list.find(x=>x.id===((list[0]||{}).id)); const plan={id:existing?.id||("plan-"+Date.now()),name:name.trim(),scope,conditions:draft}; setList([plan,...list.filter(x=>x.id!==plan.id)]); onClose(); };
-  return React.createElement("div",{className:"fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.75)"}},
-    React.createElement("div",{className:"w-full max-w-lg rounded-2xl p-4 max-h-[88vh] overflow-y-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},
-      React.createElement("div",{className:"flex justify-between mb-3"},React.createElement("b",null,"مدیریت Trade / Day Plan"),React.createElement("button",{onClick:onClose},"✕")),
-      React.createElement("div",{className:"flex gap-2 mb-3"},["trade","day"].map(x=>React.createElement("button",{key:x,onClick:()=>setScope(x),className:"flex-1 py-2 rounded-lg text-[11px]",style:{background:scope===x?"color-mix(in srgb, var(--accent-gold) 16%, transparent)":"var(--bg-card2)",color:scope===x?"var(--accent-gold)":"var(--text-secondary)"}},x==="trade"?"Trade Plan":"Day Plan"))),
-      React.createElement("input",{value:name,onChange:e=>setName(e.target.value),placeholder:"نام برنامه",className:"w-full rounded-lg px-3 py-2 mb-3 bg-transparent outline-none text-sm",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}}),
-      draft.map((c,i)=>React.createElement("div",{key:c.id,className:"rounded-xl p-3 mb-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-1)"}},
-        React.createElement("div",{className:"flex gap-2 mb-2"},React.createElement("select",{value:c.type,onChange:e=>update(i,"type",e.target.value),className:"rounded-lg px-2 text-[10px]",style:{background:"var(--bg-page)",color:"var(--text-primary)"}},["checkbox","category","number","text","multi"].map(x=>React.createElement("option",{key:x,value:x},x))),React.createElement("input",{value:c.label,onChange:e=>update(i,"label",e.target.value),className:"flex-1 bg-transparent outline-none text-[11px]",style:{color:"var(--text-primary)"}})),
-        ["category","multi"].includes(c.type)&&React.createElement("input",{value:(c.options||[]).join(", "),onChange:e=>update(i,"options",e.target.value.split(",").map(x=>x.trim()).filter(Boolean)),placeholder:"گزینه‌ها با , جدا شوند",className:"w-full bg-transparent outline-none text-[10px]",style:{color:"var(--text-secondary)"}}))),
-      React.createElement("button",{onClick:add,className:"w-full py-2 rounded-lg text-[11px] mb-2",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"+ افزودن شرط"),
-      React.createElement("button",{onClick:save,className:"w-full py-3 rounded-xl text-sm",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ذخیره برنامه")));
+  const save=()=>{if(!name.trim())return;const id=selectedId||('plan-'+Date.now().toString(36));const plan={id,name:name.trim(),scope,conditions:draft};setList((list||[]).map(x=>x.id===id?plan:x).some(x=>x.id===id)?(list||[]).map(x=>x.id===id?plan:x):[...(list||[]),plan]);setSelectedId(id)};
+  const remove=(id)=>{const next=(list||[]).filter(x=>x.id!==id);setList(next);const n=next[0];setSelectedId(n?.id||null);setName(n?.name||'');setDraft(n?.conditions||[])};
+  const move=(id,dir)=>{const i=(list||[]).findIndex(x=>x.id===id);const j=i+dir;if(i<0||j<0||j>=list.length)return;const n=[...list];[n[i],n[j]]=[n[j],n[i]];setList(n)};
+  return React.createElement('div',{className:'fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-2',style:{background:'rgba(0,0,0,.78)'}},
+    React.createElement('div',{className:'w-full max-w-2xl rounded-2xl p-4 max-h-[90vh] overflow-y-auto',style:{background:'var(--bg-page)',border:'1px solid var(--border-1)'}},
+      React.createElement('div',{className:'flex justify-between mb-3'},React.createElement('div',null,React.createElement('b',{className:'text-sm'},'مدیریت Chart / Trade / Day Plan'),React.createElement('div',{className:'text-[9px] mt-1',style:{color:'var(--text-muted)'}},'تعریف، ویرایش، حذف و جابه‌جایی ترتیب برنامه‌ها')),React.createElement('button',{onClick:onClose},'✕')),
+      React.createElement('div',{className:'grid grid-cols-3 gap-2 mb-3',style:{direction:'rtl'}},[['chart','Chart'],['trade','Trade Plan'],['day','Day Plan']].map(([x,l])=>React.createElement('button',{key:x,onClick:()=>setScope(x),className:'py-2.5 rounded-xl text-[11px] font-semibold',style:{background:scope===x?'color-mix(in srgb, var(--accent-gold) 16%, transparent)':'var(--bg-card2)',color:scope===x?'var(--accent-gold)':'var(--text-secondary)',border:'1px solid '+(scope===x?'color-mix(in srgb, var(--accent-gold) 35%, transparent)':'var(--border-1)')}},l))),
+      React.createElement('div',{className:'grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4'},(list||[]).map((p,i)=>React.createElement('div',{key:p.id,className:'rounded-xl p-2',style:{background:p.id===selectedId?'color-mix(in srgb, var(--accent-gold) 8%, var(--bg-card))':'var(--bg-card)',border:'1px solid '+(p.id===selectedId?'color-mix(in srgb, var(--accent-gold) 30%, var(--border-1))':'var(--border-1)')}},
+        React.createElement('button',{className:'w-full text-right text-[11px] font-semibold',onClick:()=>select(p),style:{color:'var(--text-primary)'}},p.name),
+        React.createElement('div',{className:'flex items-center justify-between mt-2'},React.createElement('div',{className:'flex gap-1'},React.createElement('button',{onClick:()=>move(p.id,-1),disabled:i===0,className:'p-1 rounded',style:{opacity:i===0?.3:1}},React.createElement(ChevronUp,{size:13})),React.createElement('button',{onClick:()=>move(p.id,1),disabled:i===(list.length-1),className:'p-1 rounded',style:{opacity:i===list.length-1?.3:1}},React.createElement(ChevronDown,{size:13}))),React.createElement('button',{onClick:()=>remove(p.id),className:'p-1 rounded'},React.createElement(Trash2,{size:13,color:'#F87171'}))))),
+      React.createElement('button',{onClick:addPlan,className:'w-full py-2 rounded-xl text-[11px] mb-3',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px dashed color-mix(in srgb, var(--accent-gold) 35%, var(--border-2))'}},'+ افزودن برنامه')),
+      React.createElement('input',{value:name,onChange:e=>setName(e.target.value),placeholder:'نام برنامه',className:'w-full rounded-lg px-3 py-2 mb-3 bg-transparent outline-none text-sm',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}}),
+      draft.map((c,i)=>React.createElement('div',{key:c.id,className:'rounded-xl p-3 mb-2',style:{background:'var(--bg-card2)',border:'1px solid var(--border-1)'}},
+        React.createElement('div',{className:'flex gap-2 mb-2'},React.createElement('div',{className:'flex gap-0.5'},React.createElement('button',{onClick:()=>setDraft(a=>{if(i===0)return a;const n=[...a];[n[i-1],n[i]]=[n[i],n[i-1]];return n}),disabled:i===0},React.createElement(ChevronUp,{size:13})),React.createElement('button',{onClick:()=>setDraft(a=>{if(i===a.length-1)return a;const n=[...a];[n[i+1],n[i]]=[n[i],n[i+1]];return n}),disabled:i===draft.length-1},React.createElement(ChevronDown,{size:13}))),React.createElement('select',{value:c.type,onChange:e=>update(i,'type',e.target.value),className:'rounded-lg px-2 text-[10px]',style:{background:'var(--bg-page)',color:'var(--text-primary)'}},['checkbox','category','number','text','multi'].map(x=>React.createElement('option',{key:x,value:x},x))),React.createElement('input',{value:c.label,onChange:e=>update(i,'label',e.target.value),className:'flex-1 bg-transparent outline-none text-[11px]',style:{color:'var(--text-primary)'}}),React.createElement('button',{onClick:()=>setDraft(a=>a.filter((_,n)=>n!==i))},React.createElement(Trash2,{size:13,color:'#F87171'}))),
+        ['category','multi'].includes(c.type)&&React.createElement('input',{value:(c.options||[]).join(', '),onChange:e=>update(i,'options',e.target.value.split(',').map(x=>x.trim()).filter(Boolean)),placeholder:'گزینه‌ها با , جدا شوند',className:'w-full bg-transparent outline-none text-[10px]',style:{color:'var(--text-secondary)'}}))),
+      React.createElement('button',{onClick:add,className:'w-full py-2 rounded-lg text-[11px] mb-2',style:{background:'var(--bg-card2)',color:'var(--accent-gold)'}},'+ افزودن شرط'),
+      React.createElement('button',{onClick:save,className:'w-full py-3 rounded-xl text-sm',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره برنامه')));
 }
 
 function NmDayPlanToday({plans,todayStr}){
@@ -4707,7 +4782,7 @@ class NmDashboardErrorBoundary extends React.Component {
   }
 }
 
-function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,setPlans,setDayPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades}){
+function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,chartPlans,setPlans,setDayPlans,setChartPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades}){
  const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")} }catch(e){return{range:"all",session:"all",setup:"all",direction:"all"}}});
  const [showPlans,setShowPlans]=React.useState(false);
  const [showAdvanced,setShowAdvanced]=React.useState(true);
@@ -4784,7 +4859,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        React.createElement("div",{className:"flex items-center gap-2"},React.createElement("span",{className:"text-[14px] font-bold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")),
        showAdvanced?React.createElement(ChevronUp,{size:15,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:15,color:"var(--text-muted)"})),
      showAdvanced&&React.createElement("div",{className:"pt-3"},
-       React.createElement("div",{className:"flex justify-end mb-2"},React.createElement("button",{onClick:()=>setShowPlans(true),className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"مدیریت Plan")),
+       React.createElement("div",{className:"flex justify-end mb-2"},React.createElement("button",{onClick:()=>setShowPlans(true),className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"مدیریت Chart / Trade / Day Plan")),
        baseAccountPanel,
        filterPanel,
        React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
@@ -4803,7 +4878,7 @@ React.createElement("section",{className:"rounded-2xl p-3 mt-3 mb-3",style:{back
    excursionModal,
    replayModal,
    coachModal,
-   showPlans&&React.createElement(NmPlanBuilder,{plans,setPlans,dayPlans,setDayPlans,onClose:()=>setShowPlans(false)}));
+   showPlans&&React.createElement(NmPlanBuilder,{plans,setPlans,dayPlans,setDayPlans,chartPlans,setChartPlans,onClose:()=>setShowPlans(false)}));
 
 }
 
@@ -5143,6 +5218,7 @@ function App() {
     const [mt5BridgeStatus, setMt5BridgeStatus] = useState({ state: "idle", text: "غیرفعال", synced: 0 });
     const [tradePlans, setTradePlans] = useState([NM_DEFAULT_TRADE_PLAN]);
     const [dayPlans, setDayPlans] = useState([NM_DEFAULT_DAY_PLAN]);
+    const [chartPlans, setChartPlans] = useState([NM_DEFAULT_CHART_PLAN]);
 
     const [showExportPicker, setShowExportPicker] = useState(false);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -5720,9 +5796,10 @@ function App() {
         await window.storage.set(`namello_trades_${activeAccount}`, JSON.stringify(next));
     }
     catch (e) { } }, [activeAccount]);
-    useEffect(()=>{(async()=>{try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value)setTradePlans(JSON.parse(a.value));}catch(e){} try{const a=await window.storage.get("namello_day_plans_v1");if(a?.value)setDayPlans(JSON.parse(a.value));}catch(e){}})()},[]);
+    useEffect(()=>{(async()=>{try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value)setTradePlans(JSON.parse(a.value));}catch(e){} try{const a=await window.storage.get("namello_day_plans_v1");if(a?.value)setDayPlans(JSON.parse(a.value));}catch(e){} try{const a=await window.storage.get("namello_chart_plans_v1");if(a?.value)setChartPlans(JSON.parse(a.value)); else { const prep=await window.storage.get("namello_prepsteps_v1"); const steps=prep?.value?JSON.parse(prep.value):DEFAULT_PREP_STEPS; const migrated=[{...NM_DEFAULT_CHART_PLAN,conditions:(steps||[]).map(x=>({id:x.id||("chart-"+Date.now()+Math.random()),type:"checkbox",label:x.text,options:[]}))}]; setChartPlans(migrated); await window.storage.set("namello_chart_plans_v1",JSON.stringify(migrated)); }}catch(e){}})()},[]);
     const persistTradePlans=useCallback(async next=>{setTradePlans(next);try{await window.storage.set("namello_trade_plans_v1",JSON.stringify(next))}catch(e){}},[]);
     const persistDayPlans=useCallback(async next=>{setDayPlans(next);try{await window.storage.set("namello_day_plans_v1",JSON.stringify(next))}catch(e){}},[]);
+    const persistChartPlans=useCallback(async next=>{setChartPlans(next);try{await window.storage.set("namello_chart_plans_v1",JSON.stringify(next))}catch(e){}},[]);
 
     useEffect(() => {
         let alive = true;
@@ -6028,13 +6105,18 @@ function App() {
         return () => document.removeEventListener("visibilitychange", onVisibility);
     }, [namelloReturnSettings.enabled]);
     async function enableNamelloReturn() {
+        if (window.NamelloNative && typeof window.NamelloNative.enableFloatingReturn === "function") {
+            const started = window.NamelloNative.enableFloatingReturn();
+            if (started) { persistNamelloReturnSettings({ ...namelloReturnSettings, enabled: true }); showToast("دکمه شناور Namello فعال شد."); }
+            else showToast("صفحه مجوز «نمایش روی سایر برنامه‌ها» باز شد؛ پس از فعال‌سازی، گزینه را دوباره روشن کن.");
+            return;
+        }
         if (typeof Notification === "undefined") {
             showToast("مرورگر شما از نوتیفیکیشن پشتیبانی نمی‌کند.");
             return;
         }
         let perm = Notification.permission;
-        if (perm === "default")
-            perm = await Notification.requestPermission();
+        if (perm === "default") perm = await Notification.requestPermission();
         if (perm !== "granted") {
             showToast("بدون اجازه‌ی نوتیفیکیشن، این قابلیت کار نمی‌کند.");
             return;
@@ -6119,6 +6201,7 @@ function App() {
         { key: "closeTypeOptions", value: closeTypeOptions, persist: persistCloseTypeOptions, def: DEFAULT_CLOSE_TYPE_OPTIONS },
         { key: "manualExitReasonOptions", value: manualExitReasonOptions, persist: persistManualExitReasonOptions, def: DEFAULT_MANUAL_EXIT_REASON_OPTIONS },
         { key: "prepSteps", value: prepSteps, persist: persistPrepSteps, def: DEFAULT_PREP_STEPS },
+        { key: "chartPlans", value: chartPlans, persist: persistChartPlans, def: [NM_DEFAULT_CHART_PLAN] },
         { key: "accSettings", value: accSettings, persist: persistAccSettings, def: DEFAULT_ACC_SETTINGS },
         { key: "customParams", value: customParams, persist: persistCustomParams, def: [] },
     ];
@@ -6885,7 +6968,7 @@ function App() {
             marketBias: d.marketBias, marketCondition: d.marketCondition, wave: d.wave, trigs: d.trigs || [], targets: d.targets || [], stops: d.stops || [],
             reversalPatterns: d.reversalPatterns || [],
             divergenceMain: d.divergenceMain || [], divergenceEntry: d.divergenceEntry || [],
-            successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: {},
+            successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: {}, chartAnswers: {},
             chartImageMain: "", chartImageEntryStart: "", voiceNoteBefore: "",
         });
         setShowOpenForm(true);
@@ -6904,8 +6987,11 @@ function App() {
             ? (openForm.direction === "sell" ? ((plannedEntryPrice - plannedTargetPrice) / (plannedStopPrice - plannedEntryPrice)) : ((plannedTargetPrice - plannedEntryPrice) / (plannedEntryPrice - plannedStopPrice)))
             : null;
         const plan = tradePlans[0] || null;
+        const chartPlan = chartPlans[0] || null;
         const planAnswers = openForm.planAnswers || {};
+        const chartAnswers = openForm.chartAnswers || {};
         const ruleViolationsAtEntry = (plan?.conditions || []).filter(c => c.type === "checkbox" && planAnswers[c.id] === false).map(c => c.id);
+        const chartRuleViolationsAtEntry = (chartPlan?.conditions || []).filter(c => c.type === "checkbox" && chartAnswers[c.id] === false).map(c => c.id);
         const trade = {
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             status: "open", schemaVersion: 2, review: null, mfe: null, mae: null, bestExit: null, exitEfficiency: null,
@@ -6931,7 +7017,7 @@ function App() {
             successProb: openForm.successProb === "" ? null : parseFloat(openForm.successProb),
             calcSuccessProb: calcSuccessProbResult,
             psychology: openForm.psychology || [],
-            review: plan ? { planAnswers: { templateId: plan.id || null, answers: planAnswers }, ruleViolations: ruleViolationsAtEntry, entryChecklistScore: nmPlanChecklistScore(plan, planAnswers) } : null,
+            review: (plan || chartPlan) ? { ...(plan ? { planAnswers: { templateId: plan.id || null, answers: planAnswers }, ruleViolations: ruleViolationsAtEntry, entryChecklistScore: nmPlanChecklistScore(plan, planAnswers) } : {}), ...(chartPlan ? { chartAnswers: { templateId: chartPlan.id || null, answers: chartAnswers }, chartRuleViolations: chartRuleViolationsAtEntry, chartChecklistScore: nmPlanChecklistScore(chartPlan, chartAnswers) } : {}) } : null,
             chartImageMain: openForm.chartImageMain || "", chartImageEntryStart: openForm.chartImageEntryStart || "", voiceNoteBefore: openForm.voiceNoteBefore || "",
             chartImageAfter: "", voiceNoteAfter: "",
             newsName: findNewsForTrade(newsEvents, openForm.pair, openForm.date, openForm.time),
@@ -8265,7 +8351,7 @@ function App() {
                 " ",
                 jy)),
         RE(NmGlobalPlayer, { tab }),
-        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades }))),
+        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, chartPlans: chartPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, setChartPlans: persistChartPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades }))),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
@@ -8398,22 +8484,17 @@ function App() {
                         React.createElement("p", { className: "text-[11px] leading-6", style: { color: "var(--text-secondary)" } }, newsImpactEffect(ev.impact, ev.currency))))));
             }))))),
         tab === "prep" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("h3", { className: "text-[13px] font-semibold mb-3", style: { color: "var(--accent-gold)" } }, "\u06AF\u0627\u0645\u200C\u0647\u0627\u06CC \u0622\u0645\u0627\u062F\u0647\u200C\u0633\u0627\u0632\u06CC"),
-            React.createElement("div", { className: "flex gap-2 mb-4" },
-                React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
-                    React.createElement("input", { type: "text", value: newPrepStepText, onChange: e => setNewPrepStepText(e.target.value), onKeyDown: e => e.key === "Enter" && addPrepStep(), placeholder: "\u06CC\u06A9 \u06AF\u0627\u0645 \u062C\u062F\u06CC\u062F \u0628\u0646\u0648\u06CC\u0633...", className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
-                React.createElement("button", { onClick: addPrepStep, className: "px-4 rounded-lg text-sm", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
-                    React.createElement(Plus, { size: 16 }))),
-            prepSteps.length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0647\u0646\u0648\u0632 \u06AF\u0627\u0645\u06CC \u062B\u0628\u062A \u0646\u0634\u062F\u0647.")) : (React.createElement("div", { className: "grid grid-cols-1 gap-2" }, prepSteps.map((s, i) => (React.createElement("div", { key: s.id, className: "rounded-xl p-3 flex items-center gap-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                React.createElement("div", { className: "flex items-center gap-0.5 shrink-0" },
-                    React.createElement("button", { onClick: () => movePrepStep(s.id, -1), disabled: i === 0, className: "p-1", style: { opacity: i === 0 ? 0.3 : 1 } },
-                        React.createElement(ChevronUp, { size: 18, color: "var(--text-muted)" })),
-                    React.createElement("button", { onClick: () => movePrepStep(s.id, 1), disabled: i === prepSteps.length - 1, className: "p-1", style: { opacity: i === prepSteps.length - 1 ? 0.3 : 1 } },
-                        React.createElement(ChevronDown, { size: 18, color: "var(--text-muted)" }))),
-                React.createElement("span", { className: "w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0", style: { background: "color-mix(in srgb, var(--accent-gold) 13%, transparent)", color: "var(--accent-gold)" } }, i + 1),
-                React.createElement(AutoGrowTextarea, { value: s.text, onChange: e => updatePrepStep(s.id, e.target.value), className: "flex-1 bg-transparent outline-none text-sm", style: { color: "var(--text-primary)", minWidth: 0 } }),
-                React.createElement("button", { onClick: () => askDeleteConfirm("این مرحله آماده‌سازی حذف بشه؟", () => deletePrepStep(s.id)) },
-                    React.createElement(Trash2, { size: 15, color: "var(--text-muted)" }))))))))),
+            React.createElement("div", { className: "rounded-2xl p-4 mb-3", style: { background: "color-mix(in srgb, #60A5FA 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #60A5FA 30%, var(--border-1))" } },
+                React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement(BarChart3, { size: 18, color: "#60A5FA" }), React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "آماده‌سازی / ارزیابی چارت")),
+                React.createElement("p", { className: "text-[11px] leading-5", style: { color: "var(--text-secondary)" } }, "گام‌های آماده‌سازی قبلی به‌عنوان چک‌لیست «ارزیابی چارت» منتقل شده‌اند. مدیریت، افزودن، ویرایش، حذف و جابه‌جایی آن‌ها از Dashboard ← مدیریت Chart / Trade / Day Plan انجام می‌شود.")),
+            React.createElement("div", { className: "rounded-2xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+                React.createElement("div", { className: "flex items-center justify-between mb-3" },
+                    React.createElement("div", { className: "text-[12px] font-semibold", style: { color: "var(--accent-gold)" } }, chartPlans?.[0]?.name || "ارزیابی چارت"),
+                    React.createElement("span", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, (chartPlans?.[0]?.conditions || []).length + " آیتم")),
+                (chartPlans?.[0]?.conditions || []).map((c,i) => React.createElement("div", { key:c.id, className:"flex items-center gap-2 py-2", style:{borderBottom:i<(chartPlans[0].conditions.length-1)?"1px solid var(--border-1)":"none"}},
+                    React.createElement("span", { className:"w-5 h-5 rounded-full flex items-center justify-center text-[9px]", style:{background:"color-mix(in srgb, #60A5FA 14%, transparent)",color:"#60A5FA"}}, i+1),
+                    React.createElement("span", { className:"text-[11px]", style:{color:"var(--text-secondary)"}}, c.label))),
+                React.createElement("p", { className:"text-[9px] mt-3", style:{color:"var(--text-muted)"}}, "چک‌لیست «ارزیابی چارت» در ثبت ورود معامله، بعد از «آمادگی ستاپ» نمایش داده می‌شود.")))) ,
         tab === "journal" && (React.createElement("div", { className: "px-4 mt-4" }, !loaded ? (React.createElement("div", { className: "text-center text-sm py-10", style: { color: "var(--text-muted)" } }, appLanguage === "en" ? "Loading..." : "\u062F\u0631 \u062D\u0627\u0644 \u0628\u0627\u0631\u06AF\u0630\u0627\u0631\u06CC...")) : !activeAccount ? (React.createElement("div", { className: "rounded-xl p-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
             React.createElement("h2", { className: "text-sm font-semibold mb-3", style: { color: "var(--text-primary)" } }, appLanguage === "en" ? "Create or Select an Account" : "\u0627\u06CC\u062C\u0627\u062F \u06CC\u0627 \u0627\u0646\u062A\u062E\u0627\u0628 \u062D\u0633\u0627\u0628"),
             accounts.length > 0 && (React.createElement("div", { className: "mb-3" },
@@ -9124,10 +9205,10 @@ function App() {
                     React.createElement(FileSpreadsheet, { size: 18 }),
                     " PDF"))))),
         tab === "library" && RE(NmLibraryLayer, { showToast, askDeleteConfirm }),
-        tab === "settings" && (React.createElement("div", { className: "w-full" },
+        tab === "settings" && (React.createElement("div", { className: "w-full nm-settings-root" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_title")),
             React.createElement("div", { className: "text-[10px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "پروفایل برای هویت و تنظیمات شخصی؛ تمپلت برای ذخیره و بازگردانی مجموعه تنظیمات سفارشی برنامه."),
-            React.createElement("div", { className: "px-4 mt-4" },
+            React.createElement("div", { className: "px-4 mt-4 nm-settings-stack" },
             React.createElement("div", { className: "rounded-2xl p-3 mb-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "profile" ? "" : "profile"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
                     React.createElement("span", { className: "text-[13px] font-semibold" }, "پروفایل"), settingsProfileSection === "profile" ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" }))
@@ -9234,9 +9315,9 @@ function App() {
                     React.createElement("button", { onClick: () => toggleSettingsSection("namelloReturn"), className: "flex items-center gap-1.5" },
                         React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "نوتیفیکیشن بازگشت به Namello"),
                         openSettingsSection.namelloReturn ? React.createElement(ChevronUp, { size: 12, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 12, color: "var(--text-muted)" })),
-                    React.createElement("button", { onClick: () => namelloReturnSettings.enabled ? persistNamelloReturnSettings({ ...namelloReturnSettings, enabled: false }) : enableNamelloReturn(), className: "px-3 py-1 rounded-full text-[11px] font-medium", style: { background: namelloReturnSettings.enabled ? "#34D39922" : "var(--bg-card2)", color: namelloReturnSettings.enabled ? "#34D399" : "var(--text-muted)" } }, namelloReturnSettings.enabled ? "فعال" : "غیرفعال")),
+                    React.createElement("button", { onClick: () => { if (namelloReturnSettings.enabled) { if (window.NamelloNative && typeof window.NamelloNative.disableFloatingReturn === "function") window.NamelloNative.disableFloatingReturn(); persistNamelloReturnSettings({ ...namelloReturnSettings, enabled: false }); } else enableNamelloReturn(); }, className: "px-3 py-1 rounded-full text-[11px] font-medium", style: { background: namelloReturnSettings.enabled ? "#34D39922" : "var(--bg-card2)", color: namelloReturnSettings.enabled ? "#34D399" : "var(--text-muted)" } }, namelloReturnSettings.enabled ? "فعال" : "غیرفعال")),
                 openSettingsSection.namelloReturn && React.createElement("p", { className: "text-[11px] leading-6", style: { color: "var(--text-muted)" } },
-                    "نکته‌ی مهم: چون Namello یک وب‌اپ (PWA) است، نمی‌تونه مثل یه اپلیکیشن نصب‌شده، روی صفحه‌ی اپ‌های دیگه (مثل MT5 یا تریدینگ‌ویو) یک آیکن شناور دائمی نشون بده — این کار فقط با مجوز سیستمیِ «نمایش روی سایر برنامه‌ها» ممکنه که فقط به اپ‌های نصب‌شده (APK) داده می‌شه، نه به تبِ مرورگر. نزدیک‌ترین جایگزینِ واقعی که از دل مرورگر قابل‌اجراست همین است: وقتی این گزینه فعاله و از Namello بری روی اپ دیگه، یک نوتیفیکیشن با متن «برای بازگشت سریع به Namello ضربه بزن» توی نوار اعلان‌ها ظاهر می‌شه؛ با زدنش برمی‌گردی به برنامه.",
+                    "در نسخه PWA، مرورگر فقط نوتیفیکیشن بازگشت را می‌تواند نمایش دهد. اگر Namello را به‌صورت APK Native اجرا می‌کنی، همین گزینه با مجوز سیستمی «نمایش روی سایر برنامه‌ها» یک دکمه شناور واقعی روی MT5، TradingView و سایر برنامه‌ها ایجاد می‌کند؛ دکمه قابل جابه‌جایی است و با لمس آن Namello باز می‌شود.",
                     React.createElement("br", null),
                     React.createElement("br", null),
                     "اگه بعد از فعال‌کردن هنوز این نوتیفیکیشن ظاهر نمی‌شه، دلیلش تقریباً همیشه مدیریت باتریِ خودِ سامسونگه: چون Namello یه تبِ مرورگرِ پس‌زمینه است (نه اپ نصب‌شده)، سامسونگ اغلب پردازشش رو همون لحظه‌ای که ازش خارج می‌شی می‌بنده، قبل از اینکه فرصت کنه نوتیفیکیشن رو نشون بده. برای رفع این مورد: تنظیمات گوشی ← نرم‌افزارها (یا مراقبت از باتری) ← مرورگری که Namello رو باهاش باز کردی (کروم/سامسونگ‌اینترنت) ← مصرف باتری ← گزینه‌ی «بدون محدودیت» رو انتخاب کن، و مطمئن شو مرورگر تو لیست «اپ‌های خواب» یا «به‌خواب‌رفته» نیست. بدون این تنظیم، این قابلیت (و کلاً نوتیفیکیشن‌های Namello) روی گوشی‌های سامسونگ به‌طور نامنظم کار می‌کنن.")),
@@ -9309,8 +9390,8 @@ function App() {
             { key: "library", label: t("tab_library"), Icon: BookOpen },
             { key: "settings", label: t("tab_settings"), Icon: SettingsIcon },
             { key: "about", label: t("tab_about"), Icon: Info },
-        ].map(({ key, label, Icon, journalLogo }) => (React.createElement("button", { key: key, onClick: () => setTab(key), className: "flex flex-col items-center gap-1 py-2.5 shrink-0", style: { width: 68, color: tab === key ? "var(--accent-gold)" : "var(--text-muted)" } },
-            journalLogo ? React.createElement("img", { src: "icon-journal.png", alt: "ژورنال", className: "w-[17px] h-[17px] rounded-md object-cover", style: { background: "#000" } }) : React.createElement(Icon, { size: 17 }),
+        ].map(({ key, label, Icon, journalLogo }) => (React.createElement("button", { key: key, onClick: () => setTab(key), className: "nm-nav-item flex flex-col items-center gap-1 py-2.5 shrink-0 "+(tab===key?"nm-nav-active":""), style: { width: 68, color: tab === key ? "var(--accent-gold)" : "var(--text-muted)" } },
+            journalLogo ? React.createElement("img", { src: "icon-journal.png", alt: "ژورنال", className: "nm-layer-icon object-cover p-0", style: { background: "var(--bg-card2)" } }) : React.createElement(Icon, { size: 17 }),
             React.createElement("span", { className: "text-[10px] px-2 py-0.5 rounded-full", style: { background: tab === key ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "transparent", fontWeight: tab === key ? 700 : 400 } }, label)))))),
         navLayout === "vertical" && navMenuOpen && (React.createElement(React.Fragment, null,
             React.createElement("div", { className: "fixed inset-0 z-40", style: { background: "#000000AA" }, onClick: () => setNavMenuOpen(false) }),
@@ -9334,7 +9415,7 @@ function App() {
                 { key: "settings", label: t("tab_settings"), Icon: SettingsIcon },
                 { key: "about", label: t("tab_about"), Icon: Info },
             ].map(({ key, label, Icon, journalLogo }) => (React.createElement("button", { key: key, onClick: () => { setTab(key); setNavMenuOpen(false); }, className: "w-full flex items-center gap-3 px-4 py-3", style: { color: tab === key ? "var(--accent-gold)" : "var(--text-primary)", background: tab === key ? "color-mix(in srgb, var(--accent-gold) 10%, transparent)" : "transparent", borderBottom: "1px solid var(--border-1)" } },
-                journalLogo ? React.createElement("img", { src: "icon-journal.png", alt: "ژورنال", className: "w-[17px] h-[17px] rounded-md object-cover", style: { background: "#000" } }) : React.createElement(Icon, { size: 17 }),
+                journalLogo ? React.createElement("img", { src: "icon-journal.png", alt: "ژورنال", className: "nm-layer-icon object-cover p-0", style: { background: "var(--bg-card2)" } }) : React.createElement(Icon, { size: 17 }),
                 React.createElement("span", { className: "text-[13px]" }, label))))))),
         showSessionSettings && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowSessionSettings(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
@@ -9504,6 +9585,8 @@ function App() {
                         const nm = findNewsForTrade(newsEvents, openForm.pair, openForm.date, openForm.time);
                         return nm ? React.createElement("span", { className: "text-[12px]", style: { color: "#FBBF24" } }, nm) : React.createElement("span", { className: "text-[11px]", style: { color: "var(--text-muted)" } });
                     })())),
+                tradePlans[0] && React.createElement(NmPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v})),label:"آمادگی ستاپ"}),
+                chartPlans[0] && React.createElement(NmPlanChecklistField,{plan:chartPlans[0],answers:openForm.chartAnswers||{},onChange:v=>setOpenForm(f=>({...f,chartAnswers:v})),label:"ارزیابی چارت"}),
                 React.createElement(Field, { label: numLabel(6, appLanguage === "en" ? "Fractal" : "فراکتال") },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         React.createElement("button", { type: "button", onClick: () => setFractalEditMode(m => !m), style: { position: "absolute", top: -6, left: -6, zIndex: 1, background: fractalEditMode ? "#F8717122" : "var(--bg-card2)", border: `1px solid ${fractalEditMode ? "#F8717155" : "var(--border-2)"}`, borderRadius: 8, padding: 4 }, "aria-label": "\u062D\u0630\u0641 \u06AF\u0632\u06CC\u0646\u0647\u200C\u0647\u0627" },
@@ -9790,7 +9873,6 @@ function App() {
                     React.createElement(Field, { label: "حد سود قیمتی برنامه‌ریزی‌شده (اختیاری)" },React.createElement("input",{type:"number",inputMode:"decimal",value:openForm.plannedTargetPrice,onChange:e=>setOpenForm({...openForm,plannedTargetPrice:e.target.value}),placeholder:"TP Price",className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}})),
                     React.createElement(Field, { label: "حد ضرر قیمتی برنامه‌ریزی‌شده (اختیاری)" },React.createElement("input",{type:"number",inputMode:"decimal",value:openForm.plannedStopPrice,onChange:e=>setOpenForm({...openForm,plannedStopPrice:e.target.value}),placeholder:"SL Price",className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}}))),
                 (()=>{ const e=Number(openForm.entry),tp=Number(openForm.plannedTargetPrice),sl=Number(openForm.plannedStopPrice); if(!Number.isFinite(e)||!Number.isFinite(tp)||!Number.isFinite(sl)) return null; const rr=openForm.direction==="sell"?((e-tp)/(sl-e)):((tp-e)/(e-sl)); if(!Number.isFinite(rr)) return null; return React.createElement("div",{className:"rounded-lg px-3 py-2 mb-2",style:{background:rr>0?"#34D39910":"#F8717110",border:"1px solid "+(rr>0?"#34D39938":"#F8717138")}},React.createElement("div",{className:"text-[10px]",style:{color:"var(--text-muted)"}},"R:R برنامه‌ریزی‌شده"),React.createElement("div",{className:"text-sm font-bold mono",style:{color:rr>0?"#34D399":"#F87171",fontFamily:"JetBrains Mono, monospace"}},Number(rr).toFixed(2),"R")); })(),
-                tradePlans[0] && React.createElement(NmPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v})),label:"Strategy Checker · چک‌لیست قبل از ورود"}),
                 React.createElement(Field, { label: numLabel(29, appLanguage === "en" ? "Psychology (multi-select)" : "روانشناسی (چند تا هم می‌تونی انتخاب کنی)") },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         React.createElement("button", { type: "button", onClick: () => setPsychEditMode(m => !m), style: { position: "absolute", top: -6, left: -6, zIndex: 1, background: psychEditMode ? "#F8717122" : "var(--bg-card2)", border: `1px solid ${psychEditMode ? "#F8717155" : "var(--border-2)"}`, borderRadius: 8, padding: 4 }, "aria-label": "\u062D\u0630\u0641 \u062D\u0627\u0644\u062A\u200C\u0647\u0627" },
@@ -9848,7 +9930,7 @@ function App() {
                         })())),
                 React.createElement(Field, { label: numLabel(32, appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله") },
                     React.createElement(ChartImageField, { label: "چارت تایم اصلی", value: openForm.chartImageMain || "", onChange: v => setOpenForm({ ...openForm, chartImageMain: v }) }),
-                    React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }) })),
+                    React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }), onPriceExtract: r => { if(r.error){ showToast(r.error); return; } setOpenForm(f => ({ ...f, entry: r.entry!=null?String(r.entry):f.entry, plannedTargetPrice: r.target!=null?String(r.target):f.plannedTargetPrice, plannedStopPrice: r.stop!=null?String(r.stop):f.plannedStopPrice })); showToast("قیمت‌های Entry / TP / SL از چارت استخراج و در فرم ثبت شدند."); } , direction: openForm.direction })),
                 React.createElement(Field, { label: numLabel(33, appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله") },
                     React.createElement(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت", value: openForm.voiceNoteBefore || "", onChange: v => setOpenForm({ ...openForm, voiceNoteBefore: v }) })),
                 RE(NmCustomFieldsFormSection, { values: openForm.customFields, onChange: v => setOpenForm({ ...openForm, customFields: v }) }),

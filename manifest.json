@@ -3,7 +3,7 @@
   "name": "Namello",
   "short_name": "Namello",
   "description": "ژورنال معاملاتی Namello با Dashboard، تحلیل آماری، ارزیابی پیشرفته، ایمپورت استیتمنت MT4/MT5 و مدیریت معاملات",
-  "start_url": "./index.html?v=1214",
+  "start_url": "./index.html?v=1217",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
