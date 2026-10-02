@@ -1,3 +1,17 @@
+# Namello 1.22.12
+
+- Dashboard: خروجی جامع داشبورد کاملاً مستقل از بخش ارزیابی پیشرفته و خارج از accordion آن قرار گرفت.
+- PWA: manifest با display_override، prefer_related_applications و launch_handler تقویت شد و جریان Install App به تنظیمات اضافه شد تا به‌جای میانبر Chrome از نصب واقعی PWA استفاده شود.
+- Settings: محتوای Profile بلافاصله زیر کارت Profile و محتوای Template بلافاصله زیر کارت Template نمایش داده می‌شود؛ عرض هر دو با سایر بخش‌های Settings یکسان شد.
+- VersionCode: 45
+
+# Namello 1.22.12
+
+- Dashboard: خروجی جامع کاملاً مستقل از بخش ارزیابی پیشرفته و خارج از accordion آن قرار گرفت.
+- PWA: manifest و جریان نصب واقعی تقویت شد؛ دکمه Install App به تنظیمات اضافه شد تا میانبر Chrome با اپ PWA اشتباه نشود.
+- Settings: محتوای Profile بلافاصله زیر کارت Profile و محتوای Template بلافاصله زیر کارت Template نمایش داده می‌شود؛ عرض هر دو با سایر بخش‌های Settings یکسان شد.
+- VersionCode: 45
+
 # Namello 1.22.11
 
 - Dashboard split into three visually distinct sections: Statistical Analysis, Advanced Evaluation, and Comprehensive Dashboard Export.

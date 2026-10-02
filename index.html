@@ -308,6 +308,9 @@
     });
   }
 </script>
+<script>
+(function(){let deferred=null;window.__nmPwaInstall=async function(showToast){try{if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches){if(showToast)showToast('Namello همین حالا به‌صورت اپ نصب شده است.');return true;}if(!deferred){if(showToast)showToast('برای نصب واقعی اپ، از منوی Chrome گزینه «Install app / نصب برنامه» را انتخاب کن؛ «Add to Home screen» فقط میانبر وب می‌سازد.');return false;}deferred.prompt();const choice=await deferred.userChoice;deferred=null;if(showToast)showToast(choice&&choice.outcome==='accepted'?'نصب Namello آغاز شد.':'نصب لغو شد.');return !!(choice&&choice.outcome==='accepted');}catch(e){if(showToast)showToast('پنجره نصب توسط مرورگر در دسترس نیست؛ از گزینه Install app استفاده کن.');return false;}};window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e});window.addEventListener('appinstalled',()=>{deferred=null});})();
+</script>
 <script>document.getElementById('boot-status').textContent = 'Loading libraries…';</script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" onerror="showBootError('Failed to load React', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" onerror="showBootError('Failed to load ReactDOM', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
@@ -2439,13 +2442,13 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.11";
+const NM_VERSION_NAME = "1.22.12";
 const NM_VERSION_CODE = 44;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
     "نسخه 1.22.10: منطق Dashboard به baseline سالم 1.22.5 بازگردانده شد تا خطای خالی‌شدن Dashboard برطرف شود؛ قابلیت‌های مستقل نسخه‌های بعدی حفظ شدند.",
-    "نسخه 1.22.11: داشبورد سه بخش مجزا با رنگ زمینه متفاوت و خروجی مستقل برای تحلیل آماری، ارزیابی پیشرفته و خروجی جامع اضافه شد؛ مسیرهای امنیت، پشتیبان، ذخیره ابری و Sync برای جلوگیری از موازی‌کاری در تنظیمات تفکیک شدند.",
+    "نسخه 1.22.12: داشبورد سه بخش مجزا با رنگ زمینه متفاوت و خروجی مستقل برای تحلیل آماری، ارزیابی پیشرفته و خروجی جامع اضافه شد؛ مسیرهای امنیت، پشتیبان، ذخیره ابری و Sync برای جلوگیری از موازی‌کاری در تنظیمات تفکیک شدند.",
     "نسخه 1.22.9: رفع کامل‌تر خالی‌شدن Dashboard؛ محاسبات مقاوم، ویجت‌های lazy و fallback امن برای داده‌های ناقص.",
     "نسخه 1.22.6: داشبورد به تحلیل آماری و ارزیابی پیشرفته تقسیم شد؛ خروجی جامع بازطراحی شد؛ حفظ زمان پادکست و جداسازی باکس‌های پروفایل/تمپلت بهبود یافت.",
     "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data",
@@ -4770,11 +4773,12 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
            React.createElement("button",{onClick:onExportAdvancedExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#8B5CF6",color:"#fff"}},"Excel ارزیابی پیشرفته"),
            React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته"))),
-       React.createElement("section",{className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))"}},
+       )),
+React.createElement("section",{className:"rounded-2xl p-3 mt-3 mb-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))"}},
          React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"گزارش کامل از شاخص‌ها، تحلیل آماری، ارزیابی پیشرفته و داده‌های داشبورد")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
            React.createElement("button",{onClick:onExportComprehensiveExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#10B981",color:"#06150f"}},"Excel جامع داشبورد"),
-           React.createElement("button",{onClick:onExportComprehensivePdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#34D399",border:"1px solid #10B981"}},"PDF جامع داشبورد"))))),
+           React.createElement("button",{onClick:onExportComprehensivePdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#34D399",border:"1px solid #10B981"}},"PDF جامع داشبورد"))),
    selectedModal,
    excursionModal,
    replayModal,
@@ -8998,17 +9002,14 @@ function App() {
                     React.createElement(FileSpreadsheet, { size: 18 }),
                     " PDF"))))),
         tab === "library" && RE(NmLibraryLayer, { showToast, askDeleteConfirm }),
-        tab === "settings" && (React.createElement("div", { className: "px-4 mt-4" },
+        tab === "settings" && (React.createElement("div", { className: "w-full" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_title")),
             React.createElement("div", { className: "text-[10px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "پروفایل برای هویت و تنظیمات شخصی؛ تمپلت برای ذخیره و بازگردانی مجموعه تنظیمات سفارشی برنامه."),
+            React.createElement("div",{className:"rounded-xl p-3 mb-3",style:{background:"color-mix(in srgb, #0EA5E9 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #0EA5E9 32%, var(--border-1))"}},React.createElement("div",{className:"flex items-center justify-between gap-3"},React.createElement("div",{className:"min-w-0"},React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"نصب Namello به‌عنوان اپ"),React.createElement("div",{className:"text-[9px] mt-1 leading-5",style:{color:"var(--text-muted)"}},"از Install app استفاده کن تا برنامه مستقل از تب Chrome اجرا شود؛ Add to Home screen فقط میانبر وب می‌سازد.")),React.createElement("button",{type:"button",onClick:()=>window.__nmPwaInstall&&window.__nmPwaInstall(showToast),className:"shrink-0 px-3 py-2 rounded-lg text-[10px] font-semibold",style:{background:"#0EA5E9",color:"#fff"}},"نصب اپ"))),
 React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("div", { className: "rounded-2xl p-3 mb-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "profile" ? "" : "profile"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
                     React.createElement("span", { className: "text-[13px] font-semibold" }, "پروفایل"), settingsProfileSection === "profile" ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" }))
-            ),
-            React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "template" ? "" : "template"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
-                    React.createElement("span", { className: "text-[13px] font-semibold" }, "تمپلت"), settingsProfileSection === "template" ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" }))
             ),
             settingsProfileSection === "profile" && React.createElement(React.Fragment, null,
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u067E\u0631\u0648\u0641\u0627\u06CC\u0644"),
@@ -9022,6 +9023,10 @@ React.createElement("div", { className: "px-4 mt-4" },
                 React.createElement("button", { type: "button", onClick: () => selectUser(u.id) }, u.name),
                 React.createElement("button", { type: "button", onClick: () => askDeleteConfirm(`کاربر «${u.name}» و تمام تمپلیت‌هایش حذف بشه؟`, () => deleteUser(u.id)) },
                     React.createElement(Trash2, { size: 12, color: "var(--text-muted)" }))))))),
+            ),
+            React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "template" ? "" : "template"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
+                    React.createElement("span", { className: "text-[13px] font-semibold" }, "تمپلت"), settingsProfileSection === "template" ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" }))
             ),
             !activeUserId ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u06CC\u06A9 \u06A9\u0627\u0631\u0628\u0631 \u0631\u0648 \u0627\u0632 \u0628\u0627\u0644\u0627 \u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646 \u062A\u0627 \u062A\u0645\u067E\u0644\u06CC\u062A\u200C\u0647\u0627\u0634 \u0631\u0648 \u0628\u0628\u06CC\u0646\u06CC.")) : (settingsProfileSection === "template" && React.createElement(React.Fragment, null,
                 React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } },
