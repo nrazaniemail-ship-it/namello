@@ -600,7 +600,7 @@ const WEEKDAY_LETTERS_GREG_EN = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
    در JSX به‌جای متن ثابت از t("key") استفاده کنی. */
 const I18N = {
     fa: {
-        tab_user: "پروفایل", tab_dashboard: "داشبورد", tab_live: "نشست‌ها", tab_news: "اخبار", tab_prep: "آماده‌سازی",
+        tab_user: "پروفایل", tab_dashboard: "داشبورد", tab_live: "نشست‌ها", tab_news: "اخبار",
         tab_journal: "ژورنال", tab_marketeval: "ارزیابی رفتار بازار", tab_calendar: "تقویم معاملاتی", tab_finance: "مالی", tab_systems: "سیستم‌ها",
         tab_strategy: "استراتژی", tab_goals: "اهداف معامله گری", tab_lifegoals: "اهداف زندگی",
         tab_gratitude: "شکر گزاری", tab_statement: "ارزیابی استیتمنت", tab_analysis: "تحلیل",
@@ -624,7 +624,7 @@ const I18N = {
         journal_pick_account_first: "اول از تب پروفایل یک حساب ایجاد کن.",
     },
     en: {
-        tab_user: "Profile", tab_dashboard: "Dashboard", tab_live: "Sessions", tab_news: "News", tab_prep: "Preparation",
+        tab_user: "Profile", tab_dashboard: "Dashboard", tab_live: "Sessions", tab_news: "News",
         tab_journal: "Journal", tab_marketeval: "Market Behavior Evaluation", tab_calendar: "Trading Calendar", tab_finance: "Finance", tab_systems: "Systems",
         tab_strategy: "Strategy", tab_goals: "Trading Goals", tab_lifegoals: "Life Goals",
         tab_gratitude: "Gratitude", tab_statement: "Statement Review", tab_analysis: "Analysis",
@@ -1658,12 +1658,12 @@ const DEFAULT_ABOUT_SECTIONS = [
     {
         id: "about3",
         title: "قابلیت‌های اصلی برنامه",
-        content: "کاربر (تعریف کاربر و تمپلیت‌های شخصی) • نشست‌ها (ساعت زنده‌ی سشن‌ها، کیل‌زون‌ها و سیلور بولت‌های نیویورک) • اخبار (ثبت و ردیابی رویدادهای تقویمی) • آماده‌سازی (چک‌لیست پیش از معامله) • ژورنال (ثبت ورود و نتیجه‌ی معاملات با ده‌ها پارامتر دقیق، به‌همراه مدیریت مالی) • سیستم‌های معاملاتی • استراتژی • اهداف معامله‌گری، اهداف زندگی و شکرگزاری • تحلیل (آمار سودآوری بر اساس هر پارامتر، سودآورترین شرایط معامله، احتمال موفقیت محاسباتی و نمودار سه‌بعدی).",
+        content: "کاربر (تعریف کاربر و تمپلیت‌های شخصی) • نشست‌ها (ساعت زنده‌ی سشن‌ها، کیل‌زون‌ها و سیلور بولت‌های نیویورک) • اخبار (ثبت و ردیابی رویدادهای تقویمی) • ارزیابی چارت (چک‌لیست پیش از معامله) • ژورنال (ثبت ورود و نتیجه‌ی معاملات با ده‌ها پارامتر دقیق، به‌همراه مدیریت مالی) • سیستم‌های معاملاتی • استراتژی • اهداف معامله‌گری، اهداف زندگی و شکرگزاری • تحلیل (آمار سودآوری بر اساس هر پارامتر، سودآورترین شرایط معامله، احتمال موفقیت محاسباتی و نمودار سه‌بعدی).",
     },
     {
         id: "about4",
         title: "راهنمای شروع کار",
-        content: "۱) از تنظیمات ← پروفایل یک پروفایل بساز و در بخش تمپلت تنظیمات سفارشی را ذخیره کن. ۲) از تب «ژورنال» یک کد حساب تعریف کن. ۳) قبل از هر معامله، چک‌لیست «آماده‌سازی» رو مرور کن. ۴) موقع ورود به معامله، از دکمه‌ی «ثبت ورود» همه‌ی پارامترهای معامله رو دقیق ثبت کن. ۵) بعد از بستن معامله، از «ثبت نتیجه معامله» نتیجه‌ی نهایی رو وارد کن. ۶) به‌مرور که داده جمع شد، به تب «تحلیل» سر بزن تا ببینی کدوم شرایط برات سودآورتره.",
+        content: "۱) از تنظیمات ← پروفایل یک پروفایل بساز و در بخش تمپلت تنظیمات سفارشی را ذخیره کن. ۲) از تب «ژورنال» یک کد حساب تعریف کن. ۳) قبل از هر معامله، چک‌لیست «ارزیابی چارت» رو مرور کن. ۴) موقع ورود به معامله، از دکمه‌ی «ثبت ورود» همه‌ی پارامترهای معامله رو دقیق ثبت کن. ۵) بعد از بستن معامله، از «ثبت نتیجه معامله» نتیجه‌ی نهایی رو وارد کن. ۶) به‌مرور که داده جمع شد، به تب «تحلیل» سر بزن تا ببینی کدوم شرایط برات سودآورتره.",
     },
     {
         id: "about5",
@@ -2523,11 +2523,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.17";
-const NM_VERSION_CODE = 50;
+const NM_VERSION_NAME = "1.22.18";
+const NM_VERSION_CODE = 51;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۰ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.18: چک‌لیست پیش‌فرض ارزیابی چارت با شروط جدید بروزرسانی شد، لایه آماده‌سازی حذف شد و مدیریت Chart / Trade / Day Plan ساده‌تر شد.",
     "نسخه 1.22.17: بهبود گرافیکی لایه‌ها، پلیر درون آیتم کتابخانه، تفکیک رنگی فرم ورود/نتیجه، باکس‌های تنظیمات، دکمه شناور Native، OCR قیمت از چارت، و مدیریت Chart/Trade/Day Plan اضافه شد.",
     "نسخه 1.22.16: گزینه «نصب Namello به‌عنوان اپ» از تنظیمات حذف شد؛ نصب PWA فقط از مسیر استاندارد مرورگر انجام می‌شود. همچنین مسیر Android Native از TWA/Chrome جدا نگه داشته شد تا APK مستقل اجرا شود.",
     "نسخه 1.22.16: لوگوی لایه ژورنال در منوی لایه‌ها با تصویر اختصاصی ارسالی جایگزین شد و از لوگوی داشبورد جداست.",
@@ -4561,7 +4562,15 @@ const NM_DEFAULT_DAY_PLAN = {
     {id:"goal",type:"text",label:"هدف اصلی روز"}
   ]
 };
-const NM_DEFAULT_CHART_PLAN = { id:"core-chart-plan", name:"ارزیابی چارت", scope:"chart", conditions:[] };
+const NM_DEFAULT_CHART_CONDITIONS = [
+  {id:"chart_key_levels",type:"checkbox",label:"PMH/L, PWH/L, PDH/L, Daily key level, P4HH/L"},
+  {id:"chart_daily_direction",type:"checkbox",label:"تعیین جهت روند / کندل روزانه"},
+  {id:"chart_fvg_ls",type:"checkbox",label:"تعیین FVG و LS ها در H1، H4، D"},
+  {id:"chart_sessions",type:"checkbox",label:"Sessions H/L in M15، Asia %50"},
+  {id:"chart_ict_main",type:"checkbox",label:"ساختار ICT تایم اصلی (شامل پترن‌های نقدینگی و مناطق عرضه و تقاضا)"},
+  {id:"chart_ict_entry",type:"checkbox",label:"ساختار ICT تایم ورود (شامل پترن‌های نقدینگی)"}
+];
+const NM_DEFAULT_CHART_PLAN = { id:"core-chart-plan", name:"ارزیابی چارت", scope:"chart", conditions:NM_DEFAULT_CHART_CONDITIONS };
 function nmPlanAnswerStatus(v){ return v===true ? "yes" : v===false ? "no" : (v==null||v==="" ? "unanswered" : "answered"); }
 function nmPlanAdherence(trade, plan){
   const a=trade?.review?.planAnswers?.answers||{}; const rows=(plan?.conditions||[]).map(c=>({id:c.id,label:c.label,type:c.type,status:nmPlanAnswerStatus(a[c.id]),value:a[c.id]}));
@@ -4571,30 +4580,78 @@ function nmPlanAdherence(trade, plan){
 function NmPlanBuilder({plans,setPlans,dayPlans,setDayPlans,chartPlans,setChartPlans,onClose}){
   const [scope,setScope]=React.useState('chart');
   const [selectedId,setSelectedId]=React.useState(null);
-  const [name,setName]=React.useState(''); const [draft,setDraft]=React.useState([]);
-  const list=scope==='trade'?plans:scope==='day'?dayPlans:chartPlans; const setList=scope==='trade'?setPlans:scope==='day'?setDayPlans:setChartPlans;
-  React.useEffect(()=>{ const base=list.find(x=>x.id===selectedId)||list[0]||null; setSelectedId(base?.id||null); setName(base?.name||''); setDraft(base?.conditions||[]); },[scope,list.length,selectedId]);
-  const select=(p)=>{setSelectedId(p.id);setName(p.name);setDraft(p.conditions||[])};
-  const addPlan=()=>{const p={id:'plan-'+Date.now().toString(36),name:scope==='trade'?'برنامه معامله جدید':scope==='day'?'برنامه روزانه جدید':'ارزیابی چارت جدید',scope,conditions:[]};setList([...(list||[]),p]);select(p)};
-  const add=()=>setDraft(a=>[...a,{id:'c'+Date.now(),type:'checkbox',label:'شرط جدید',options:[]}]);
+  const [draft,setDraft]=React.useState([]);
+  const list=scope==='trade'?plans:scope==='day'?dayPlans:chartPlans;
+  const setList=scope==='trade'?setPlans:scope==='day'?setDayPlans:setChartPlans;
+  React.useEffect(()=>{
+    const base=(list||[]).find(x=>x.id===selectedId)||(list||[])[0]||null;
+    setSelectedId(base?.id||null);
+    setDraft(base?.conditions||[]);
+  },[scope,list,selectedId]);
+  const select=(p)=>{setSelectedId(p.id);setDraft(p.conditions||[])};
+  const add=()=>setDraft(a=>[...a,{id:'c'+Date.now().toString(36),type:'checkbox',label:'شرط جدید',options:[]}]);
   const update=(i,k,v)=>setDraft(a=>a.map((x,n)=>n===i?{...x,[k]:v}:x));
-  const save=()=>{if(!name.trim())return;const id=selectedId||('plan-'+Date.now().toString(36));const plan={id,name:name.trim(),scope,conditions:draft};setList((list||[]).map(x=>x.id===id?plan:x).some(x=>x.id===id)?(list||[]).map(x=>x.id===id?plan:x):[...(list||[]),plan]);setSelectedId(id)};
-  const remove=(id)=>{const next=(list||[]).filter(x=>x.id!==id);setList(next);const n=next[0];setSelectedId(n?.id||null);setName(n?.name||'');setDraft(n?.conditions||[])};
-  const move=(id,dir)=>{const i=(list||[]).findIndex(x=>x.id===id);const j=i+dir;if(i<0||j<0||j>=list.length)return;const n=[...list];[n[i],n[j]]=[n[j],n[i]];setList(n)};
+  const save=()=>{
+    if(!selectedId) return;
+    setList((list||[]).map(x=>x.id===selectedId?{...x,conditions:draft}:x));
+  };
+  const remove=(id)=>{
+    if(['core-chart-plan','core-trade-plan','core-day-plan'].includes(id)) return;
+    const next=(list||[]).filter(x=>x.id!==id);setList(next);
+    const n=next[0];setSelectedId(n?.id||null);setDraft(n?.conditions||[]);
+  };
+  const move=(id,dir)=>{
+    const i=(list||[]).findIndex(x=>x.id===id);const j=i+dir;
+    if(i<0||j<0||j>=list.length)return;
+    const n=[...list];[n[i],n[j]]=[n[j],n[i]];setList(n);
+  };
+  const active=(list||[]).find(x=>x.id===selectedId)||null;
   return React.createElement('div',{className:'fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-2',style:{background:'rgba(0,0,0,.78)'}},
     React.createElement('div',{className:'w-full max-w-2xl rounded-2xl p-4 max-h-[90vh] overflow-y-auto',style:{background:'var(--bg-page)',border:'1px solid var(--border-1)'}},
-      React.createElement('div',{className:'flex justify-between mb-3'},React.createElement('div',null,React.createElement('b',{className:'text-sm'},'مدیریت Chart / Trade / Day Plan'),React.createElement('div',{className:'text-[9px] mt-1',style:{color:'var(--text-muted)'}},'تعریف، ویرایش، حذف و جابه‌جایی ترتیب برنامه‌ها')),React.createElement('button',{onClick:onClose},'✕')),
-      React.createElement('div',{className:'grid grid-cols-3 gap-2 mb-3',style:{direction:'rtl'}},[['chart','Chart'],['trade','Trade Plan'],['day','Day Plan']].map(([x,l])=>React.createElement('button',{key:x,onClick:()=>setScope(x),className:'py-2.5 rounded-xl text-[11px] font-semibold',style:{background:scope===x?'color-mix(in srgb, var(--accent-gold) 16%, transparent)':'var(--bg-card2)',color:scope===x?'var(--accent-gold)':'var(--text-secondary)',border:'1px solid '+(scope===x?'color-mix(in srgb, var(--accent-gold) 35%, transparent)':'var(--border-1)')}},l))),
-      React.createElement('div',{className:'grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4'},(list||[]).map((p,i)=>React.createElement('div',{key:p.id,className:'rounded-xl p-2',style:{background:p.id===selectedId?'color-mix(in srgb, var(--accent-gold) 8%, var(--bg-card))':'var(--bg-card)',border:'1px solid '+(p.id===selectedId?'color-mix(in srgb, var(--accent-gold) 30%, var(--border-1))':'var(--border-1)')}},
-        React.createElement('button',{className:'w-full text-right text-[11px] font-semibold',onClick:()=>select(p),style:{color:'var(--text-primary)'}},p.name),
-        React.createElement('div',{className:'flex items-center justify-between mt-2'},React.createElement('div',{className:'flex gap-1'},React.createElement('button',{onClick:()=>move(p.id,-1),disabled:i===0,className:'p-1 rounded',style:{opacity:i===0?.3:1}},React.createElement(ChevronUp,{size:13})),React.createElement('button',{onClick:()=>move(p.id,1),disabled:i===(list.length-1),className:'p-1 rounded',style:{opacity:i===list.length-1?.3:1}},React.createElement(ChevronDown,{size:13}))),React.createElement('button',{onClick:()=>remove(p.id),className:'p-1 rounded'},React.createElement(Trash2,{size:13,color:'#F87171'}))))),
-      React.createElement('button',{onClick:addPlan,className:'w-full py-2 rounded-xl text-[11px] mb-3',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px dashed color-mix(in srgb, var(--accent-gold) 35%, var(--border-2))'}},'+ افزودن برنامه')),
-      React.createElement('input',{value:name,onChange:e=>setName(e.target.value),placeholder:'نام برنامه',className:'w-full rounded-lg px-3 py-2 mb-3 bg-transparent outline-none text-sm',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}}),
+      React.createElement('div',{className:'flex justify-between mb-3'},
+        React.createElement('div',null,
+          React.createElement('b',{className:'text-sm'},'مدیریت Chart / Trade / Day Plan'),
+          React.createElement('div',{className:'text-[9px] mt-1',style:{color:'var(--text-muted)'}},'در این نسخه مدیریت مستقیماً روی شروط هر برنامه انجام می‌شود؛ باکس نام و افزودن برنامه حذف شده است.')
+        ),
+        React.createElement('button',{onClick:onClose},'✕')
+      ),
+      React.createElement('div',{className:'grid grid-cols-3 gap-2 mb-3',style:{direction:'rtl'}},
+        [['chart','Chart'],['trade','Trade Plan'],['day','Day Plan']].map(([x,l])=>
+          React.createElement('button',{key:x,onClick:()=>setScope(x),className:'py-2.5 rounded-xl text-[11px] font-semibold',style:{background:scope===x?'color-mix(in srgb, var(--accent-gold) 16%, transparent)':'var(--bg-card2)',color:scope===x?'var(--accent-gold)':'var(--text-secondary)',border:'1px solid '+(scope===x?'color-mix(in srgb, var(--accent-gold) 35%, transparent)':'var(--border-1)')}},l)
+        )
+      ),
+      React.createElement('div',{className:'grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4'},
+        (list||[]).map((p,i)=>React.createElement('div',{key:p.id,className:'rounded-xl p-2',style:{background:p.id===selectedId?'color-mix(in srgb, var(--accent-gold) 8%, var(--bg-card))':'var(--bg-card)',border:'1px solid '+(p.id===selectedId?'color-mix(in srgb, var(--accent-gold) 30%, var(--border-1))':'var(--border-1)')}},
+          React.createElement('button',{className:'w-full text-right text-[11px] font-semibold',onClick:()=>select(p),style:{color:'var(--text-primary)'}},p.name),
+          React.createElement('div',{className:'flex items-center justify-between mt-2'},
+            React.createElement('div',{className:'flex gap-1'},
+              React.createElement('button',{onClick:()=>move(p.id,-1),disabled:i===0,className:'p-1 rounded',style:{opacity:i===0?.3:1}},React.createElement(ChevronUp,{size:13})),
+              React.createElement('button',{onClick:()=>move(p.id,1),disabled:i===list.length-1,className:'p-1 rounded',style:{opacity:i===list.length-1?.3:1}},React.createElement(ChevronDown,{size:13}))
+            ),
+            React.createElement('button',{onClick:()=>remove(p.id),disabled:['core-chart-plan','core-trade-plan','core-day-plan'].includes(p.id),className:'p-1 rounded',style:{opacity:['core-chart-plan','core-trade-plan','core-day-plan'].includes(p.id)?.35:1}},React.createElement(Trash2,{size:13,color:'#F87171'}))
+          )
+        ))
+      ),
+      active && React.createElement('div',{className:'rounded-xl px-3 py-2 mb-3',style:{background:'color-mix(in srgb, var(--accent-gold) 6%, var(--bg-card))',border:'1px solid color-mix(in srgb, var(--accent-gold) 20%, var(--border-1))'}},
+        React.createElement('div',{className:'text-[12px] font-semibold',style:{color:'var(--accent-gold)'}},active.name),
+        React.createElement('div',{className:'text-[9px] mt-1',style:{color:'var(--text-muted)'}},'شروط این برنامه در همین بخش قابل ویرایش، حذف و جابه‌جایی هستند.')
+      ),
       draft.map((c,i)=>React.createElement('div',{key:c.id,className:'rounded-xl p-3 mb-2',style:{background:'var(--bg-card2)',border:'1px solid var(--border-1)'}},
-        React.createElement('div',{className:'flex gap-2 mb-2'},React.createElement('div',{className:'flex gap-0.5'},React.createElement('button',{onClick:()=>setDraft(a=>{if(i===0)return a;const n=[...a];[n[i-1],n[i]]=[n[i],n[i-1]];return n}),disabled:i===0},React.createElement(ChevronUp,{size:13})),React.createElement('button',{onClick:()=>setDraft(a=>{if(i===a.length-1)return a;const n=[...a];[n[i+1],n[i]]=[n[i],n[i+1]];return n}),disabled:i===draft.length-1},React.createElement(ChevronDown,{size:13}))),React.createElement('select',{value:c.type,onChange:e=>update(i,'type',e.target.value),className:'rounded-lg px-2 text-[10px]',style:{background:'var(--bg-page)',color:'var(--text-primary)'}},['checkbox','category','number','text','multi'].map(x=>React.createElement('option',{key:x,value:x},x))),React.createElement('input',{value:c.label,onChange:e=>update(i,'label',e.target.value),className:'flex-1 bg-transparent outline-none text-[11px]',style:{color:'var(--text-primary)'}}),React.createElement('button',{onClick:()=>setDraft(a=>a.filter((_,n)=>n!==i))},React.createElement(Trash2,{size:13,color:'#F87171'}))),
-        ['category','multi'].includes(c.type)&&React.createElement('input',{value:(c.options||[]).join(', '),onChange:e=>update(i,'options',e.target.value.split(',').map(x=>x.trim()).filter(Boolean)),placeholder:'گزینه‌ها با , جدا شوند',className:'w-full bg-transparent outline-none text-[10px]',style:{color:'var(--text-secondary)'}}))),
-      React.createElement('button',{onClick:add,className:'w-full py-2 rounded-lg text-[11px] mb-2',style:{background:'var(--bg-card2)',color:'var(--accent-gold)'}},'+ افزودن شرط'),
-      React.createElement('button',{onClick:save,className:'w-full py-3 rounded-xl text-sm',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره برنامه')));
+        React.createElement('div',{className:'flex gap-2 mb-2'},
+          React.createElement('div',{className:'flex gap-0.5'},
+            React.createElement('button',{onClick:()=>setDraft(a=>{if(i===0)return a;const n=[...a];[n[i-1],n[i]]=[n[i],n[i-1]];return n}),disabled:i===0},React.createElement(ChevronUp,{size:13})),
+            React.createElement('button',{onClick:()=>setDraft(a=>{if(i===a.length-1)return a;const n=[...a];[n[i+1],n[i]]=[n[i],n[i+1]];return n}),disabled:i===draft.length-1},React.createElement(ChevronDown,{size:13}))
+          ),
+          React.createElement('select',{value:c.type,onChange:e=>update(i,'type',e.target.value),className:'rounded-lg px-2 text-[10px]',style:{background:'var(--bg-page)',color:'var(--text-primary)'}},['checkbox','category','number','text','multi'].map(x=>React.createElement('option',{key:x,value:x},x))),
+          React.createElement('input',{value:c.label,onChange:e=>update(i,'label',e.target.value),className:'flex-1 bg-transparent outline-none text-[11px]',style:{color:'var(--text-primary)'}}),
+          React.createElement('button',{onClick:()=>setDraft(a=>a.filter((_,n)=>n!==i))},React.createElement(Trash2,{size:13,color:'#F87171'}))
+        ),
+        ['category','multi'].includes(c.type)&&React.createElement('input',{value:(c.options||[]).join(', '),onChange:e=>update(i,'options',e.target.value.split(',').map(x=>x.trim()).filter(Boolean)),placeholder:'گزینه‌ها با , جدا شوند',className:'w-full bg-transparent outline-none text-[10px]',style:{color:'var(--text-secondary)'}})
+      )),
+      active && React.createElement('button',{onClick:add,className:'w-full py-2 rounded-lg text-[11px] mb-2',style:{background:'var(--bg-card2)',color:'var(--accent-gold)'}},'+ افزودن شرط'),
+      active && React.createElement('button',{onClick:save,className:'w-full py-3 rounded-xl text-sm',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره شروط')
+    )
+  );
 }
 
 function NmDayPlanToday({plans,todayStr}){
@@ -5069,7 +5126,7 @@ function NmSecurityAccountCard({showToast}){ const [sec,setSec]=React.useState((
 function App() {
     const [, forceTick] = useState(0);
     const [tab, setTab] = useState("dashboard");
-    useEffect(() => { if (tab === "analysis" || tab === "user") setTab("dashboard"); }, [tab]);
+    useEffect(() => { if (tab === "analysis" || tab === "user" || tab === "prep") setTab("dashboard"); }, [tab]);
     const [showRef, setShowRef] = useState(false);
     const [config, setConfig] = useState(DEFAULT_CONFIG);
     const [showSessionSettings, setShowSessionSettings] = useState(false);
@@ -5796,7 +5853,32 @@ function App() {
         await window.storage.set(`namello_trades_${activeAccount}`, JSON.stringify(next));
     }
     catch (e) { } }, [activeAccount]);
-    useEffect(()=>{(async()=>{try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value)setTradePlans(JSON.parse(a.value));}catch(e){} try{const a=await window.storage.get("namello_day_plans_v1");if(a?.value)setDayPlans(JSON.parse(a.value));}catch(e){} try{const a=await window.storage.get("namello_chart_plans_v1");if(a?.value)setChartPlans(JSON.parse(a.value)); else { const prep=await window.storage.get("namello_prepsteps_v1"); const steps=prep?.value?JSON.parse(prep.value):DEFAULT_PREP_STEPS; const migrated=[{...NM_DEFAULT_CHART_PLAN,conditions:(steps||[]).map(x=>({id:x.id||("chart-"+Date.now()+Math.random()),type:"checkbox",label:x.text,options:[]}))}]; setChartPlans(migrated); await window.storage.set("namello_chart_plans_v1",JSON.stringify(migrated)); }}catch(e){}})()},[]);
+    useEffect(()=>{(async()=>{
+      try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value)setTradePlans(JSON.parse(a.value));}catch(e){}
+      try{const a=await window.storage.get("namello_day_plans_v1");if(a?.value)setDayPlans(JSON.parse(a.value));}catch(e){}
+      try{
+        const a=await window.storage.get("namello_chart_plans_v1");
+        if(a?.value){
+          const saved=JSON.parse(a.value)||[];
+          const idx=saved.findIndex(p=>p.id==="core-chart-plan");
+          if(idx>=0){
+            const current=saved[idx];
+            const oldPrepIds=(current.conditions||[]).map(c=>c.id).filter(id=>/^step[1-6]$/.test(id));
+            const isOldMigration=!current.conditions?.length || oldPrepIds.length>=3;
+            const labels=new Set((current.conditions||[]).map(c=>c.label));
+            const merged=isOldMigration ? NM_DEFAULT_CHART_CONDITIONS : [...(current.conditions||[])];
+            if(!isOldMigration){ NM_DEFAULT_CHART_CONDITIONS.forEach(c=>{if(!labels.has(c.label)) merged.push(c);}); }
+            saved[idx]={...current, name:"ارزیابی چارت", scope:"chart", conditions:merged};
+          } else { saved.unshift({...NM_DEFAULT_CHART_PLAN,conditions:NM_DEFAULT_CHART_CONDITIONS}); }
+          setChartPlans(saved);
+          await window.storage.set("namello_chart_plans_v1",JSON.stringify(saved));
+        } else {
+          const migrated=[{...NM_DEFAULT_CHART_PLAN,conditions:NM_DEFAULT_CHART_CONDITIONS}];
+          setChartPlans(migrated);
+          await window.storage.set("namello_chart_plans_v1",JSON.stringify(migrated));
+        }
+      }catch(e){ setChartPlans([{...NM_DEFAULT_CHART_PLAN,conditions:NM_DEFAULT_CHART_CONDITIONS}]); }
+    })()},[]);
     const persistTradePlans=useCallback(async next=>{setTradePlans(next);try{await window.storage.set("namello_trade_plans_v1",JSON.stringify(next))}catch(e){}},[]);
     const persistDayPlans=useCallback(async next=>{setDayPlans(next);try{await window.storage.set("namello_day_plans_v1",JSON.stringify(next))}catch(e){}},[]);
     const persistChartPlans=useCallback(async next=>{setChartPlans(next);try{await window.storage.set("namello_chart_plans_v1",JSON.stringify(next))}catch(e){}},[]);
@@ -8055,7 +8137,7 @@ function App() {
         const sessAoa = [["دسته", "نام", "شروع (DST)", "پایان (DST)", "شروع (STD)", "پایان (STD)"]];
         ["sessions", "killzones", "silverbullets"].forEach(cat => (config[cat] || []).forEach(ev => sessAoa.push([cat, ev.name, minToHHMM(ev.dst.s), minToHHMM(ev.dst.e), minToHHMM(ev.std.s), minToHHMM(ev.std.e)])));
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sessAoa), "نشست‌ها");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["ردیف", "گام آماده‌سازی"], ...prepSteps.map((s, i) => [i + 1, s.text])]), "آماده‌سازی");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["ردیف", "شرط ارزیابی چارت"], ...((chartPlans?.[0]?.conditions || []).map((c, i) => [i + 1, c.label]))]), "ارزیابی چارت");
         const allClosedAsc = sortAsc(closedTrades);
         const { header: jHeader, rows: jRows } = buildJournalAoa(allClosedAsc);
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([jHeader, ...jRows]), "ژورنال");
@@ -8125,7 +8207,7 @@ function App() {
         exportMultiTablesAsPdf(`خروجی کامل — ${activeAccount}`, [
             ...dashboardPdfSections,
             { name: "نشست‌ها", header: ["دسته", "نام", "شروع (DST)", "پایان (DST)"], rows: sessRows },
-            { name: "آماده‌سازی", header: ["ردیف", "گام"], rows: prepSteps.map((s, i) => [i + 1, s.text]) },
+            { name: "ارزیابی چارت", header: ["ردیف", "شرط"], rows: (chartPlans?.[0]?.conditions || []).map((c, i) => [i + 1, c.label]) },
             { name: "ژورنال", header: jHeader, rows: jRows },
             { name: "مدیریت مالی", header: ["پارامتر", "مقدار"], rows: fRows },
             { name: "سیستم‌های معاملاتی", header: ["نام سیستم", "توضیحات"], rows: tradingSystemsCatalog.map(s => [s.name, s.description || ""]) },
@@ -8483,18 +8565,6 @@ function App() {
                         !ev.actual && ev.source === "live" && (React.createElement("p", { className: "text-[10px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "\u0645\u0646\u0628\u0639 \u0631\u0627\u06CC\u06AF\u0627\u0646 ForexFactory \u0639\u062F\u062F Actual \u0631\u0648 \u062F\u0631 \u0627\u06CC\u0646 \u0641\u06CC\u062F \u0627\u0631\u0627\u0626\u0647 \u0646\u0645\u06CC\u200C\u062F\u0647 (\u062D\u062A\u06CC \u0628\u0639\u062F \u0627\u0632 \u0627\u0646\u062A\u0634\u0627\u0631 \u062E\u0628\u0631) \u2014 \u0627\u06CC\u0646 \u0645\u062D\u062F\u0648\u062F\u06CC\u062A \u062E\u0648\u062F \u0645\u0646\u0628\u0639\u0647\u060C \u0646\u0647 \u06CC\u0647 \u062E\u0637\u0627. \u0628\u0631\u0627\u06CC Actual \u0644\u062D\u0638\u0647\u200C\u0627\u06CC \u0628\u0627\u06CC\u062F \u0645\u0633\u062A\u0642\u06CC\u0645 \u0633\u0627\u06CC\u062A forexfactory.com \u0631\u0648 \u0686\u06A9 \u06A9\u0646\u06CC \u06CC\u0627 \u0627\u0632 \u06CC\u0647 \u0645\u0646\u0628\u0639 \u067E\u0648\u0644\u06CC \u0627\u0633\u062A\u0641\u0627\u062F\u0647 \u06A9\u0646\u06CC.")),
                         React.createElement("p", { className: "text-[11px] leading-6", style: { color: "var(--text-secondary)" } }, newsImpactEffect(ev.impact, ev.currency))))));
             }))))),
-        tab === "prep" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("div", { className: "rounded-2xl p-4 mb-3", style: { background: "color-mix(in srgb, #60A5FA 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #60A5FA 30%, var(--border-1))" } },
-                React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement(BarChart3, { size: 18, color: "#60A5FA" }), React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "آماده‌سازی / ارزیابی چارت")),
-                React.createElement("p", { className: "text-[11px] leading-5", style: { color: "var(--text-secondary)" } }, "گام‌های آماده‌سازی قبلی به‌عنوان چک‌لیست «ارزیابی چارت» منتقل شده‌اند. مدیریت، افزودن، ویرایش، حذف و جابه‌جایی آن‌ها از Dashboard ← مدیریت Chart / Trade / Day Plan انجام می‌شود.")),
-            React.createElement("div", { className: "rounded-2xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                React.createElement("div", { className: "flex items-center justify-between mb-3" },
-                    React.createElement("div", { className: "text-[12px] font-semibold", style: { color: "var(--accent-gold)" } }, chartPlans?.[0]?.name || "ارزیابی چارت"),
-                    React.createElement("span", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, (chartPlans?.[0]?.conditions || []).length + " آیتم")),
-                (chartPlans?.[0]?.conditions || []).map((c,i) => React.createElement("div", { key:c.id, className:"flex items-center gap-2 py-2", style:{borderBottom:i<(chartPlans[0].conditions.length-1)?"1px solid var(--border-1)":"none"}},
-                    React.createElement("span", { className:"w-5 h-5 rounded-full flex items-center justify-center text-[9px]", style:{background:"color-mix(in srgb, #60A5FA 14%, transparent)",color:"#60A5FA"}}, i+1),
-                    React.createElement("span", { className:"text-[11px]", style:{color:"var(--text-secondary)"}}, c.label))),
-                React.createElement("p", { className:"text-[9px] mt-3", style:{color:"var(--text-muted)"}}, "چک‌لیست «ارزیابی چارت» در ثبت ورود معامله، بعد از «آمادگی ستاپ» نمایش داده می‌شود.")))) ,
         tab === "journal" && (React.createElement("div", { className: "px-4 mt-4" }, !loaded ? (React.createElement("div", { className: "text-center text-sm py-10", style: { color: "var(--text-muted)" } }, appLanguage === "en" ? "Loading..." : "\u062F\u0631 \u062D\u0627\u0644 \u0628\u0627\u0631\u06AF\u0630\u0627\u0631\u06CC...")) : !activeAccount ? (React.createElement("div", { className: "rounded-xl p-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
             React.createElement("h2", { className: "text-sm font-semibold mb-3", style: { color: "var(--text-primary)" } }, appLanguage === "en" ? "Create or Select an Account" : "\u0627\u06CC\u062C\u0627\u062F \u06CC\u0627 \u0627\u0646\u062A\u062E\u0627\u0628 \u062D\u0633\u0627\u0628"),
             accounts.length > 0 && (React.createElement("div", { className: "mb-3" },
@@ -9375,7 +9445,6 @@ function App() {
             { key: "dashboard", label: t("tab_dashboard"), Icon: LineChartIcon },
             { key: "live", label: t("tab_live"), Icon: Clock },
             { key: "news", label: t("tab_news"), Icon: Newspaper },
-            { key: "prep", label: t("tab_prep"), Icon: Check },
             { key: "journal", label: t("tab_journal"), Icon: TrendingUp, journalLogo: true },
             { key: "marketeval", label: t("tab_marketeval"), Icon: Target },
             { key: "calendar", label: t("tab_calendar"), Icon: CalendarIcon },
@@ -9399,8 +9468,7 @@ function App() {
                 { key: "dashboard", label: t("tab_dashboard"), Icon: LineChartIcon },
                     { key: "live", label: t("tab_live"), Icon: Clock },
                 { key: "news", label: t("tab_news"), Icon: Newspaper },
-                { key: "prep", label: t("tab_prep"), Icon: Check },
-                { key: "journal", label: t("tab_journal"), Icon: TrendingUp, journalLogo: true },
+                    { key: "journal", label: t("tab_journal"), Icon: TrendingUp, journalLogo: true },
                 { key: "marketeval", label: t("tab_marketeval"), Icon: Target },
                 { key: "calendar", label: t("tab_calendar"), Icon: CalendarIcon },
                 { key: "finance", label: t("tab_finance"), Icon: Wallet },
