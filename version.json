@@ -1,12 +1,11 @@
 {
-  "name": "1.14.0",
-  "code": 25,
+  "name": "1.18.0",
+  "code": 29,
   "date": "۱۰ مهر ۱۴۰۵",
   "changes": [
-    "Advanced Risk Analytics: Sharpe، Sortino، Calmar، Recovery، Ulcer، بازده و زمان نگهداری",
-    "Exit Insights: شناسایی خروج زودهنگام، خروج کارآمد و Round-trip با استفاده از MFE/MAE و Exit Efficiency",
-    "Tag / Context Analysis: تحلیل تعداد، Win Rate و P&L برای برچسب‌های معاملات",
-    "داشبورد قابل‌فیلتر با Drill-down عمیق‌تر و حفظ چیدمان شخصی",
-    "همگام‌سازی همین موتور تحلیل در نسخه Android/Widget"
+    "Analytics Engine برای Correlation بین Trade Plan و P&L/Win Rate",
+    "تحلیل Discipline/Mistakes و Exit Efficiency در کنار MFE/MAE",
+    "Journal Coach مبتنی بر داده‌های ثبت‌شده و قواعد deterministic",
+    "تحلیل Setup و Session با Avg P&L و Avg R"
   ]
 }

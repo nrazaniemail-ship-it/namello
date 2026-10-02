@@ -2439,11 +2439,19 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.12.0";
-const NM_VERSION_CODE = 23;
+const NM_VERSION_NAME = "1.18.0";
+const NM_VERSION_CODE = 29;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.18: Namello Intelligence، ماتریس Setup×Session×Plan×Mistake، گزارش هفتگی و Coach قابل‌اقدام اضافه شد.",
+    "نسخه 1.17: Analytics Engine، تحلیل Correlation بین Plan/Discipline و عملکرد، و Journal Coach مبتنی بر داده‌های واقعی اضافه شد.",
+    "نسخه 1.16: Trade Replay با مسیر OHLC، اسکراب زمانی، MFE/MAE تا لحظه و خروج فرضی اضافه شد.",
+    "نسخه 1.16: What-if Exit Analysis برای مقایسه خروج واقعی، خروج در نقاط مختلف مسیر و Best Exit اضافه شد.",
+    "نسخه 1.16: Plan Analysis برای عددی/دسته‌ای هم خلاصه آماری و P&L تفکیکی ارائه می‌کند و Day Plan تاریخچه روزانه نگه می‌دارد.",
+    "نسخه 1.15: موتور Trade/Day Plan و Checklist اضافه شد؛ شروط قابل تحلیل هستند و وضعیت رعایت/نقض/بی‌پاسخ جدا نگه داشته می‌شود.",
+    "نسخه 1.15: Rule Compliance و Discipline به Planها متصل شد و آمار رعایت قوانین بر اساس معاملات فیلترشده نمایش داده می‌شود.",
+    "نسخه 1.15: پنل Plan Analysis با Win Rate، P&L، R و تعداد رعایت/نقض هر شرط به داشبورد اضافه شد.",
     "نسخه 1.11: داشبورد عملکرد جدید با فیلترهای سراسری، کارت‌های KPI، منحنی سرمایه و کشف Edge بر اساس سشن و سیستم اضافه شد.",
     "نسخه 1.11: از هر نتیجه‌ی داشبورد می‌توان مستقیماً به معاملات سازنده‌ی آن نتیجه Drill-down کرد.",
     "نسخه 1.11: مرور معامله، Rule Compliance و ثبت Mistakeهای پرهزینه به مدل معامله اضافه شد؛ داده‌های قدیمی بدون تغییر قابل استفاده‌اند.",
@@ -4291,7 +4299,7 @@ const NM_DISCIPLINE_OPTIONS = [
  ["high_risk","معامله پر ریسک"], ["wrong_sl","حدضرر اشتباه"], ["wrong_tp","حد سود اشتباه"],
  ["overtrade","over trade"], ["bad_session_event","نشست/رویداد نامناسب"], ["not_ready","عدم آمادگی"]
 ];
-const NM_DASH_DEFAULT_LAYOUT = ["kpi","equity","advanced","excursion","session","setup","tags","discipline","trades"];
+const NM_DASH_DEFAULT_LAYOUT = ["kpi","equity","advanced","analytics","intelligence","coach","excursion","session","setup","tags","discipline","plans","dayplan","trades"];
 function nmDashNum(v,digits=2){const n=Number(v);return Number.isFinite(n)?n.toLocaleString("en-US",{maximumFractionDigits:digits}):"—";}
 function nmDashPnl(v){const n=Number(v)||0;return `${n>=0?"+":""}${n.toLocaleString("en-US",{maximumFractionDigits:2})}`;}
 function nmDashR(t){if(t&&t.rMultiple!==undefined&&t.rMultiple!==null&&Number.isFinite(Number(t.rMultiple)))return Number(t.rMultiple);const p=Number(t&&t.pnl),r=Number(t&&t.riskDollar);return Number.isFinite(p)&&Number.isFinite(r)&&r>0?p/r:null;}
@@ -4339,6 +4347,48 @@ function nmApplyBridgePayload(payload,trades,autoCreate=false){
  return {next,touched,count:incoming.length};
 }
 function nmApplyExcursion(trade,text){const rows=nmParsePricePath(text);if(!rows.length)return{error:"هیچ ردیف OHLC معتبری پیدا نشد. فرمت: time,open,high,low,close"};const x=nmCalcExcursion(trade,rows);return x?{rows,x}:{error:"Entry معتبر نیست."};}
+function nmReplayStats(trade,rows,index){
+ const rs=Array.isArray(rows)?rows:[], i=Math.max(0,Math.min(rs.length-1,Number(index)||0));
+ if(!trade||!rs.length)return null;
+ const entry=Number(trade.entry), long=String(trade.direction||"").toLowerCase().includes("buy")||String(trade.direction||"").toLowerCase().includes("long");
+ const upto=rs.slice(0,i+1), bar=rs[i], px=Number(bar.close);
+ let mfe=0,mae=0,best=null,bestI=0;
+ upto.forEach((r,j)=>{const fav=long?Number(r.high)-entry:entry-Number(r.low),adv=long?entry-Number(r.low):Number(r.high)-entry;if(fav>mfe){mfe=fav;best=long?Number(r.high):Number(r.low);bestI=j;}if(adv>mae)mae=adv;});
+ const hyp=Number.isFinite(px)?(long?px-entry:entry-px):null;
+ const stop=Number(trade.stop??trade.stops?.[0]), risk=Math.abs(entry-stop), hypR=risk>0&&hyp!==null?hyp/risk:null;
+ return {index:i,bar,mfe,mae,best,bestI,hyp,hypR,bars:upto.length,total:rs.length,time:bar.time||""};
+}
+function NmReplayModal({trade,onClose}){
+ const rows=Array.isArray(trade?.ohlcPath)?trade.ohlcPath:[];
+ const [idx,setIdx]=React.useState(Math.max(0,rows.length-1));
+ if(!rows.length)return React.createElement("div",{className:"fixed inset-0 z-[130] flex items-center justify-center p-3",style:{background:"rgba(0,0,0,.78)"}},React.createElement("div",{className:"w-full max-w-md rounded-2xl p-4",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between"},React.createElement("b",null,"Trade Replay"),React.createElement("button",{onClick:onClose},"✕")),React.createElement("p",{className:"text-[11px] mt-3",style:{color:"var(--text-muted)"}},"این معامله هنوز مسیر OHLC ذخیره‌شده ندارد. ابتدا از «محاسبه از OHLC» مسیر را وارد/همگام کن.")));
+ const st=nmReplayStats(trade,rows,idx); const actual=Number(trade.exit), long=String(trade.direction||"").toLowerCase().includes("buy")||String(trade.direction||"").toLowerCase().includes("long");
+ const actualP=Number.isFinite(actual)?(long?actual-Number(trade.entry):Number(trade.entry)-actual):null;
+ const bestP=st?.mfe??null; const actualEff=bestP>0&&actualP!==null?Math.max(0,Math.min(100,actualP/bestP*100)):null;
+ const line=rows.map((r,i)=>{const x=Number(r.close),min=Math.min(...rows.map(q=>Number(q.low))),max=Math.max(...rows.map(q=>Number(q.high)));const y=max===min?50:8+(max-x)/(max-min)*84;const xx=rows.length===1?50:2+i/(rows.length-1)*96;return `${xx},${y}`}).join(" ");
+ const point=(()=>{const min=Math.min(...rows.map(q=>Number(q.low))),max=Math.max(...rows.map(q=>Number(q.high))),x=Number(st.bar.close),y=max===min?50:8+(max-x)/(max-min)*84,xx=rows.length===1?50:2+st.index/(rows.length-1)*96;return `${xx},${y}`})();
+ const whatif=st.hypR===null?"—":`${st.hypR>=0?"+":""}${nmDashNum(st.hypR,2)}R`;
+ return React.createElement("div",{className:"fixed inset-0 z-[130] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.78)"}},
+  React.createElement("div",{className:"w-full max-w-xl rounded-2xl p-4 max-h-[94vh] overflow-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},
+   React.createElement("div",{className:"flex justify-between items-center mb-2"},React.createElement("div",null,React.createElement("b",{style:{color:"var(--text-primary)"}},"Trade Replay · ",trade.pair||"Trade"),React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${st.bars}/${st.total} bar · ${st.time}`)),React.createElement("button",{onClick:onClose},"✕")),
+   React.createElement("div",{className:"rounded-xl p-2 mb-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-1)"}},React.createElement("svg",{viewBox:"0 0 100 100",className:"w-full h-48"},React.createElement("polyline",{points:line,fill:"none",stroke:"var(--accent-gold)",strokeWidth:"1.2",vectorEffect:"non-scaling-stroke"}),React.createElement("circle",{cx:point.split(",")[0],cy:point.split(",")[1],r:"2.2",fill:"var(--accent-gold)"}))),
+   React.createElement("input",{type:"range",min:0,max:rows.length-1,value:idx,onChange:e=>setIdx(Number(e.target.value)),className:"w-full"}),
+   React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2"},
+    [
+      ["قیمت لحظه‌ای",nmDashNum(st.bar.close,2)],
+      ["MFE تا اینجا",nmDashNum(st.mfe,2)],
+      ["MAE تا اینجا",nmDashNum(st.mae,2)],
+      ["خروج فرضی",whatif]
+    ].map(function(item){return React.createElement("div",{key:item[0],className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},item[0]),React.createElement("b",{className:"text-[12px]",style:{color:"var(--text-primary)"}},item[1]));})
+   ),
+   React.createElement("div",{className:"grid grid-cols-2 gap-2 mt-2"},
+    React.createElement("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"خروج واقعی"),React.createElement("b",null,actualP===null?"—":nmDashNum(actualP,2)),React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},actualEff===null?"—":`Efficiency ${nmDashNum(actualEff,1)}%`)),
+    React.createElement("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"Best Exit تا اینجا"),React.createElement("b",null,st.best===null?"—":nmDashNum(st.best,2)),React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},`bar ${st.bestI+1}`))),
+   React.createElement("div",{className:"mt-3 text-[9px] leading-5",style:{color:"var(--text-muted)"}},"What-if Exit بر اساس Close همان bar محاسبه می‌شود؛ برای شبیه‌سازی دقیق‌تر، اسپرد/اسلیپیج/کمیسیون در این محاسبه لحاظ نشده است."),
+   React.createElement("button",{onClick:()=>setIdx(rows.length-1),className:"w-full mt-3 py-2.5 rounded-xl text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"رفتن به انتهای مسیر")
+ ));
+}
+
 function NmExcursionModal({trade,onClose,onSave}){const [text,setText]=React.useState("");const [result,setResult]=React.useState(null);const [fileName,setFileName]=React.useState("");const run=()=>{const r=nmApplyExcursion(trade,text);setResult(r.error?{error:r.error}:r.x);};const file=async e=>{const f=e.target.files?.[0];if(!f)return;setFileName(f.name);setText(await f.text());};return React.createElement("div",{className:"fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.72)"}},React.createElement("div",{className:"w-full max-w-lg rounded-2xl p-4 max-h-[92vh] overflow-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-3"},React.createElement("div",{className:"font-bold",style:{color:"var(--text-primary)"}},"MFE / MAE واقعی · ",trade.pair||"Trade"),React.createElement("button",{onClick:onClose},"✕")),React.createElement("div",{className:"text-[10px] leading-5 mb-3",style:{color:"var(--text-muted)"}},"فایل/متن OHLC مسیر معامله را وارد کن. هر ردیف: time, open, high, low, close. محاسبه فقط از High/Low واقعی مسیر انجام می‌شود."),React.createElement("input",{type:"file",accept:".csv,.txt",onChange:file,className:"text-[11px] mb-2 w-full"}),fileName&&React.createElement("div",{className:"text-[10px] mb-2",style:{color:"var(--accent-gold)"}},fileName),React.createElement("textarea",{value:text,onChange:e=>setText(e.target.value),rows:8,placeholder:"time,open,high,low,close\n10:01,3980.2,3983.1,3978.9,3982.4",className:"w-full rounded-xl p-3 text-[11px] mono",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)",color:"var(--text-primary)"}}),result&&React.createElement("div",{className:"rounded-xl p-3 mt-3 text-[11px]",style:{background:"var(--bg-card2)",border:"1px solid var(--border-1)"}},result.error?result.error:`MFE: ${nmDashNum(result.mfe,2)} · MAE: ${nmDashNum(result.mae,2)} · Best Exit: ${nmDashNum(result.bestExit?.price,2)} · Exit Efficiency: ${result.exitEfficiency===null?"—":nmDashNum(result.exitEfficiency,1)+"%"} · MFE R: ${result.bestExit?.rMultiple===null?"—":nmDashNum(result.bestExit?.rMultiple,2)+"R"}`),React.createElement("div",{className:"rounded-xl p-2.5 mt-3 text-[10px]",style:{background:"var(--bg-card2)",color:"var(--text-secondary)"}},React.createElement("b",{style:{color:"var(--accent-gold)"}},"Exit Insight · "),nmExitInsight(selected)),
     React.createElement("div",{className:"grid grid-cols-2 gap-2 mt-3"},React.createElement("button",{onClick:run,className:"py-2.5 rounded-xl text-[11px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"محاسبه"),React.createElement("button",{disabled:!result||result.error,onClick:()=>onSave(result),className:"py-2.5 rounded-xl text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)",opacity:!result||result.error?.5:1}},"ذخیره در معامله"))));}
 function NmDashWidget({id,title,children,onDragStart,onDragOver,onMove}){return React.createElement("section",{draggable:true,onDragStart:e=>onDragStart(e,id),onDragOver:e=>{e.preventDefault();onDragOver(id);},className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex items-center justify-between mb-2 cursor-grab"},React.createElement("div",{className:"text-[11px] font-semibold",style:{color:"var(--accent-gold)"}},title),React.createElement("div",{className:"flex items-center gap-1"},React.createElement("button",{type:"button",onClick:()=>onMove&&onMove(id,-1),className:"px-1.5 rounded",style:{color:"var(--text-muted)"}},"↑"),React.createElement("button",{type:"button",onClick:()=>onMove&&onMove(id,1),className:"px-1.5 rounded",style:{color:"var(--text-muted)"}},"↓"),React.createElement("span",{className:"text-[12px]",style:{color:"var(--text-muted)"}},"⠿"))),children);}
@@ -4376,9 +4426,162 @@ function nmExitInsight(t){
  return 'خروج متوسط؛ برای بررسی دقیق‌تر به MFE/MAE نگاه کن';
 }
 
-function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount}){
+
+const NM_DEFAULT_TRADE_PLAN = {
+  id: "core-trade-plan", name: "برنامه اصلی معامله", scope: "trade",
+  conditions: [
+    { id:"setup", type:"checkbox", label:"ستاپ معتبر است" },
+    { id:"prep", type:"checkbox", label:"آماده‌سازی کامل انجام شد" },
+    { id:"risk", type:"checkbox", label:"ریسک در محدوده مجاز است" },
+    { id:"sl", type:"checkbox", label:"حدضرر طبق پلن است" },
+    { id:"tp", type:"checkbox", label:"حدسود طبق پلن است" },
+    { id:"session", type:"checkbox", label:"زمان/سشن مناسب است" },
+    { id:"news", type:"checkbox", label:"خبر پرریسک بررسی شد" },
+    { id:"emotion", type:"category", label:"آمادگی ذهنی", options:["آماده","خنثی","نامناسب"] },
+    { id:"conviction", type:"number", label:"اعتماد به معامله (1-10)" }
+  ]
+};
+const NM_DEFAULT_DAY_PLAN = {
+  id:"core-day-plan", name:"برنامه روزانه معامله", scope:"day",
+  conditions:[
+    {id:"sleep",type:"checkbox",label:"آمادگی و خواب مناسب"},
+    {id:"calendar",type:"checkbox",label:"تقویم اخبار بررسی شد"},
+    {id:"levels",type:"checkbox",label:"سطوح مهم مشخص شد"},
+    {id:"riskbudget",type:"checkbox",label:"بودجه ریسک روز مشخص شد"},
+    {id:"goal",type:"text",label:"هدف اصلی روز"}
+  ]
+};
+function nmPlanAnswerStatus(v){ return v===true ? "yes" : v===false ? "no" : (v==null||v==="" ? "unanswered" : "answered"); }
+function nmPlanAdherence(trade, plan){
+  const a=trade?.review?.planAnswers?.answers||{}; const rows=(plan?.conditions||[]).map(c=>({id:c.id,label:c.label,type:c.type,status:nmPlanAnswerStatus(a[c.id]),value:a[c.id]}));
+  const answered=rows.filter(x=>x.status!=="unanswered"), yes=rows.filter(x=>x.status==="yes").length, no=rows.filter(x=>x.status==="no").length;
+  return {rows,answered,yes,no,rate:answered.length?Math.round(yes/answered.length*100):null};
+}
+function NmPlanBuilder({plans,setPlans,dayPlans,setDayPlans,onClose}){
+  const [scope,setScope]=React.useState("trade"); const [name,setName]=React.useState(""); const [draft,setDraft]=React.useState([]);
+  const list=scope==="trade"?plans:dayPlans; const setList=scope==="trade"?setPlans:setDayPlans;
+  React.useEffect(()=>{ const base=list[0]||null; setName(base?.name||""); setDraft(base?.conditions||[]); },[scope]);
+  const add=()=>setDraft(a=>[...a,{id:"c"+Date.now(),type:"checkbox",label:"شرط جدید",options:[]}]);
+  const update=(i,k,v)=>setDraft(a=>a.map((x,n)=>n===i?{...x,[k]:v}:x));
+  const save=()=>{ if(!name.trim()) return; const existing=list.find(x=>x.id===((list[0]||{}).id)); const plan={id:existing?.id||("plan-"+Date.now()),name:name.trim(),scope,conditions:draft}; setList([plan,...list.filter(x=>x.id!==plan.id)]); onClose(); };
+  return React.createElement("div",{className:"fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.75)"}},
+    React.createElement("div",{className:"w-full max-w-lg rounded-2xl p-4 max-h-[88vh] overflow-y-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},
+      React.createElement("div",{className:"flex justify-between mb-3"},React.createElement("b",null,"مدیریت Trade / Day Plan"),React.createElement("button",{onClick:onClose},"✕")),
+      React.createElement("div",{className:"flex gap-2 mb-3"},["trade","day"].map(x=>React.createElement("button",{key:x,onClick:()=>setScope(x),className:"flex-1 py-2 rounded-lg text-[11px]",style:{background:scope===x?"color-mix(in srgb, var(--accent-gold) 16%, transparent)":"var(--bg-card2)",color:scope===x?"var(--accent-gold)":"var(--text-secondary)"}},x==="trade"?"Trade Plan":"Day Plan"))),
+      React.createElement("input",{value:name,onChange:e=>setName(e.target.value),placeholder:"نام برنامه",className:"w-full rounded-lg px-3 py-2 mb-3 bg-transparent outline-none text-sm",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}}),
+      draft.map((c,i)=>React.createElement("div",{key:c.id,className:"rounded-xl p-3 mb-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-1)"}},
+        React.createElement("div",{className:"flex gap-2 mb-2"},React.createElement("select",{value:c.type,onChange:e=>update(i,"type",e.target.value),className:"rounded-lg px-2 text-[10px]",style:{background:"var(--bg-page)",color:"var(--text-primary)"}},["checkbox","category","number","text","multi"].map(x=>React.createElement("option",{key:x,value:x},x))),React.createElement("input",{value:c.label,onChange:e=>update(i,"label",e.target.value),className:"flex-1 bg-transparent outline-none text-[11px]",style:{color:"var(--text-primary)"}})),
+        ["category","multi"].includes(c.type)&&React.createElement("input",{value:(c.options||[]).join(", "),onChange:e=>update(i,"options",e.target.value.split(",").map(x=>x.trim()).filter(Boolean)),placeholder:"گزینه‌ها با , جدا شوند",className:"w-full bg-transparent outline-none text-[10px]",style:{color:"var(--text-secondary)"}}))),
+      React.createElement("button",{onClick:add,className:"w-full py-2 rounded-lg text-[11px] mb-2",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"+ افزودن شرط"),
+      React.createElement("button",{onClick:save,className:"w-full py-3 rounded-xl text-sm",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ذخیره برنامه")));
+}
+
+function NmDayPlanToday({plans,todayStr}){
+ const plan=plans?.[0]; const key="namello_day_plan_answers_v1_"+(todayStr||new Date().toISOString().slice(0,10));
+ const [answers,setAnswers]=React.useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
+ if(!plan) return null;
+ const update=(id,v)=>{const n={...answers,[id]:v};setAnswers(n);try{localStorage.setItem(key,JSON.stringify(n));const hk="namello_day_plan_history_v1";const hist=JSON.parse(localStorage.getItem(hk)||"{}");hist[todayStr||new Date().toISOString().slice(0,10)]={planId:plan.id,answers:n,updatedAt:new Date().toISOString()};localStorage.setItem(hk,JSON.stringify(hist))}catch(e){}};
+ const items=(plan.conditions||[]).map(c=>{
+   let control;
+   if(c.type==="checkbox") control=React.createElement("div",{className:"flex gap-1"},
+     React.createElement("button",{onClick:()=>update(c.id,true),className:"px-2 py-1 rounded",style:{background:answers[c.id]===true?"color-mix(in srgb, var(--accent-gold) 18%, transparent)":"var(--bg-card2)",color:answers[c.id]===true?"var(--accent-gold)":"var(--text-muted)"}},"✓"),
+     React.createElement("button",{onClick:()=>update(c.id,false),className:"px-2 py-1 rounded",style:{background:answers[c.id]===false?"color-mix(in srgb, var(--accent-gold) 18%, transparent)":"var(--bg-card2)",color:answers[c.id]===false?"var(--accent-gold)":"var(--text-muted)"}},"✕"),
+     React.createElement("button",{onClick:()=>update(c.id,null),className:"px-2 py-1 rounded",style:{background:answers[c.id]==null?"color-mix(in srgb, var(--accent-gold) 18%, transparent)":"var(--bg-card2)",color:answers[c.id]==null?"var(--accent-gold)":"var(--text-muted)"}},"—"));
+   else control=React.createElement("input",{value:answers[c.id]||"",onChange:e=>update(c.id,e.target.value),className:"w-32 rounded px-2 py-1 bg-transparent text-[10px]",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}});
+   return React.createElement("div",{key:c.id,className:"flex items-center justify-between gap-2 py-1.5"},React.createElement("span",{className:"text-[10px]",style:{color:"var(--text-secondary)"}},c.label),control);
+ });
+ return React.createElement("div",{className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},[
+   React.createElement("div",{key:"h",className:"flex justify-between items-center mb-2"},React.createElement("b",{className:"text-[12px]",style:{color:"var(--accent-gold)"}},plan.name),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},todayStr||"today")),
+   ...items
+ ]);
+}
+function NmPlanAnalysis({trades,plans}){
+ const closed=(trades||[]).filter(t=>t.status==="closed"), plan=plans?.[0]; if(!plan) return null;
+ const rows=(plan.conditions||[]).map(c=>{
+   const vals=closed.map(t=>t?.review?.planAnswers?.answers||{}).filter(a=>Object.prototype.hasOwnProperty.call(a,c.id)&&a[c.id]!==null&&a[c.id]!=="").map(a=>a[c.id]);
+   const ts=closed.filter(t=>Object.prototype.hasOwnProperty.call(t?.review?.planAnswers?.answers||{},c.id)&&t.review.planAnswers.answers[c.id]!==null&&t.review.planAnswers.answers[c.id]!=="");
+   const pnl=a=>a.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+   const yes=ts.filter(t=>t.review.planAnswers.answers[c.id]===true), no=ts.filter(t=>t.review.planAnswers.answers[c.id]===false);
+   const numeric=ts.map(t=>Number(t.review.planAnswers.answers[c.id])).filter(Number.isFinite);
+   const cats={}; vals.filter(v=>typeof v==="string"&&!String(v).match(/^[-+]?\d+(\.\d+)?$/)).forEach(v=>{const k=String(v);cats[k]??={count:0,pnl:0};cats[k].count++;const t=ts.find(x=>String(x.review.planAnswers.answers[c.id])===k);cats[k].pnl+=Number(t?.pnl)||0;});
+   return {...c,answered:ts.length,yes:yes.length,no:no.length,unanswered:closed.length-ts.length,yesRate:ts.length?Math.round(yes.length/ts.length*100):null,yesPnl:pnl(yes),noPnl:pnl(no),avgNumber:numeric.length?numeric.reduce((a,b)=>a+b,0)/numeric.length:null,cats:Object.entries(cats).sort((a,b)=>b[1].count-a[1].count)};
+ });
+ return React.createElement("div",{className:"rounded-2xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-2"},React.createElement("b",{className:"text-[12px]",style:{color:"var(--accent-gold)"}},"Plan Analysis · "+plan.name),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},closed.length+" معامله")),rows.map(r=>React.createElement("div",{key:r.id,className:"rounded-lg p-2 mb-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"flex justify-between text-[10px]"},React.createElement("span",null,r.label),React.createElement("span",{style:{color:r.yesRate==null?"var(--text-muted)":r.yesRate>=70?"#34D399":"#F87171"}},r.type==="checkbox"?(r.yesRate==null?"بی‌پاسخ":r.yesRate+"% رعایت"):r.type==="number"?(r.avgNumber==null?"بدون داده":"میانگین "+nmDashNum(r.avgNumber,1)):r.answered+" پاسخ")),React.createElement("div",{className:"flex flex-wrap gap-3 text-[9px] mt-1",style:{color:"var(--text-muted)"}},r.type==="checkbox"&&React.createElement(React.Fragment,null,React.createElement("span",null,"✓ "+r.yes),React.createElement("span",null,"✕ "+r.no),React.createElement("span",null,"— "+r.unanswered),React.createElement("span",{style:{color:r.yesPnl>=0?"#34D399":"#F87171"}},"رعایت: "+r.yesPnl),React.createElement("span",{style:{color:r.noPnl>=0?"#34D399":"#F87171"}},"نقض: "+r.noPnl)),r.type!=="checkbox"&&r.cats.slice(0,4).map(([k,v])=>React.createElement("span",{key:k},`${k}: ${v.count} · ${nmDashPnl(v.pnl)}`))))));
+}
+
+function nmAnalyticsGroup(trades,keyFn){
+ const groups={};(trades||[]).forEach(t=>{const k=keyFn(t);if(k===null||k===undefined||k==="")return;(groups[k]??=[]).push(t);});
+ return Object.entries(groups).map(([key,ts])=>{const pnl=ts.reduce((s,t)=>s+(Number(t.pnl)||0),0),rs=ts.map(nmDashR).filter(v=>v!==null&&Number.isFinite(v));return {key,count:ts.length,pnl,avgPnl:ts.length?pnl/ts.length:0,winRate:ts.length?ts.filter(t=>Number(t.pnl)>0).length/ts.length*100:0,avgR:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null};});
+}
+function nmCorrelationAnalytics(trades,plans){
+ const closed=(trades||[]).filter(t=>t.status==="closed"&&Number.isFinite(Number(t.pnl)));
+ const rows=[];
+ (plans||[]).forEach(plan=>(plan.conditions||[]).forEach(c=>{
+   if(c.type!=="checkbox")return;
+   const answered=closed.filter(t=>{const a=t.review?.planAnswers?.answers||{};return a[c.id]===true||a[c.id]===false;});
+   if(answered.length<2)return;
+   const yes=answered.filter(t=>t.review.planAnswers.answers[c.id]===true),no=answered.filter(t=>t.review.planAnswers.answers[c.id]===false);
+   const avg=a=>a.length?a.reduce((s,t)=>s+(Number(t.pnl)||0),0)/a.length:null;
+   rows.push({id:c.id,label:c.label,answered:answered.length,yes:yes.length,no:no.length,yesAvg:avg(yes),noAvg:avg(no),delta:avg(yes)!==null&&avg(no)!==null?avg(yes)-avg(no):null,yesWin:yes.length?yes.filter(t=>Number(t.pnl)>0).length/yes.length*100:null,noWin:no.length?no.filter(t=>Number(t.pnl)>0).length/no.length*100:null});
+ }));
+ const mistakes={};closed.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>{mistakes[k]??=[];mistakes[k].push(t);}));
+ const discipline=Object.entries(mistakes).map(([key,ts])=>({key,count:ts.length,pnl:ts.reduce((s,t)=>s+(Number(t.pnl)||0),0),avg:ts.reduce((s,t)=>s+(Number(t.pnl)||0),0)/ts.length}));
+ const exit=closed.filter(t=>Number.isFinite(Number(t.exitEfficiency)));const early=exit.filter(t=>Number(t.exitEfficiency)<25),strong=exit.filter(t=>Number(t.exitEfficiency)>=75);
+ return {closed,plan:rows,discipline,exit:{count:exit.length,early:early.length,earlyAvg:early.length?early.reduce((s,t)=>s+(Number(t.pnl)||0),0)/early.length:null,strong:strong.length,strongAvg:strong.length?strong.reduce((s,t)=>s+(Number(t.pnl)||0),0)/strong.length:null}};
+}
+function nmCoachInsights(trades,plans){
+ const a=nmCorrelationAnalytics(trades,plans),out=[];
+ if(!a.closed.length)return [{kind:"info",title:"داده کافی نیست",text:"برای Coach حداقل چند معامله بسته‌شده با P&L و Review ثبت کن."}];
+ a.plan.filter(x=>x.delta!==null&&x.answered>=3).sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta)).slice(0,4).forEach(x=>out.push({kind:x.delta>=0?"positive":"attention",title:"Plan · "+x.label,text:`در ${x.yes} معامله رعایت شده و ${x.no} معامله نقض شده؛ میانگین P&L رعایت ${nmDashPnl(x.yesAvg)} در برابر ${nmDashPnl(x.noAvg)} هنگام نقض است. اختلاف مشاهده‌شده ${x.delta>=0?"به نفع رعایت":"به زیان رعایت"} است.`}));
+ a.discipline.filter(x=>x.count>=2).sort((x,y)=>x.avg-y.avg).slice(0,4).forEach(x=>out.push({kind:x.avg<0?"attention":"info",title:"Discipline · "+x.key,text:`این مورد در ${x.count} معامله ثبت شده و میانگین P&L معاملات دارای آن ${nmDashPnl(x.avg)} بوده است.`}));
+ if(a.exit.count>=3){if(a.exit.early>=2)out.push({kind:"attention",title:"Exit Efficiency",text:`${a.exit.early} معامله با Exit Efficiency زیر 25٪ ثبت شده‌اند؛ این الگو می‌تواند برای بررسی خروج زودهنگام در Replay استفاده شود.`});if(a.exit.strong>=2)out.push({kind:"positive",title:"Best-exit capture",text:`${a.exit.strong} معامله حداقل 75٪ از MFE ثبت‌شده را در خروج واقعی گرفته‌اند.`});}
+ const bySetup=nmAnalyticsGroup(a.closed,nmDashSetup).filter(x=>x.count>=3).sort((x,y)=>y.avgPnl-x.avgPnl);if(bySetup.length)out.push({kind:"info",title:"Setup consistency",text:`برای هر Setup حداقل 3 معامله در نظر گرفته شده؛ این بخش را برای مقایسه ثبات P&L و Avg R هر Setup بررسی کن.`});
+ return out.slice(0,8);
+}
+function NmAnalyticsEngine({trades,plans}){
+ const a=React.useMemo(()=>nmCorrelationAnalytics(trades,plans),[trades,plans]);
+ const setups=React.useMemo(()=>nmAnalyticsGroup(a.closed,nmDashSetup).filter(x=>x.count>=2).sort((x,y)=>y.avgPnl-x.avgPnl),[a.closed]);
+ const sessions=React.useMemo(()=>nmAnalyticsGroup(a.closed,nmDashSession).filter(x=>x.count>=2).sort((x,y)=>y.avgPnl-x.avgPnl),[a.closed]);
+ const line=(label,rows)=>React.createElement("div",{className:"mb-2"},React.createElement("div",{className:"text-[10px] font-semibold mb-1",style:{color:"var(--text-primary)"}},label),rows.slice(0,5).map(x=>React.createElement("div",{key:x.key,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,`${x.key} · ${x.count} معامله`),React.createElement("span",null,`${nmDashPnl(x.avgPnl)} avg · ${x.avgR===null?"—":(x.avgR>=0?"+":"")+nmDashNum(x.avgR,2)+"R"}`))));
+ return React.createElement("div",{className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-2"},React.createElement("b",{className:"text-[12px]",style:{color:"var(--accent-gold)"}},"Analytics Engine"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},a.closed.length+" معامله")),
+ a.plan.filter(x=>x.delta!==null&&x.answered>=2).slice().sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta)).slice(0,5).map(x=>React.createElement("div",{key:x.id,className:"rounded-lg p-2 mb-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"flex justify-between text-[9px]"},React.createElement("span",null,x.label),React.createElement("b",{style:{color:x.delta>=0?"#34D399":"#F87171"}},`${x.delta>=0?"+":""}${nmDashPnl(x.delta)} avg`)),React.createElement("div",{className:"text-[8px] mt-1",style:{color:"var(--text-muted)"}},`رعایت ${x.yes} · نقض ${x.no} · WR ${nmDashNum(x.yesWin,0)}% / ${nmDashNum(x.noWin,0)}%`))),
+ a.discipline.slice().sort((x,y)=>x.avg-y.avg).slice(0,4).map(x=>React.createElement("div",{key:"d"+x.key,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,`${x.key} · ${x.count}`),React.createElement("span",null,nmDashPnl(x.avg)+" avg"))),
+ line("Setup",setups),line("Session",sessions));
+}
+
+function nmIntelligenceMatrix(trades,plans){
+ const closed=(trades||[]).filter(t=>t.status==="closed"&&Number.isFinite(Number(t.pnl)));
+ const map={}; closed.forEach(t=>{const setup=nmDashSetup(t)||"—",session=nmDashSession(t)||"—",k=setup+"|||"+session;(map[k]??=[]).push(t);});
+ return Object.entries(map).map(([key,ts])=>{const [setup,session]=key.split("|||");const pnl=ts.reduce((s,t)=>s+(Number(t.pnl)||0),0),rs=ts.map(nmDashR).filter(Number.isFinite),eff=ts.map(t=>Number(t.exitEfficiency)).filter(Number.isFinite);return{setup,session,count:ts.length,pnl,avgPnl:pnl/ts.length,winRate:ts.filter(t=>Number(t.pnl)>0).length/ts.length*100,avgR:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null,exitEff:eff.length?eff.reduce((a,b)=>a+b,0)/eff.length:null};}).sort((a,b)=>b.avgPnl-a.avgPnl);
+}
+function nmWeeklyIntelligence(trades,plans,todayStr){
+ const end=new Date((todayStr||new Date().toISOString().slice(0,10))+"T23:59:59"),start=new Date(end);start.setDate(start.getDate()-6);
+ const closed=(trades||[]).filter(t=>{if(t.status!=="closed")return false;const d=new Date(String(t.date||t.closeTime||t.closedAt||"").slice(0,10)+"T12:00:00");return Number.isFinite(d.getTime())&&d>=start&&d<=end;});
+ const pnl=closed.reduce((s,t)=>s+(Number(t.pnl)||0),0),wins=closed.filter(t=>Number(t.pnl)>0),rs=closed.map(nmDashR).filter(Number.isFinite),eff=closed.map(t=>Number(t.exitEfficiency)).filter(Number.isFinite);
+ const mistakes={};closed.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>{mistakes[k]??={count:0,pnl:0};mistakes[k].count++;mistakes[k].pnl+=Number(t.pnl)||0;}));
+ const violations={};closed.forEach(t=>(t.ruleViolations||[]).forEach(k=>{violations[k]??={count:0,pnl:0};violations[k].count++;violations[k].pnl+=Number(t.pnl)||0;}));
+ const setup=nmAnalyticsGroup(closed,nmDashSetup).sort((a,b)=>b.avgPnl-a.avgPnl),session=nmAnalyticsGroup(closed,nmDashSession).sort((a,b)=>b.avgPnl-a.avgPnl);
+ return {start,end,closed,pnl,wins,winRate:closed.length?wins.length/closed.length*100:null,avgR:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null,exitEff:eff.length?eff.reduce((a,b)=>a+b,0)/eff.length:null,mistakes,violations,setup,session};
+}
+function NmIntelligenceReport({trades,plans,todayStr}){
+ const w=React.useMemo(()=>nmWeeklyIntelligence(trades,plans,todayStr),[trades,plans,todayStr]),matrix=React.useMemo(()=>nmIntelligenceMatrix(trades,plans),[trades,plans]);
+ const rows=Object.entries(w.mistakes).sort((a,b)=>a[1].pnl-b[1].pnl).slice(0,4), vio=Object.entries(w.violations).sort((a,b)=>b[1].count-a[1].count).slice(0,4);
+ return React.createElement("div",{className:"space-y-2"},
+  React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-5 gap-2"},
+   ["معامله",String(w.closed.length),"P&L",nmDashPnl(w.pnl),"Win Rate",w.winRate==null?"—":nmDashNum(w.winRate,1)+"%","Avg R",w.avgR==null?"—":nmDashNum(w.avgR,2)+"R","Exit Eff",w.exitEff==null?"—":nmDashNum(w.exitEff,1)+"%"].reduce((acc,v,i,a)=>{if(i%2===0)acc.push(React.createElement("div",{key:i,className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},v),React.createElement("div",{className:"text-[11px] font-semibold mt-1",style:{color:"var(--text-primary)"}},a[i+1])));return acc},[])),
+  React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-1",style:{color:"var(--accent-gold)"}},"هشدارهای تکرارشونده هفته"),rows.length?rows.map(([k,v])=>React.createElement("div",{key:k,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,k+" · "+v.count),React.createElement("span",null,nmDashPnl(v.pnl)+" avg"))):React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"مورد تکرارشونده‌ای ثبت نشده است.")),
+  React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-1",style:{color:"var(--accent-gold)"}},"Setup × Session"),matrix.slice(0,8).map(x=>React.createElement("div",{key:x.setup+x.session,className:"grid grid-cols-4 gap-1 text-[8px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,x.setup),React.createElement("span",null,x.session),React.createElement("span",null,x.count+" · "+nmDashPnl(x.avgPnl)),React.createElement("span",null,x.avgR==null?"—":nmDashNum(x.avgR,2)+"R")))),
+  vio.length?React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-1",style:{color:"var(--accent-gold)"}},"Rule Violations"),vio.map(([k,v])=>React.createElement("div",{key:k,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,k+" · "+v.count),React.createElement("span",null,nmDashPnl(v.pnl)+" total")))):null
+ );
+}
+function NmJournalCoach({trades,plans,onClose}){
+ const insights=React.useMemo(()=>nmCoachInsights(trades,plans),[trades,plans]);
+ return React.createElement("div",{className:"fixed inset-0 z-[140] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.78)"}},React.createElement("div",{className:"w-full max-w-xl rounded-2xl p-4 max-h-[92vh] overflow-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-3"},React.createElement("div",null,React.createElement("b",{style:{color:"var(--accent-gold)"}},"Journal Coach"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"تحلیل deterministic از داده‌های خود Namello؛ بدون حدس درباره آینده.")),React.createElement("button",{onClick:onClose},"✕")),insights.map((x,i)=>React.createElement("div",{key:i,className:"rounded-xl p-3 mb-2",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"text-[10px] font-semibold",style:{color:x.kind==="attention"?"#F87171":x.kind==="positive"?"#34D399":"var(--text-primary)"}},x.title),React.createElement("div",{className:"text-[10px] leading-5 mt-1",style:{color:"var(--text-secondary)"}},x.text))),React.createElement("div",{className:"text-[8px] mt-3",style:{color:"var(--text-muted)"}},"این گزارش توصیفی است؛ برای تصمیم معاملاتی باید زمینه، نمونه‌حجم و کیفیت داده را هم بررسی کنی.")));
+}
+function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,setPlans,setDayPlans}){
  const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")} }catch(e){return{range:"all",session:"all",setup:"all",direction:"all"}}});
- const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");return Array.isArray(x)&&x.length?x:NM_DASH_DEFAULT_LAYOUT}catch(e){return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);
+ const [showPlans,setShowPlans]=React.useState(false);
+ const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");return Array.isArray(x)&&x.length?x:NM_DASH_DEFAULT_LAYOUT}catch(e){return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);const [replay,setReplay]=React.useState(null);const [coach,setCoach]=React.useState(false);
  const persistFilters=x=>{setFilters(x);try{localStorage.setItem(NM_DASH_FILTER_KEY,JSON.stringify(x))}catch(e){}};const saveLayout=a=>{setLayout(a);try{localStorage.setItem(NM_DASH_LAYOUT_KEY,JSON.stringify(a))}catch(e){}};const reorder=(from,to)=>{if(!from||from===to)return;const a=[...layout],i=a.indexOf(from),j=a.indexOf(to);if(i<0||j<0)return;a.splice(i,1);a.splice(j,0,from);saveLayout(a);};const moveWidget=(id,dir)=>{const a=[...layout],i=a.indexOf(id),j=i+dir;if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];saveLayout(a);};
  const closed=(trades||[]).filter(t=>t.status==="closed");const sessions=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSession))).filter(Boolean).sort(),[trades]);const setups=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSetup))).filter(Boolean).sort(),[trades]);const filtered=React.useMemo(()=>closed.filter(t=>nmDashFilterDate(t,filters.range,todayStr)&&(filters.session==="all"||nmDashSession(t)===filters.session)&&(filters.setup==="all"||nmDashSetup(t)===filters.setup)&&(filters.direction==="all"||t.direction===filters.direction)),[closed,filters,todayStr]);const m=React.useMemo(()=>nmDashMetrics(filtered,startingBalance),[filtered,startingBalance]);
  const edge=React.useMemo(()=>{const make=fn=>{const map={};filtered.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return{name,count:ts.length,pnl:mm.pnl,win:mm.winRate,exp:mm.expectancy}}).sort((a,b)=>b.pnl-a.pnl)};return{session:make(nmDashSession),setup:make(nmDashSetup)}},[filtered]);
@@ -4392,11 +4595,16 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
   kpi:React.createElement(NmDashWidget,{id:"kpi",title:"KPI · عملکرد کلی",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},card("P&L",nmDashPnl(m.pnl),`${m.closed.length} معامله`),card("Win Rate",`${nmDashNum(m.winRate,1)}%`,`${m.wins} برد / ${m.losses} باخت`),card("Profit Factor",m.pf===Infinity?"∞":nmDashNum(m.pf,2),"Gross W / Gross L"),card("Expectancy",m.expectancy===null?"—":nmDashPnl(m.expectancy),"به ازای هر معامله"),card("Avg R",m.avgR===null?"—":`${m.avgR>=0?"+":""}${nmDashNum(m.avgR,2)}R`,"میانگین R"),card("Max DD",nmDashPnl(-m.maxDD),"افت سرمایه"),card("MFE ثبت‌شده",excursionStats.count?nmDashNum(excursionStats.avgM,2):"—","میانگین حرکت مطلوب"),card("Exit Efficiency",excursionStats.avgEff===null?"—":`${nmDashNum(excursionStats.avgEff,1)}%`,"واقعی از OHLC"))),
   equity:React.createElement(NmDashWidget,{id:"equity",title:"Equity Curve",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"flex items-end gap-1 h-28 overflow-hidden"},m.curve.slice(-40).map((x,i)=>React.createElement("div",{key:i,className:"flex-1 rounded-t",title:`${x.date} · ${nmDashNum(x.balance,2)}`,style:{height:`${Math.max(5,Math.min(100,((x.balance-(Number(startingBalance)||0))/Math.max(1,...m.curve.map(q=>Math.abs(q.balance-(Number(startingBalance)||0))))*45)+50))}%`,background:x.balance>=(Number(startingBalance)||0)?"var(--accent-gold)":"#ef4444",opacity:.8}}))),React.createElement("div",{className:"text-[9px] mt-2",style:{color:"var(--text-muted)"}},"نوارها به ترتیب زمانی معاملات بسته‌شده هستند.")),
   advanced:React.createElement(NmDashWidget,{id:"advanced",title:"Advanced Risk & Exit Analytics",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},card("Sharpe",advanced.sharpe===null?"—":nmDashNum(advanced.sharpe,2),"annualized proxy"),card("Sortino",advanced.sortino===null?"—":nmDashNum(advanced.sortino,2),"downside-adjusted"),card("Calmar",advanced.calmar===null?"—":nmDashNum(advanced.calmar,2),"return / max DD"),card("Recovery",advanced.recovery===null?"—":nmDashNum(advanced.recovery,2),"net P&L / max DD"),card("Ulcer",nmDashNum(advanced.ulcer,2),"drawdown pressure"),card("Avg Hold",advanced.avgHold===null?"—":nmDashNum(advanced.avgHold,0)+"m","holding time"),card("Early Exit",String(advanced.exits.early),"efficiency < 25%"),card("Round-trip",String(advanced.exits.roundTrip),"MFE then losing exit"))),
+  analytics:React.createElement(NmDashWidget,{id:"analytics",title:"Analytics Engine · Correlation",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmAnalyticsEngine,{trades:filtered,plans})),
+  intelligence:React.createElement(NmDashWidget,{id:"intelligence",title:"Namello Intelligence · Weekly",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmIntelligenceReport,{trades:filtered,plans,todayStr})), 
+  coach:React.createElement(NmDashWidget,{id:"coach",title:"Journal Coach",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"flex items-center justify-between gap-3"},React.createElement("div",{className:"text-[10px] leading-5",style:{color:"var(--text-secondary)"}},"تحلیل خودکار Plan، Discipline، Exit Efficiency و الگوهای عملکرد بر اساس داده‌های ثبت‌شده."),React.createElement("button",{onClick:()=>setCoach(true),className:"rounded-lg px-3 py-2 text-[10px] font-semibold",style:{background:"var(--accent-gold)",color:"#111"}},"اجرای Coach"))),
   excursion:React.createElement(NmDashWidget,{id:"excursion",title:"MFE / MAE / Best Exit",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-3 gap-2"},card("Avg MFE",excursionStats.avgM===null?"—":nmDashNum(excursionStats.avgM,2),"price units"),card("Avg MAE",excursionStats.avgA===null?"—":nmDashNum(excursionStats.avgA,2),"price units"),card("Avg Exit Eff.",excursionStats.avgEff===null?"—":`${nmDashNum(excursionStats.avgEff,1)}%`,"Real OHLC")),React.createElement("div",{className:"text-[9px] mt-2",style:{color:"var(--text-muted)"}},`${excursionStats.count} معامله دارای مسیر قیمت واقعی هستند. برای معامله بدون MFE/MAE روی جزئیات آن، «محاسبه از OHLC» را بزن.`)),
   session:React.createElement(NmDashWidget,{id:"session",title:"Edge Finder · Session",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"space-y-1"},edge.session.slice(0,6).map(x=>React.createElement("div",{key:x.name,className:"flex justify-between text-[10px] py-1.5"},React.createElement("span",null,`${x.name} · ${x.count}`),React.createElement("b",{style:{color:x.pnl>=0?"#34D399":"#F87171"}},nmDashPnl(x.pnl)))))),
   setup:React.createElement(NmDashWidget,{id:"setup",title:"Edge Finder · System / Setup",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"space-y-1"},edge.setup.slice(0,6).map(x=>React.createElement("div",{key:x.name,className:"flex justify-between text-[10px] py-1.5"},React.createElement("span",null,`${x.name} · ${x.count}`),React.createElement("b",{style:{color:x.pnl>=0?"#34D399":"#F87171"}},nmDashPnl(x.pnl)))))),
   tags:React.createElement(NmDashWidget,{id:"tags",title:"Tag / Context Analysis",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},tagStats.length?tagStats.slice(0,8).map(x=>React.createElement("div",{key:x.name,className:"flex justify-between text-[10px] py-1.5"},React.createElement("span",null,`${x.name} · ${x.count} · ${nmDashNum(x.win,0)}% WR`),React.createElement("b",{style:{color:x.pnl>=0?"#34D399":"#F87171"}},nmDashPnl(x.pnl)))):React.createElement("div",{className:"text-[10px]",style:{color:"var(--text-muted)"}},"برای تحلیل Tag، به معاملات برچسب اضافه کن.")),
   discipline:React.createElement(NmDashWidget,{id:"discipline",title:"Discipline & Mistakes",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},mistakes.length?mistakes.slice(0,7).map(x=>React.createElement("div",{key:x.key,className:"flex justify-between text-[10px] py-1.5"},React.createElement("span",null,`${x.label} · ${x.count}`),React.createElement("b",{style:{color:x.pnl<0?"#F87171":"#34D399"}},nmDashPnl(x.pnl)))):React.createElement("div",{className:"text-[10px]",style:{color:"var(--text-muted)"}},"هنوز Review کافی ثبت نشده است.")),
+  plans:React.createElement(NmDashWidget,{id:"plans",title:"Trade Plan / Rule Compliance",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmPlanAnalysis,{trades:filtered,plans})),
+  dayplan:React.createElement(NmDashWidget,{id:"dayplan",title:"Today · Day Plan",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmDayPlanToday,{plans:dayPlans,todayStr})),
   trades:React.createElement(NmDashWidget,{id:"trades",title:"Trade Drill-down",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"space-y-1"},filtered.slice().reverse().slice(0,12).map(t=>React.createElement("button",{key:t.id,onClick:()=>setSelected(t),className:"w-full text-right rounded-lg px-2 py-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"flex justify-between text-[10px]"},React.createElement("span",null,`${t.date||""} · ${t.pair||""} · ${t.direction||""}`),React.createElement("b",{style:{color:Number(t.pnl)>=0?"#34D399":"#F87171"}},nmDashPnl(t.pnl))),React.createElement("div",{className:"text-[8px] mt-1",style:{color:"var(--text-muted)"}},`MFE ${t.mfe==null?"—":nmDashNum(t.mfe,2)} · MAE ${t.mae==null?"—":nmDashNum(t.mae,2)} · Best ${t.bestExit?.price==null?"—":nmDashNum(t.bestExit.price,2)}`)))))
  };
  const filterPanel=React.createElement("div",{className:"rounded-2xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
@@ -4408,21 +4616,43 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      ["direction","جهت",[["all","همه"],["buy","Buy"],["sell","Sell"]]]].map(([key,label,opts])=>
       React.createElement("label",{key,className:"text-[9px]",style:{color:"var(--text-muted)"}},label,
        React.createElement("select",{value:filters[key],onChange:e=>persistFilters({...filters,[key]:e.target.value}),className:"w-full mt-1 rounded-lg px-2 py-2 text-[10px]",style:{background:"var(--bg-card2)",color:"var(--text-primary)",border:"1px solid var(--border-1)"}},opts.map(o=>React.createElement("option",{key:o[0],value:o[0]},o[1])))))));
+ const coachModal=coach&&React.createElement(NmJournalCoach,{trades:filtered,plans,onClose:()=>setCoach(false)});
  const selectedModal=selected&&React.createElement("div",{className:"fixed inset-0 z-[90] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.7)"}},
    React.createElement("div",{className:"w-full max-w-md rounded-2xl p-4",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},
     React.createElement("div",{className:"flex justify-between mb-3"},React.createElement("b",null,`${selected.pair||"Trade"} · ${selected.date||""}`),React.createElement("button",{onClick:()=>setSelected(null)},"✕")),
     React.createElement("div",{className:"grid grid-cols-2 gap-2"},card("P&L",nmDashPnl(selected.pnl),""),card("R",nmDashR(selected)===null?"—":`${nmDashNum(nmDashR(selected),2)}R`,""),card("MFE",selected.mfe==null?"—":nmDashNum(selected.mfe,2),"price"),card("MAE",selected.mae==null?"—":nmDashNum(selected.mae,2),"price"),card("Best Exit",selected.bestExit?.price==null?"—":nmDashNum(selected.bestExit.price,2),"price"),card("Exit Efficiency",selected.exitEfficiency==null?"—":`${nmDashNum(selected.exitEfficiency,1)}%`,"")),
     React.createElement("div",{className:"grid grid-cols-2 gap-2 mt-3"},
      React.createElement("button",{onClick:()=>setExcursion(selected),className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"محاسبه از OHLC"),
+     React.createElement("button",{onClick:()=>{setSelected(null);setReplay(selected)},className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"Trade Replay / What-if"),
      React.createElement("button",{onClick:()=>{setSelected(null);onEditTrade&&onEditTrade(selected)},className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ویرایش معامله"))));
- const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc});
+ const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc}); const replayModal=replay&&React.createElement(NmReplayModal,{trade:replay,onClose:()=>setReplay(null)});
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
-   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${activeAccount?`حساب ${activeAccount}`:"بدون حساب"} · ${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
+   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${activeAccount?`حساب ${activeAccount}`:"بدون حساب"} · ${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض"),React.createElement("button",{onClick:()=>setShowPlans(true),className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"مدیریت Plan")),
    filterPanel,
    React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
    selectedModal,
-   excursionModal);
+   excursionModal,
+   replayModal,
+   coachModal,
+   showPlans&&React.createElement(NmPlanBuilder,{plans,setPlans,dayPlans,setDayPlans,onClose:()=>setShowPlans(false)}));
 
+}
+
+
+function NmPlanChecklistField({plan,answers,onChange}){
+ return React.createElement(Field,{label:"Trade Plan / Checklist"},
+   React.createElement("div",{className:"space-y-1.5"},(plan.conditions||[]).map(c=>
+     React.createElement("div",{key:c.id,className:"rounded-lg px-2.5 py-2",style:{background:"var(--bg-card2)"}},
+       React.createElement("div",{className:"flex items-center justify-between gap-2"},
+         React.createElement("span",{className:"text-[10px]",style:{color:"var(--text-secondary)"}},c.label),
+         c.type==="checkbox" ? React.createElement("div",{className:"flex gap-1"},[[true,"✓"],[false,"✕"],[null,"—"]].map(([v,l])=>React.createElement("button",{key:String(v),type:"button",onClick:()=>onChange({...answers,[c.id]:v}),className:"px-2 py-1 rounded",style:{background:answers[c.id]===v?"color-mix(in srgb, var(--accent-gold) 20%, transparent)":"var(--bg-page)",color:answers[c.id]===v?"var(--accent-gold)":"var(--text-muted)"}},l)))
+         : c.type==="number" ? React.createElement("input",{type:"number",min:1,max:10,value:answers[c.id]??"",onChange:e=>onChange({...answers,[c.id]:e.target.value===""?null:Number(e.target.value)}),className:"w-16 rounded px-2 py-1 bg-transparent text-[10px]",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}})
+         : React.createElement("select",{value:answers[c.id]??"",onChange:e=>onChange({...answers,[c.id]:e.target.value||null}),className:"rounded px-2 py-1 bg-transparent text-[10px]",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}},React.createElement("option",{value:""},"بی‌پاسخ"),(c.options||[]).map(o=>React.createElement("option",{key:o,value:o},o)))
+       )
+     )
+   )
+  )
+ );
 }
 
 function App() {
@@ -4567,9 +4797,11 @@ function App() {
     const [closingTrade, setClosingTrade] = useState(null);
     const [editingTrade, setEditingTrade] = useState(null);
     const [editForm, setEditForm] = useState(null);
-    const [closeForm, setCloseForm] = useState({ exit: "", pnl: "", pnlSign: "profit", pips: "", note: "", disciplineMistakes: [], closeType: "دستی", manualExitReason: "", tradeManagement: [] });
+    const [closeForm, setCloseForm] = useState({ exit: "", pnl: "", pnlSign: "profit", pips: "", note: "", disciplineMistakes: [], closeType: "دستی", manualExitReason: "", tradeManagement: [], planAnswers: {} });
     const [mt5BridgeSettings, setMt5BridgeSettings] = useState(DEFAULT_MT5_BRIDGE_SETTINGS);
     const [mt5BridgeStatus, setMt5BridgeStatus] = useState({ state: "idle", text: "غیرفعال", synced: 0 });
+    const [tradePlans, setTradePlans] = useState([NM_DEFAULT_TRADE_PLAN]);
+    const [dayPlans, setDayPlans] = useState([NM_DEFAULT_DAY_PLAN]);
 
     const [showExportPicker, setShowExportPicker] = useState(false);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -5147,6 +5379,9 @@ function App() {
         await window.storage.set(`namello_trades_${activeAccount}`, JSON.stringify(next));
     }
     catch (e) { } }, [activeAccount]);
+    useEffect(()=>{(async()=>{try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value)setTradePlans(JSON.parse(a.value));}catch(e){} try{const a=await window.storage.get("namello_day_plans_v1");if(a?.value)setDayPlans(JSON.parse(a.value));}catch(e){}})()},[]);
+    const persistTradePlans=useCallback(async next=>{setTradePlans(next);try{await window.storage.set("namello_trade_plans_v1",JSON.stringify(next))}catch(e){}},[]);
+    const persistDayPlans=useCallback(async next=>{setDayPlans(next);try{await window.storage.set("namello_day_plans_v1",JSON.stringify(next))}catch(e){}},[]);
 
     useEffect(() => {
         let alive = true;
@@ -6315,7 +6550,7 @@ function App() {
     }
     function openCloseForm(trade) {
         setClosingTrade(trade);
-        setCloseForm({ exit: "", pnl: "", pnlSign: "profit", pips: "", note: "", disciplineMistakes: [], closeType: "دستی", manualExitReason: "", tradeManagement: [], chartImageAfter: "", voiceNoteAfter: "" });
+        setCloseForm({ exit: "", pnl: "", pnlSign: "profit", pips: "", note: "", disciplineMistakes: [], closeType: "دستی", manualExitReason: "", tradeManagement: [], planAnswers: {}, chartImageAfter: "", voiceNoteAfter: "" });
     }
     function openEditCloseForm(trade) {
         setClosingTrade(trade);
@@ -6330,6 +6565,7 @@ function App() {
             closeType: trade.closeType === "manual" ? "دستی" : trade.closeType === "tp" ? "حد سود (TP)" : trade.closeType === "sl" ? "حد ضرر (SL)" : trade.closeType || "دستی",
             manualExitReason: trade.manualExitReason || "",
             tradeManagement: trade.tradeManagement || [],
+            planAnswers: trade.review?.planAnswers?.answers || {},
             chartImageAfter: trade.chartImageAfter || "", voiceNoteAfter: trade.voiceNoteAfter || "",
         });
     }
@@ -6367,7 +6603,7 @@ function App() {
             pips: closeForm.pips === "" ? null : parseFloat(closeForm.pips),
             note: closeForm.note,
             disciplineMistakes: closeForm.disciplineMistakes || [],
-            review: { ...(t.review || {}), mistakes: closeForm.disciplineMistakes || [] },
+            review: { ...(t.review || {}), mistakes: closeForm.disciplineMistakes || [], planAnswers: { templateId: (tradePlans[0]||{}).id || null, answers: closeForm.planAnswers || {} }, ruleViolations: (tradePlans[0]?.conditions||[]).filter(c=>c.type==="checkbox" && closeForm.planAnswers?.[c.id]===false).map(c=>c.id) },
             closeType: closeForm.closeType,
             manualExitReason: closeForm.manualExitReason,
             tradeManagement: closeForm.tradeManagement || [],
@@ -6406,7 +6642,7 @@ function App() {
             pnlAbs: t.pnl === null || t.pnl === undefined ? "" : String(Math.abs(t.pnl)),
             pnlSign: (t.pnl !== null && t.pnl !== undefined && t.pnl < 0) ? "loss" : "profit",
             pips: t.pips === null || t.pips === undefined ? "" : String(t.pips),
-            closeType: t.closeType === "manual" ? "دستی" : t.closeType === "tp" ? "حد سود (TP)" : t.closeType === "sl" ? "حد ضرر (SL)" : t.closeType || "دستی", manualExitReason: t.manualExitReason || "", tradeManagement: t.tradeManagement || [], note: t.note || "",
+            closeType: t.closeType === "manual" ? "دستی" : t.closeType === "tp" ? "حد سود (TP)" : t.closeType === "sl" ? "حد ضرر (SL)" : t.closeType || "دستی", manualExitReason: t.manualExitReason || "", tradeManagement: t.tradeManagement || [], note: t.note || "", planAnswers: t.review?.planAnswers?.answers || {},
         });
     }
     function onEditFieldChange(field, val) {
@@ -6468,6 +6704,7 @@ function App() {
                 pnl: signedPnl,
                 pips: editForm.pips === "" ? null : parseFloat(editForm.pips),
                 closeType: editForm.closeType, manualExitReason: editForm.manualExitReason, tradeManagement: editForm.tradeManagement || [], note: editForm.note,
+                review: { ...(t.review || {}), planAnswers: { templateId: (tradePlans[0]||{}).id || null, answers: editForm.planAnswers || {} }, ruleViolations: (tradePlans[0]?.conditions||[]).filter(c=>c.type==="checkbox" && editForm.planAnswers?.[c.id]===false).map(c=>c.id) },
             };
             next.durationMinutes = tradeDurationMinutes(next);
             return next;
@@ -7430,7 +7667,7 @@ function App() {
                 " ",
                 jy)),
         RE(NmGlobalPlayer, { tab }),
-        tab === "dashboard" && (RE(NmDashboard, { trades: trades, startingBalance: accSettings.startingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades })),
+        tab === "dashboard" && (RE(NmDashboard, { trades: trades, startingBalance: accSettings.startingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans })),
                 tab === "user" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u067E\u0631\u0648\u0641\u0627\u06CC\u0644"),
             React.createElement("div", { className: "flex gap-2 mb-4" },
@@ -9106,6 +9343,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newTradeManagementText, onChange: e => setNewTradeManagementText(e.target.value), onKeyDown: e => e.key === "Enter" && addTradeManagementOptionInline(), placeholder: (appLanguage === "en" ? "New item..." : "حالت جدید..."), className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addTradeManagementOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
+                tradePlans[0] && React.createElement(NmPlanChecklistField,{plan:tradePlans[0],answers:closeForm.planAnswers||{},onChange:v=>onCloseFieldChange("planAnswers",v)}),
                 React.createElement(Field, { label: (appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات") },
                     React.createElement("div", { className: "flex flex-wrap gap-1.5" },
                         NM_DISCIPLINE_OPTIONS.map(([key,label]) => {
