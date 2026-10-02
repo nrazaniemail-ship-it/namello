@@ -1,6 +1,6 @@
 # Namello MT5 Bridge — v1
 
-Namello 1.22.4 can poll an HTTPS endpoint and automatically attach MT5 OHLC to journal trades.
+Namello 1.22.5 can poll an HTTPS endpoint and automatically attach MT5 OHLC to journal trades.
 
 ## Flow
 

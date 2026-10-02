@@ -1,3 +1,11 @@
+## 1.22.5 — 2026-10-02
+- Dashboard split into collapsible Statistical Analysis and Advanced Evaluation sections.
+- Plan management moved into Advanced Evaluation.
+- Equity Curve aligned left-to-right.
+- Dashboard and full exports expanded with dashboard KPIs, base-account selection, plans and discipline data.
+- Podcast resume state persists across app restarts and page lifecycle events.
+- Profile and Template controls shown as separate Settings boxes.
+
 ## 1.22.4 — Dashboard / Settings / Analysis Simplification
 - تحلیل آماری داشبورد به‌صورت کاملاً جمع‌شونده درآمد و با کلیک روی عنوان باز/پنهان می‌شود.
 - پروفایل از لایه مستقل خارج و داخل تنظیمات در دو بخش «پروفایل» و «تمپلت» سازمان‌دهی شد.

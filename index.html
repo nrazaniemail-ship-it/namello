@@ -2439,12 +2439,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.4";
-const NM_VERSION_CODE = 37;
+const NM_VERSION_NAME = "1.22.5";
+const NM_VERSION_CODE = 38;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.22.4: تحلیل آماری داشبورد جمع‌شونده شد؛ پروفایل و تمپلت داخل تنظیمات ادغام شدند؛ لایه مستقل تحلیل حذف شد.",
+    "نسخه 1.22.5: داشبورد به تحلیل آماری و ارزیابی پیشرفته تقسیم شد؛ خروجی جامع بازطراحی شد؛ حفظ زمان پادکست و جداسازی باکس‌های پروفایل/تمپلت بهبود یافت.",
     "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data",
     "نسخه 1.19: Advanced Edge Discovery، کنترل حداقل نمونه، پایداری نیمه‌دوره و تحلیل چندبعدی Edge اضافه شد.",
     "نسخه 1.18: Namello Intelligence، ماتریس Setup×Session×Plan×Mistake، گزارش هفتگی و Coach قابل‌اقدام اضافه شد.",
@@ -3848,6 +3848,7 @@ function nmLibFmtDate(iso) { try { return new Date(iso).toLocaleDateString("fa-I
 
 /* ---------------- تنظیمات کتابخانه (تنظیمات ← کتابخانه) ---------------- */
 const NM_LIB_SET_KEY = "ns_namello_library_settings_v1";
+const NM_PLAYER_TRACK_KEY = "nm_player_last_track_v2";
 const NM_LIB_SET_EVT = "namello-lib-settings";
 const NM_LIB_SET_DEFAULT = { confirmDelete: true, playerHidden: false, skipSeconds: 15, playerWidth: "compact" };
 function nmLibReadSettings() { try { return { ...NM_LIB_SET_DEFAULT, ...JSON.parse(localStorage.getItem(NM_LIB_SET_KEY) || "{}") }; } catch (e) { return { ...NM_LIB_SET_DEFAULT }; } }
@@ -3910,12 +3911,38 @@ function NmGlobalPlayer({ tab }) {
     const lastSave = useRef(0);
     trackRef.current = track;
 
+    // آخرین اپیزود فعال را بین اجرای مجدد برنامه حفظ می‌کنیم.
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem(NM_PLAYER_TRACK_KEY);
+            if (raw && !trackRef.current) { const savedTrack = JSON.parse(raw); if (savedTrack && savedTrack.blobKey) setTrack(savedTrack); }
+        } catch (e) { }
+    }, []);
+    useEffect(() => {
+        if (!track) return;
+        try { localStorage.setItem(NM_PLAYER_TRACK_KEY, JSON.stringify({ episodeId: track.episodeId, blobKey: track.blobKey, title: track.title, subtitle: track.subtitle })); } catch (e) { }
+    }, [track && track.blobKey]);
+    useEffect(() => {
+        const persistResume = () => {
+            const a = audioRef.current, t = trackRef.current;
+            if (!a || !t) return;
+            try {
+                localStorage.setItem(NM_PLAYER_TRACK_KEY, JSON.stringify({ episodeId: t.episodeId, blobKey: t.blobKey, title: t.title, subtitle: t.subtitle }));
+                localStorage.setItem("nm_pos_" + t.blobKey, String(a.currentTime || 0));
+            } catch (e) { }
+        };
+        const onVisibility = () => { if (document.visibilityState === "hidden") persistResume(); };
+        window.addEventListener("pagehide", persistResume);
+        document.addEventListener("visibilitychange", onVisibility);
+        return () => { window.removeEventListener("pagehide", persistResume); document.removeEventListener("visibilitychange", onVisibility); };
+    }, []);
+
     // درخواست‌های پخش از لایه‌ی کتابخانه
     useEffect(() => {
         const onReq = (e) => {
             const d = e.detail || {};
             if (d.cmd === "toggle") { const a = audioRef.current; if (a) { if (a.paused) a.play().catch(() => { }); else a.pause(); } return; }
-            if (d.cmd === "stop") { setTrack(null); return; }
+            if (d.cmd === "stop") { try { localStorage.removeItem(NM_PLAYER_TRACK_KEY); } catch (e) {} setTrack(null); return; }
             if (d.track) setTrack(d.track);
         };
         window.addEventListener(NM_PLAY_REQ, onReq);
@@ -3986,7 +4013,7 @@ function NmGlobalPlayer({ tab }) {
             RE("div", { className: "min-w-0 flex-1" },
                 RE("div", { className: "text-[12px] font-semibold truncate", style: { color: "var(--text-primary)" } }, track.title),
                 RE("div", { className: "text-[10px] truncate", style: { color: "var(--text-muted)" } }, track.subtitle || "")),
-            RE("button", { type: "button", onClick: () => { const a = audioRef.current; if (a) a.pause(); setCenterOpen(false); setTrack(null); }, className: "shrink-0", "aria-label": "بستن پخش‌کننده" }, RE(X, { size: 15, color: "var(--text-muted)" }))),
+            RE("button", { type: "button", onClick: () => { const a = audioRef.current; if (a) a.pause(); try { localStorage.removeItem(NM_PLAYER_TRACK_KEY); } catch (e) {} setCenterOpen(false); setTrack(null); }, className: "shrink-0", "aria-label": "بستن پخش‌کننده" }, RE(X, { size: 15, color: "var(--text-muted)" }))),
         err ? RE("div", { className: "text-[11px] py-2", style: { color: "#F87171" } }, "پخش این فایل ممکن نشد.")
             : RE(React.Fragment, null,
                 RE("input", { type: "range", min: 0, max: dur || 0, step: 0.5, value: cur, onChange: e => seek(Number(e.target.value)), className: "w-full", style: { accentColor: "var(--accent-gold)" } }),
@@ -4635,9 +4662,10 @@ function NmJournalCoach({trades,plans,onClose}){
  const insights=React.useMemo(()=>nmCoachInsights(trades,plans),[trades,plans]);
  return React.createElement("div",{className:"fixed inset-0 z-[140] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.78)"}},React.createElement("div",{className:"w-full max-w-xl rounded-2xl p-4 max-h-[92vh] overflow-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-3"},React.createElement("div",null,React.createElement("b",{style:{color:"var(--accent-gold)"}},"Journal Coach"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"تحلیل deterministic از داده‌های خود Namello؛ بدون حدس درباره آینده.")),React.createElement("button",{onClick:onClose},"✕")),insights.map((x,i)=>React.createElement("div",{key:i,className:"rounded-xl p-3 mb-2",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"text-[10px] font-semibold",style:{color:x.kind==="attention"?"#F87171":x.kind==="positive"?"#34D399":"var(--text-primary)"}},x.title),React.createElement("div",{className:"text-[10px] leading-5 mt-1",style:{color:"var(--text-secondary)"}},x.text))),React.createElement("div",{className:"text-[8px] mt-3",style:{color:"var(--text-muted)"}},"این گزارش توصیفی است؛ برای تصمیم معاملاتی باید زمینه، نمونه‌حجم و کیفیت داده را هم بررسی کنی.")));
 }
-function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,setPlans,setDayPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf}){
+function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,setPlans,setDayPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportExcel,onExportPdf}){
  const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")} }catch(e){return{range:"all",session:"all",setup:"all",direction:"all"}}});
  const [showPlans,setShowPlans]=React.useState(false);
+ const [showAdvanced,setShowAdvanced]=React.useState(true);
  const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");return Array.isArray(x)&&x.length?x:NM_DASH_DEFAULT_LAYOUT}catch(e){return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);const [replay,setReplay]=React.useState(null);const [coach,setCoach]=React.useState(false);
  const persistFilters=x=>{setFilters(x);try{localStorage.setItem(NM_DASH_FILTER_KEY,JSON.stringify(x))}catch(e){}};const saveLayout=a=>{setLayout(a);try{localStorage.setItem(NM_DASH_LAYOUT_KEY,JSON.stringify(a))}catch(e){}};const reorder=(from,to)=>{if(!from||from===to)return;const a=[...layout],i=a.indexOf(from),j=a.indexOf(to);if(i<0||j<0)return;a.splice(i,1);a.splice(j,0,from);saveLayout(a);};const moveWidget=(id,dir)=>{const a=[...layout],i=a.indexOf(id),j=i+dir;if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];saveLayout(a);};
  const closed=(trades||[]).filter(t=>t.status==="closed");const sessions=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSession))).filter(Boolean).sort(),[trades]);const setups=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSetup))).filter(Boolean).sort(),[trades]);const filtered=React.useMemo(()=>closed.filter(t=>nmDashFilterDate(t,filters.range,todayStr)&&(filters.session==="all"||nmDashSession(t)===filters.session)&&(filters.setup==="all"||nmDashSetup(t)===filters.setup)&&(filters.direction==="all"||t.direction===filters.direction)),[closed,filters,todayStr]);const m=React.useMemo(()=>nmDashMetrics(filtered,startingBalance),[filtered,startingBalance]);
@@ -4650,7 +4678,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  const card=(title,value,sub)=>React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},title),React.createElement("div",{className:"text-base font-bold mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono,monospace",direction:"ltr",textAlign:"right"}},value),React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},sub||""));
  const widgets={
   kpi:React.createElement(NmDashWidget,{id:"kpi",title:"KPI · عملکرد کلی",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},card("P&L",nmDashPnl(m.pnl),`${m.closed.length} معامله`),card("Win Rate",`${nmDashNum(m.winRate,1)}%`,`${m.wins} برد / ${m.losses} باخت`),card("Profit Factor",m.pf===Infinity?"∞":nmDashNum(m.pf,2),"Gross W / Gross L"),card("Expectancy",m.expectancy===null?"—":nmDashPnl(m.expectancy),"به ازای هر معامله"),card("Avg R",m.avgR===null?"—":`${m.avgR>=0?"+":""}${nmDashNum(m.avgR,2)}R`,"میانگین R"),card("Max DD",nmDashPnl(-m.maxDD),"افت سرمایه"),card("MFE ثبت‌شده",excursionStats.count?nmDashNum(excursionStats.avgM,2):"—","میانگین حرکت مطلوب"),card("Exit Efficiency",excursionStats.avgEff===null?"—":`${nmDashNum(excursionStats.avgEff,1)}%`,"واقعی از OHLC"))),
-  equity:React.createElement(NmDashWidget,{id:"equity",title:"Equity Curve",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"flex items-end gap-1 h-28 overflow-hidden"},m.curve.slice(-40).map((x,i)=>React.createElement("div",{key:i,className:"flex-1 rounded-t",title:`${x.date} · ${nmDashNum(x.balance,2)}`,style:{height:`${Math.max(5,Math.min(100,((x.balance-(Number(startingBalance)||0))/Math.max(1,...m.curve.map(q=>Math.abs(q.balance-(Number(startingBalance)||0))))*45)+50))}%`,background:x.balance>=(Number(startingBalance)||0)?"var(--accent-gold)":"#ef4444",opacity:.8}}))),React.createElement("div",{className:"text-[9px] mt-2",style:{color:"var(--text-muted)"}},"نوارها به ترتیب زمانی معاملات بسته‌شده هستند.")),
+  equity:React.createElement(NmDashWidget,{id:"equity",title:"Equity Curve",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"flex items-end justify-start gap-1 h-28 overflow-hidden",style:{direction:"ltr",textAlign:"left"}},m.curve.slice(-40).map((x,i)=>React.createElement("div",{key:i,className:"flex-1 rounded-t",title:`${x.date} · ${nmDashNum(x.balance,2)}`,style:{height:`${Math.max(5,Math.min(100,((x.balance-(Number(startingBalance)||0))/Math.max(1,...m.curve.map(q=>Math.abs(q.balance-(Number(startingBalance)||0))))*45)+50))}%`,background:x.balance>=(Number(startingBalance)||0)?"var(--accent-gold)":"#ef4444",opacity:.8}}))),React.createElement("div",{className:"text-[9px] mt-2",style:{color:"var(--text-muted)"}},"نوارها به ترتیب زمانی معاملات بسته‌شده هستند.")),
   advanced:React.createElement(NmDashWidget,{id:"advanced",title:"Advanced Risk & Exit Analytics",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},card("Sharpe",advanced.sharpe===null?"—":nmDashNum(advanced.sharpe,2),"annualized proxy"),card("Sortino",advanced.sortino===null?"—":nmDashNum(advanced.sortino,2),"downside-adjusted"),card("Calmar",advanced.calmar===null?"—":nmDashNum(advanced.calmar,2),"return / max DD"),card("Recovery",advanced.recovery===null?"—":nmDashNum(advanced.recovery,2),"net P&L / max DD"),card("Ulcer",nmDashNum(advanced.ulcer,2),"drawdown pressure"),card("Avg Hold",advanced.avgHold===null?"—":nmDashNum(advanced.avgHold,0)+"m","holding time"),card("Early Exit",String(advanced.exits.early),"efficiency < 25%"),card("Round-trip",String(advanced.exits.roundTrip),"MFE then losing exit"))),
   analytics:React.createElement(NmDashWidget,{id:"analytics",title:"Analytics Engine · Correlation",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmAnalyticsEngine,{trades:filtered,plans})),
   edge:React.createElement(NmDashWidget,{id:"edge",title:"Advanced Edge Discovery",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmEdgeDiscovery,{trades:filtered,plans})),
@@ -4693,11 +4721,22 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      React.createElement("button",{onClick:()=>{setSelected(null);onEditTrade&&onEditTrade(selected)},className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ویرایش معامله"))));
  const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc}); const replayModal=replay&&React.createElement(NmReplayModal,{trade:replay,onClose:()=>setReplay(null)});
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
-   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${activeAccount?`حساب ${activeAccount}`:"بدون حساب"} · ${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض"),React.createElement("button",{onClick:()=>setShowPlans(true),className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"مدیریت Plan")),
+   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${activeAccount?`حساب ${activeAccount}`:"بدون حساب"} · ${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
    statisticalAnalysisSection,
-   baseAccountPanel,
-   filterPanel,
-   React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
+   React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"var(--bg-page)"}},
+     React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-2xl px-4 py-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"},"aria-expanded":showAdvanced},
+       React.createElement("div",{className:"flex items-center gap-2"},React.createElement("span",{className:"text-[14px] font-bold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")),
+       showAdvanced?React.createElement(ChevronUp,{size:15,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:15,color:"var(--text-muted)"})),
+     showAdvanced&&React.createElement("div",{className:"pt-3"},
+       React.createElement("div",{className:"flex justify-end mb-2"},React.createElement("button",{onClick:()=>setShowPlans(true),className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"مدیریت Plan")),
+       baseAccountPanel,
+       filterPanel,
+       React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
+       React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+         React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"خروجی جامع بر اساس اطلاعات و حساب‌های مبنای انتخاب‌شده")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
+         React.createElement("div",{className:"grid grid-cols-2 gap-2"},
+           React.createElement("button",{onClick:onExportExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"Excel جامع"),
+           React.createElement("button",{onClick:onExportPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"var(--accent-gold)",border:"1px solid var(--accent-gold)"}},"PDF جامع"))))),
    selectedModal,
    excursionModal,
    replayModal,
@@ -7759,6 +7798,15 @@ function App() {
     async function exportAll() {
         const __nmMe = await nmMeLoad();
         const wb = XLSX.utils.book_new();
+        const dashClosed = (dashboardSelectedTrades || []).filter(t => t.status === "closed");
+        const dashM = nmDashMetrics(dashClosed, dashboardStartingBalance);
+        const dashKpi = [["شاخص", "مقدار"], ["حساب‌های مبنا", (dashboardSelectedAccounts || []).join("، ")], ["تعداد معاملات", dashM.closed.length], ["P&L", dashM.pnl], ["Win Rate", dashM.winRate], ["Profit Factor", dashM.pf === Infinity ? "∞" : dashM.pf], ["Expectancy", dashM.expectancy ?? "—"], ["Avg R", dashM.avgR ?? "—"], ["Max DD", dashM.maxDD], ["MFE میانگین", dashClosed.length ? dashClosed.reduce((a,t)=>a+Number(t.mfe||0),0)/dashClosed.length : "—"], ["MAE میانگین", dashClosed.length ? dashClosed.reduce((a,t)=>a+Number(t.mae||0),0)/dashClosed.length : "—"]];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dashKpi), "داشبورد");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["نوع", "حساب"], ...(dashboardSelectedAccounts || []).map(c => [accountTypes[c] === "demo" ? "آزمایشی" : "واقعی", c])]), "حساب‌های مبنا");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Plan", "تعداد شروط"], ...(tradePlans || []).map(p => [p.name, (p.conditions || []).length])]), "Trade Plans");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Day Plan", "تعداد شروط"], ...(dayPlans || []).map(p => [p.name, (p.conditions || []).length])]), "Day Plans");
+        const dashMist = {}; dashClosed.forEach(t => (t.disciplineMistakes || t.review?.mistakes || []).forEach(k => { dashMist[k] = (dashMist[k] || 0) + 1; }));
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["اشتباه", "تعداد"], ...Object.entries(dashMist).map(([k,v]) => [k,v])]), "Discipline");
         const sessAoa = [["دسته", "نام", "شروع (DST)", "پایان (DST)", "شروع (STD)", "پایان (STD)"]];
         ["sessions", "killzones", "silverbullets"].forEach(cat => (config[cat] || []).forEach(ev => sessAoa.push([cat, ev.name, minToHHMM(ev.dst.s), minToHHMM(ev.dst.e), minToHHMM(ev.std.s), minToHHMM(ev.std.e)])));
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sessAoa), "نشست‌ها");
@@ -7809,6 +7857,15 @@ function App() {
     }
     async function exportAllPdf() {
         const __nmMe = await nmMeLoad();
+        const dashClosed = (dashboardSelectedTrades || []).filter(t => t.status === "closed");
+        const dashM = nmDashMetrics(dashClosed, dashboardStartingBalance);
+        const dashMist = {}; dashClosed.forEach(t => (t.disciplineMistakes || t.review?.mistakes || []).forEach(k => { dashMist[k] = (dashMist[k] || 0) + 1; }));
+        const dashboardPdfSections = [
+            { name: "داشبورد", header: ["شاخص", "مقدار"], rows: [["حساب‌های مبنا", (dashboardSelectedAccounts || []).join("، ")], ["تعداد معاملات", dashM.closed.length], ["P&L", dashM.pnl], ["Win Rate", dashM.winRate], ["Profit Factor", dashM.pf === Infinity ? "∞" : dashM.pf], ["Expectancy", dashM.expectancy ?? "—"], ["Avg R", dashM.avgR ?? "—"], ["Max DD", dashM.maxDD]] },
+            { name: "Discipline", header: ["اشتباه", "تعداد"], rows: Object.entries(dashMist).map(([k,v]) => [k,v]) },
+            { name: "Trade Plans", header: ["Plan", "تعداد شروط"], rows: (tradePlans || []).map(p => [p.name, (p.conditions || []).length]) },
+            { name: "Day Plans", header: ["Day Plan", "تعداد شروط"], rows: (dayPlans || []).map(p => [p.name, (p.conditions || []).length]) },
+        ];
         const allClosedAsc = sortAsc(closedTrades);
         const { header: jHeader, rows: jRows } = buildJournalAoa(allClosedAsc);
         const allTimeMetrics = computeFinancialMetrics(allClosedAsc, accSettings.startingBalance);
@@ -7821,6 +7878,7 @@ function App() {
             ...psych.strengths.map(s => ["نقطه قوت", s]), ...psych.weaknesses.map(s => ["نقطه ضعف", s]),
             ...psych.threats.map(s => ["تهدید", s]), ...psych.opportunities.map(s => ["فرصت", s])];
         exportMultiTablesAsPdf(`خروجی کامل — ${activeAccount}`, [
+            ...dashboardPdfSections,
             { name: "نشست‌ها", header: ["دسته", "نام", "شروع (DST)", "پایان (DST)"], rows: sessRows },
             { name: "آماده‌سازی", header: ["ردیف", "گام"], rows: prepSteps.map((s, i) => [i + 1, s.text]) },
             { name: "ژورنال", header: jHeader, rows: jRows },
@@ -8046,7 +8104,7 @@ function App() {
                 " ",
                 jy)),
         RE(NmGlobalPlayer, { tab }),
-        tab === "dashboard" && (RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf })),
+        tab === "dashboard" && (RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportExcel: exportAll, onExportPdf: exportAllPdf })),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
@@ -8891,11 +8949,13 @@ function App() {
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_title")),
             React.createElement("div", { className: "text-[10px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "پروفایل برای هویت و تنظیمات شخصی؛ تمپلت برای ذخیره و بازگردانی مجموعه تنظیمات سفارشی برنامه."),
 React.createElement("div", { className: "px-4 mt-4" },
+            React.createElement("div", { className: "rounded-2xl p-3 mb-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "profile" ? "" : "profile"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
+                    React.createElement("span", { className: "text-[13px] font-semibold" }, "پروفایل"), settingsProfileSection === "profile" ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" }))
+            ),
             React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                React.createElement("div", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, "پروفایل و تمپلت"),
-                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                    React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection("profile"), className: "py-2 rounded-lg text-[12px] font-medium", style: { background: settingsProfileSection === "profile" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: settingsProfileSection === "profile" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "پروفایل"),
-                    React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection("template"), className: "py-2 rounded-lg text-[12px] font-medium", style: { background: settingsProfileSection === "template" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: settingsProfileSection === "template" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "تمپلت"))
+                React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "template" ? "" : "template"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
+                    React.createElement("span", { className: "text-[13px] font-semibold" }, "تمپلت"), settingsProfileSection === "template" ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" }))
             ),
             settingsProfileSection === "profile" && React.createElement(React.Fragment, null,
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u067E\u0631\u0648\u0641\u0627\u06CC\u0644"),
