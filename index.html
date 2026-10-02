@@ -1649,12 +1649,12 @@ const DEFAULT_ABOUT_SECTIONS = [
     {
         id: "about4",
         title: "راهنمای شروع کار",
-        content: "۱) از تب «کاربر» یک کاربر و در صورت نیاز یک تمپلیت تنظیمات بساز. ۲) از تب «ژورنال» یک کد حساب تعریف کن. ۳) قبل از هر معامله، چک‌لیست «آماده‌سازی» رو مرور کن. ۴) موقع ورود به معامله، از دکمه‌ی «ثبت ورود» همه‌ی پارامترهای معامله رو دقیق ثبت کن. ۵) بعد از بستن معامله، از «ثبت نتیجه معامله» نتیجه‌ی نهایی رو وارد کن. ۶) به‌مرور که داده جمع شد، به تب «تحلیل» سر بزن تا ببینی کدوم شرایط برات سودآورتره.",
+        content: "۱) از تنظیمات ← پروفایل یک پروفایل بساز و در بخش تمپلت تنظیمات سفارشی را ذخیره کن. ۲) از تب «ژورنال» یک کد حساب تعریف کن. ۳) قبل از هر معامله، چک‌لیست «آماده‌سازی» رو مرور کن. ۴) موقع ورود به معامله، از دکمه‌ی «ثبت ورود» همه‌ی پارامترهای معامله رو دقیق ثبت کن. ۵) بعد از بستن معامله، از «ثبت نتیجه معامله» نتیجه‌ی نهایی رو وارد کن. ۶) به‌مرور که داده جمع شد، به تب «تحلیل» سر بزن تا ببینی کدوم شرایط برات سودآورتره.",
     },
     {
         id: "about5",
         title: "نکات و توصیه‌ها",
-        content: "هرچی پارامترهای معامله (فراکتال، الگوی برگشتی، سیستم‌ها، روانشناسی و…) رو دقیق‌تر و منظم‌تر ثبت کنی، تحلیل آماری برنامه (و «احتمال موفقیت محاسباتی») دقیق‌تر می‌شه. حداقل قبل از هر بار سفارشی‌سازی بزرگ تنظیمات، یک تمپلیت جدید از تب «کاربر» ذخیره کن تا در صورت نیاز بتونی برگردی. این لایه (درباره برنامه) رو هم می‌تونی مطابق سبک کاری خودت ویرایش، کم یا زیاد کنی.",
+        content: "هرچی پارامترهای معامله (فراکتال، الگوی برگشتی، سیستم‌ها، روانشناسی و…) رو دقیق‌تر و منظم‌تر ثبت کنی، تحلیل آماری برنامه (و «احتمال موفقیت محاسباتی») دقیق‌تر می‌شه. حداقل قبل از هر بار سفارشی‌سازی بزرگ تنظیمات، یک تمپلیت جدید از تب «کاربر» ذخیره کن تا در صورت نیاز بتونی برگردی. این بخش (درباره برنامه) رو هم می‌تونی مطابق سبک کاری خودت ویرایش، کم یا زیاد کنی.",
     },
 ];
 const DEFAULT_SUCCESS_PROB_OPTIONS = ["50", "60", "70", "80", "90"];
@@ -2439,11 +2439,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.2";
-const NM_VERSION_CODE = 35;
+const NM_VERSION_NAME = "1.22.4";
+const NM_VERSION_CODE = 37;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.4: تحلیل آماری داشبورد جمع‌شونده شد؛ پروفایل و تمپلت داخل تنظیمات ادغام شدند؛ لایه مستقل تحلیل حذف شد.",
     "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data",
     "نسخه 1.19: Advanced Edge Discovery، کنترل حداقل نمونه، پایداری نیمه‌دوره و تحلیل چندبعدی Edge اضافه شد.",
     "نسخه 1.18: Namello Intelligence، ماتریس Setup×Session×Plan×Mistake، گزارش هفتگی و Coach قابل‌اقدام اضافه شد.",
@@ -4875,6 +4876,7 @@ function NmSecurityAccountCard({showToast}){ const [sec,setSec]=React.useState((
 function App() {
     const [, forceTick] = useState(0);
     const [tab, setTab] = useState("dashboard");
+    useEffect(() => { if (tab === "analysis" || tab === "user") setTab("dashboard"); }, [tab]);
     const [showRef, setShowRef] = useState(false);
     const [config, setConfig] = useState(DEFAULT_CONFIG);
     const [showSessionSettings, setShowSessionSettings] = useState(false);
@@ -4919,6 +4921,7 @@ function App() {
     const [lastBackupAt, setLastBackupAt] = useState("");
     const [viewImageSrc, setViewImageSrc] = useState(null);
     const [openSettingsSection, setOpenSettingsSection] = useState({});
+    const [settingsProfileSection, setSettingsProfileSection] = useState("profile");
     const toggleSettingsSection = (key) => setOpenSettingsSection(s => ({ ...s, [key]: !s[key] }));
     const [calendarSettings, setCalendarSettings] = useState({ system: "jalali" });
     const [calendarCursor, setCalendarCursor] = useState(null);
@@ -4927,6 +4930,7 @@ function App() {
     const [statementImporting, setStatementImporting] = useState(false);
     const [statementImportError, setStatementImportError] = useState("");
     const [analysisSource, setAnalysisSource] = useState("journal");
+    const [showStatisticalAnalysis, setShowStatisticalAnalysis] = useState(false);
     const [namelloReturnSettings, setNamelloReturnSettings] = useState(DEFAULT_NAMELLO_RETURN_SETTINGS);
     const [widgetSettings, setWidgetSettings] = useState(DEFAULT_WIDGET_SETTINGS);
     const [closeTypeOptions, setCloseTypeOptions] = useState(DEFAULT_CLOSE_TYPE_OPTIONS);
@@ -7833,9 +7837,11 @@ function App() {
             { name: "روانشناسی", header: ["دسته", "توضیح"], rows: psychRows },
         ]);
     }
-    const nmStatisticalAnalysisSection = React.createElement("section", { className: "nm-statistical-analysis mb-3", style: { background: "var(--bg-page)" } },
-        React.createElement("div", { className: "text-[14px] font-bold mb-3 px-4", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
-        React.createElement("div", { className: "px-4 mt-4" },
+    const nmStatisticalAnalysisSection = React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "var(--bg-page)" } },
+        React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-2xl px-4 py-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" }, "aria-expanded": showStatisticalAnalysis },
+            React.createElement("span", { className: "text-[14px] font-bold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
+            showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
+        showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-4" },
             RE(NmPriceExtremesAnalysis, null),
             RE(NmDrawdownChart, { trades: dashboardSelectedTrades, startingBalance: accSettings.startingBalance }),
             RE(NmRMultipleCard, { trades: dashboardSelectedTrades }),
@@ -8041,40 +8047,6 @@ function App() {
                 jy)),
         RE(NmGlobalPlayer, { tab }),
         tab === "dashboard" && (RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf })),
-                tab === "user" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u067E\u0631\u0648\u0641\u0627\u06CC\u0644"),
-            React.createElement("div", { className: "flex gap-2 mb-4" },
-                React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
-                    React.createElement("input", { type: "text", value: newUserName, onChange: e => setNewUserName(e.target.value), onKeyDown: e => e.key === "Enter" && addUser(), placeholder: "\u0646\u0627\u0645 \u06A9\u0627\u0631\u0628\u0631 \u062C\u062F\u06CC\u062F...", className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
-                React.createElement("button", { onClick: addUser, className: "px-4 rounded-lg text-sm flex items-center gap-1", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
-                    React.createElement(Plus, { size: 14 }),
-                    " \u0627\u0641\u0632\u0648\u062F\u0646")),
-            users.length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0647\u0646\u0648\u0632 \u06A9\u0627\u0631\u0628\u0631\u06CC \u062A\u0639\u0631\u06CC\u0641 \u0646\u0634\u062F\u0647. \u0627\u0648\u0644 \u06CC\u06A9 \u06A9\u0627\u0631\u0628\u0631 \u062C\u062F\u06CC\u062F \u0628\u0633\u0627\u0632.")) : (React.createElement("div", { className: "flex flex-wrap gap-2 mb-5" }, users.map(u => (React.createElement("span", { key: u.id, className: "flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px]", style: { background: activeUserId === u.id ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card)", color: activeUserId === u.id ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${activeUserId === u.id ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-1)"}` } },
-                React.createElement("button", { type: "button", onClick: () => selectUser(u.id) }, u.name),
-                React.createElement("button", { type: "button", onClick: () => askDeleteConfirm(`کاربر «${u.name}» و تمام تمپلیت‌هایش حذف بشه؟`, () => deleteUser(u.id)) },
-                    React.createElement(Trash2, { size: 12, color: "var(--text-muted)" }))))))),
-            !activeUserId ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u06CC\u06A9 \u06A9\u0627\u0631\u0628\u0631 \u0631\u0648 \u0627\u0632 \u0628\u0627\u0644\u0627 \u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646 \u062A\u0627 \u062A\u0645\u067E\u0644\u06CC\u062A\u200C\u0647\u0627\u0634 \u0631\u0648 \u0628\u0628\u06CC\u0646\u06CC.")) : (React.createElement(React.Fragment, null,
-                React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } },
-                    "\u062A\u0645\u067E\u0644\u06CC\u062A\u200C\u0647\u0627\u06CC \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u2014 ",
-                    users.find(u => u.id === activeUserId)?.name),
-                React.createElement("p", { className: "text-[11px] mb-3 leading-5", style: { color: "var(--text-muted)" } }, "\u0647\u0631 \u062A\u0645\u067E\u0644\u06CC\u062A\u060C \u06CC\u06A9 \u0639\u06A9\u0633\u200C\u0641\u0648\u0631\u06CC \u06A9\u0627\u0645\u0644 \u0627\u0632 \u0627\u06CC\u0646 \u062D\u0633\u0627\u0628 \u06A9\u0627\u0631\u0628\u0631\u06CC\u0647: \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0633\u0641\u0627\u0631\u0634\u06CC \u0647\u0645\u0647\u200C\u06CC \u0644\u0627\u06CC\u0647\u200C\u0647\u0627 (\u0646\u0634\u0633\u062A\u200C\u0647\u0627\u060C \u062C\u0641\u062A\u200C\u0627\u0631\u0632\u0647\u0627\u060C \u0633\u06CC\u0633\u062A\u0645\u200C\u0647\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u060C \u0641\u0631\u0627\u06A9\u062A\u0627\u0644\u060C \u0646\u0642\u0637\u0647 \u0648\u0631\u0648\u062F\u060C TP/SL\u060C \u0627\u0644\u06AF\u0648\u0647\u0627\u06CC \u0628\u0631\u06AF\u0634\u062A\u06CC\u060C R:R\u060C \u0627\u062D\u062A\u0645\u0627\u0644 \u0645\u0648\u0641\u0642\u06CC\u062A\u060C \u0631\u0648\u0627\u0646\u0634\u0646\u0627\u0633\u06CC\u060C \u0648\u0632\u0646\u200C\u062F\u0647\u06CC \u0627\u062D\u062A\u0645\u0627\u0644 \u0645\u062D\u0627\u0633\u0628\u0627\u062A\u06CC\u060C \u0646\u0648\u0639 \u0628\u0633\u062A\u0646 \u0645\u0639\u0627\u0645\u0644\u0647\u060C \u0622\u0645\u0627\u062F\u0647\u200C\u0633\u0627\u0632\u06CC\u060C \u0645\u062F\u06CC\u0631\u06CC\u062A \u0645\u0627\u0644\u06CC \u0648 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0647\u0627\u06CC \u0633\u0641\u0627\u0631\u0634\u06CC) \u0628\u0647\u200C\u0639\u0644\u0627\u0648\u0647\u200C\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u060C \u062D\u0633\u0627\u0628\u200C\u0647\u0627\u060C \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u200C\u0647\u0627\u060C \u0627\u0647\u062F\u0627\u0641 (\u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06AF\u0631\u06CC/\u0632\u0646\u062F\u06AF\u06CC/\u0634\u06A9\u0631\u06AF\u0632\u0627\u0631\u06CC) \u0648 \u0627\u062E\u0628\u0627\u0631. \u062A\u0648\u062C\u0647: \u00AB\u0627\u0639\u0645\u0627\u0644\u00BB \u06CC\u06A9 \u062A\u0645\u067E\u0644\u06CC\u062A\u060C \u0647\u0645\u0647\u200C\u06CC \u0627\u06CC\u0646\u200C\u0647\u0627 \u0631\u0648 \u0628\u0627 \u0646\u0633\u062E\u0647\u200C\u06CC \u0630\u062E\u06CC\u0631\u0647\u200C\u0634\u062F\u0647 \u062C\u0627\u06CC\u06AF\u0632\u06CC\u0646 \u0645\u06CC\u200C\u06A9\u0646\u0647."),
-                React.createElement("div", { className: "rounded-xl p-3 flex items-center justify-between mb-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                    React.createElement("div", null,
-                        React.createElement("div", { className: "text-sm font-medium", style: { color: "var(--text-primary)" } }, "\u067E\u06CC\u0634\u200C\u0641\u0631\u0636"),
-                        React.createElement("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, "\u0641\u0642\u0637 \u0628\u0627\u0632\u06AF\u0634\u062A \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0633\u0641\u0627\u0631\u0634\u06CC \u0644\u0627\u06CC\u0647\u200C\u0647\u0627 \u0628\u0647 \u0645\u0642\u062F\u0627\u0631 \u0627\u0648\u0644\u06CC\u0647\u200C\u06CC \u06A9\u0627\u0631\u062E\u0627\u0646\u0647\u200C\u0627\u06CC (\u0645\u0639\u0627\u0645\u0644\u0627\u062A\u060C \u062D\u0633\u0627\u0628\u200C\u0647\u0627\u060C \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u060C \u0627\u0647\u062F\u0627\u0641 \u0648 \u0627\u062E\u0628\u0627\u0631 \u062F\u0633\u062A\u200C\u0646\u062E\u0648\u0631\u062F\u0647 \u0645\u06CC\u200C\u0645\u0648\u0646\u0646)")),
-                    React.createElement("button", { onClick: () => askDeleteConfirm("تمام تنظیمات سفارشی لایه‌ها با مقادیر پیش‌فرض جایگزین بشه؟", applyDefaultTemplate), className: "px-3 py-1.5 rounded-lg text-[12px] font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, "\u0627\u0639\u0645\u0627\u0644")),
-                React.createElement("div", { className: "grid grid-cols-1 gap-2 mb-4" }, (templatesByUser[activeUserId] || []).map(tpl => (React.createElement("div", { key: tpl.id, className: "rounded-xl p-3 flex items-center justify-between gap-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                    React.createElement("span", { className: "text-sm", style: { color: "var(--text-primary)", minWidth: 0, overflowWrap: "break-word", wordBreak: "break-word" } }, tpl.name),
-                    React.createElement("div", { className: "flex items-center gap-2 shrink-0" },
-                        React.createElement("button", { onClick: () => askDeleteConfirm(`تمام تنظیمات، معاملات، حساب‌ها، استراتژی‌ها، اهداف و اخبار فعلی با تمپلیت «${tpl.name}» جایگزین بشه؟ این کار قابل بازگشت نیست.`, () => applyTemplateById(tpl.id)), className: "px-3 py-1.5 rounded-lg text-[12px] font-medium", style: { background: "var(--bg-card2)", color: "#34D399" } }, "\u0627\u0639\u0645\u0627\u0644"),
-                        React.createElement("button", { onClick: () => askDeleteConfirm(`تمپلیت «${tpl.name}» حذف بشه؟`, () => deleteTemplate(tpl.id)) },
-                            React.createElement(Trash2, { size: 14, color: "var(--text-muted)" }))))))),
-                React.createElement("div", { className: "flex gap-2 mb-2" },
-                    React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
-                        React.createElement("input", { type: "text", value: newTemplateName, onChange: e => setNewTemplateName(e.target.value), onKeyDown: e => e.key === "Enter" && addTemplateFromCurrentSettings(), placeholder: "\u0646\u0627\u0645 \u062A\u0645\u067E\u0644\u06CC\u062A \u062C\u062F\u06CC\u062F...", className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
-                    React.createElement("button", { onClick: addTemplateFromCurrentSettings, className: "px-4 rounded-lg text-sm flex items-center gap-1", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
-                        React.createElement(Plus, { size: 14 }),
-                        " \u0630\u062E\u06CC\u0631\u0647 \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0641\u0639\u0644\u06CC")))))),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
@@ -8742,8 +8714,6 @@ function App() {
             activeAccount: activeAccount,
             showToast: showToast,
         }))),
-        tab === "analysis" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("div", { className: "rounded-xl p-4 text-center text-[11px]", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "تحلیل آماری به لایه داشبورد منتقل شده است."))),
         false && (React.createElement("div", { className: "px-4 mt-4" },
             RE(NmPriceExtremesAnalysis, null),
             RE(NmDrawdownChart, { trades: closedTrades, startingBalance: accSettings.startingBalance }),
@@ -8919,6 +8889,49 @@ function App() {
         tab === "library" && RE(NmLibraryLayer, { showToast, askDeleteConfirm }),
         tab === "settings" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_title")),
+            React.createElement("div", { className: "text-[10px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "پروفایل برای هویت و تنظیمات شخصی؛ تمپلت برای ذخیره و بازگردانی مجموعه تنظیمات سفارشی برنامه."),
+React.createElement("div", { className: "px-4 mt-4" },
+            React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+                React.createElement("div", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, "پروفایل و تمپلت"),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection("profile"), className: "py-2 rounded-lg text-[12px] font-medium", style: { background: settingsProfileSection === "profile" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: settingsProfileSection === "profile" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "پروفایل"),
+                    React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection("template"), className: "py-2 rounded-lg text-[12px] font-medium", style: { background: settingsProfileSection === "template" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: settingsProfileSection === "template" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "تمپلت"))
+            ),
+            settingsProfileSection === "profile" && React.createElement(React.Fragment, null,
+            React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u067E\u0631\u0648\u0641\u0627\u06CC\u0644"),
+            React.createElement("div", { className: "flex gap-2 mb-4" },
+                React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+                    React.createElement("input", { type: "text", value: newUserName, onChange: e => setNewUserName(e.target.value), onKeyDown: e => e.key === "Enter" && addUser(), placeholder: "\u0646\u0627\u0645 \u06A9\u0627\u0631\u0628\u0631 \u062C\u062F\u06CC\u062F...", className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
+                React.createElement("button", { onClick: addUser, className: "px-4 rounded-lg text-sm flex items-center gap-1", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
+                    React.createElement(Plus, { size: 14 }),
+                    " \u0627\u0641\u0632\u0648\u062F\u0646")),
+            users.length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0647\u0646\u0648\u0632 \u06A9\u0627\u0631\u0628\u0631\u06CC \u062A\u0639\u0631\u06CC\u0641 \u0646\u0634\u062F\u0647. \u0627\u0648\u0644 \u06CC\u06A9 \u06A9\u0627\u0631\u0628\u0631 \u062C\u062F\u06CC\u062F \u0628\u0633\u0627\u0632.")) : (React.createElement("div", { className: "flex flex-wrap gap-2 mb-5" }, users.map(u => (React.createElement("span", { key: u.id, className: "flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px]", style: { background: activeUserId === u.id ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card)", color: activeUserId === u.id ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${activeUserId === u.id ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-1)"}` } },
+                React.createElement("button", { type: "button", onClick: () => selectUser(u.id) }, u.name),
+                React.createElement("button", { type: "button", onClick: () => askDeleteConfirm(`کاربر «${u.name}» و تمام تمپلیت‌هایش حذف بشه؟`, () => deleteUser(u.id)) },
+                    React.createElement(Trash2, { size: 12, color: "var(--text-muted)" }))))))),
+            ),
+            !activeUserId ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u06CC\u06A9 \u06A9\u0627\u0631\u0628\u0631 \u0631\u0648 \u0627\u0632 \u0628\u0627\u0644\u0627 \u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646 \u062A\u0627 \u062A\u0645\u067E\u0644\u06CC\u062A\u200C\u0647\u0627\u0634 \u0631\u0648 \u0628\u0628\u06CC\u0646\u06CC.")) : (settingsProfileSection === "template" && React.createElement(React.Fragment, null,
+                React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } },
+                    "\u062A\u0645\u067E\u0644\u06CC\u062A\u200C\u0647\u0627\u06CC \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u2014 ",
+                    users.find(u => u.id === activeUserId)?.name),
+                React.createElement("p", { className: "text-[11px] mb-3 leading-5", style: { color: "var(--text-muted)" } }, "\u0647\u0631 \u062A\u0645\u067E\u0644\u06CC\u062A\u060C \u06CC\u06A9 \u0639\u06A9\u0633\u200C\u0641\u0648\u0631\u06CC \u06A9\u0627\u0645\u0644 \u0627\u0632 \u0627\u06CC\u0646 \u062D\u0633\u0627\u0628 \u06A9\u0627\u0631\u0628\u0631\u06CC\u0647: \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0633\u0641\u0627\u0631\u0634\u06CC \u0647\u0645\u0647\u200C\u06CC \u0644\u0627\u06CC\u0647\u200C\u0647\u0627 (\u0646\u0634\u0633\u062A\u200C\u0647\u0627\u060C \u062C\u0641\u062A\u200C\u0627\u0631\u0632\u0647\u0627\u060C \u0633\u06CC\u0633\u062A\u0645\u200C\u0647\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u060C \u0641\u0631\u0627\u06A9\u062A\u0627\u0644\u060C \u0646\u0642\u0637\u0647 \u0648\u0631\u0648\u062F\u060C TP/SL\u060C \u0627\u0644\u06AF\u0648\u0647\u0627\u06CC \u0628\u0631\u06AF\u0634\u062A\u06CC\u060C R:R\u060C \u0627\u062D\u062A\u0645\u0627\u0644 \u0645\u0648\u0641\u0642\u06CC\u062A\u060C \u0631\u0648\u0627\u0646\u0634\u0646\u0627\u0633\u06CC\u060C \u0648\u0632\u0646\u200C\u062F\u0647\u06CC \u0627\u062D\u062A\u0645\u0627\u0644 \u0645\u062D\u0627\u0633\u0628\u0627\u062A\u06CC\u060C \u0646\u0648\u0639 \u0628\u0633\u062A\u0646 \u0645\u0639\u0627\u0645\u0644\u0647\u060C \u0622\u0645\u0627\u062F\u0647\u200C\u0633\u0627\u0632\u06CC\u060C \u0645\u062F\u06CC\u0631\u06CC\u062A \u0645\u0627\u0644\u06CC \u0648 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0647\u0627\u06CC \u0633\u0641\u0627\u0631\u0634\u06CC) \u0628\u0647\u200C\u0639\u0644\u0627\u0648\u0647\u200C\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u060C \u062D\u0633\u0627\u0628\u200C\u0647\u0627\u060C \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u200C\u0647\u0627\u060C \u0627\u0647\u062F\u0627\u0641 (\u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06AF\u0631\u06CC/\u0632\u0646\u062F\u06AF\u06CC/\u0634\u06A9\u0631\u06AF\u0632\u0627\u0631\u06CC) \u0648 \u0627\u062E\u0628\u0627\u0631. \u062A\u0648\u062C\u0647: \u00AB\u0627\u0639\u0645\u0627\u0644\u00BB \u06CC\u06A9 \u062A\u0645\u067E\u0644\u06CC\u062A\u060C \u0647\u0645\u0647\u200C\u06CC \u0627\u06CC\u0646\u200C\u0647\u0627 \u0631\u0648 \u0628\u0627 \u0646\u0633\u062E\u0647\u200C\u06CC \u0630\u062E\u06CC\u0631\u0647\u200C\u0634\u062F\u0647 \u062C\u0627\u06CC\u06AF\u0632\u06CC\u0646 \u0645\u06CC\u200C\u06A9\u0646\u0647."),
+                React.createElement("div", { className: "rounded-xl p-3 flex items-center justify-between mb-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "text-sm font-medium", style: { color: "var(--text-primary)" } }, "\u067E\u06CC\u0634\u200C\u0641\u0631\u0636"),
+                        React.createElement("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, "\u0641\u0642\u0637 \u0628\u0627\u0632\u06AF\u0634\u062A \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0633\u0641\u0627\u0631\u0634\u06CC \u0644\u0627\u06CC\u0647\u200C\u0647\u0627 \u0628\u0647 \u0645\u0642\u062F\u0627\u0631 \u0627\u0648\u0644\u06CC\u0647\u200C\u06CC \u06A9\u0627\u0631\u062E\u0627\u0646\u0647\u200C\u0627\u06CC (\u0645\u0639\u0627\u0645\u0644\u0627\u062A\u060C \u062D\u0633\u0627\u0628\u200C\u0647\u0627\u060C \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u060C \u0627\u0647\u062F\u0627\u0641 \u0648 \u0627\u062E\u0628\u0627\u0631 \u062F\u0633\u062A\u200C\u0646\u062E\u0648\u0631\u062F\u0647 \u0645\u06CC\u200C\u0645\u0648\u0646\u0646)")),
+                    React.createElement("button", { onClick: () => askDeleteConfirm("تمام تنظیمات سفارشی لایه‌ها با مقادیر پیش‌فرض جایگزین بشه؟", applyDefaultTemplate), className: "px-3 py-1.5 rounded-lg text-[12px] font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, "\u0627\u0639\u0645\u0627\u0644")),
+                React.createElement("div", { className: "grid grid-cols-1 gap-2 mb-4" }, (templatesByUser[activeUserId] || []).map(tpl => (React.createElement("div", { key: tpl.id, className: "rounded-xl p-3 flex items-center justify-between gap-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+                    React.createElement("span", { className: "text-sm", style: { color: "var(--text-primary)", minWidth: 0, overflowWrap: "break-word", wordBreak: "break-word" } }, tpl.name),
+                    React.createElement("div", { className: "flex items-center gap-2 shrink-0" },
+                        React.createElement("button", { onClick: () => askDeleteConfirm(`تمام تنظیمات، معاملات، حساب‌ها، استراتژی‌ها، اهداف و اخبار فعلی با تمپلیت «${tpl.name}» جایگزین بشه؟ این کار قابل بازگشت نیست.`, () => applyTemplateById(tpl.id)), className: "px-3 py-1.5 rounded-lg text-[12px] font-medium", style: { background: "var(--bg-card2)", color: "#34D399" } }, "\u0627\u0639\u0645\u0627\u0644"),
+                        React.createElement("button", { onClick: () => askDeleteConfirm(`تمپلیت «${tpl.name}» حذف بشه؟`, () => deleteTemplate(tpl.id)) },
+                            React.createElement(Trash2, { size: 14, color: "var(--text-muted)" }))))))),
+                React.createElement("div", { className: "flex gap-2 mb-2" },
+                    React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+                        React.createElement("input", { type: "text", value: newTemplateName, onChange: e => setNewTemplateName(e.target.value), onKeyDown: e => e.key === "Enter" && addTemplateFromCurrentSettings(), placeholder: "\u0646\u0627\u0645 \u062A\u0645\u067E\u0644\u06CC\u062A \u062C\u062F\u06CC\u062F...", className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
+                    React.createElement("button", { onClick: addTemplateFromCurrentSettings, className: "px-4 rounded-lg text-sm flex items-center gap-1", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
+                        React.createElement(Plus, { size: 14 }),
+                        " \u0630\u062E\u06CC\u0631\u0647 \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0641\u0639\u0644\u06CC"))))),
             RE(NmSecurityAccountCard, { showToast }),
             RE(NmBackendSyncCard, { showToast }),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
@@ -9079,7 +9092,6 @@ function App() {
                     " \u0627\u0641\u0632\u0648\u062F\u0646 \u0628\u062E\u0634")))),
         navLayout !== "vertical" && (React.createElement("div", { className: "fixed bottom-0 left-0 right-0 flex overflow-x-auto", style: { background: "var(--bg-card)", borderTop: "1px solid var(--border-1)" } }, [
             { key: "dashboard", label: t("tab_dashboard"), Icon: LineChartIcon },
-            { key: "user", label: t("tab_user"), Icon: User },
             { key: "live", label: t("tab_live"), Icon: Clock },
             { key: "news", label: t("tab_news"), Icon: Newspaper },
             { key: "prep", label: t("tab_prep"), Icon: Check },
@@ -9093,7 +9105,6 @@ function App() {
             { key: "lifegoals", label: t("tab_lifegoals"), Icon: TreeIcon },
             { key: "gratitude", label: t("tab_gratitude"), Icon: Heart },
             { key: "statement", label: t("tab_statement"), Icon: UploadIcon },
-            { key: "analysis", label: t("tab_analysis"), Icon: LineChartIcon },
             { key: "psychology", label: t("tab_psychology"), Icon: Brain },
             { key: "exportall", label: t("tab_exportall"), Icon: FileSpreadsheet },
             { key: "library", label: t("tab_library"), Icon: BookOpen },
@@ -9106,8 +9117,7 @@ function App() {
             React.createElement("div", { className: "fixed inset-0 z-40", style: { background: "#000000AA" }, onClick: () => setNavMenuOpen(false) }),
             React.createElement("div", { className: "fixed top-16 z-50 rounded-2xl overflow-y-auto", style: { insetInlineStart: 12, background: "var(--bg-card)", border: "1px solid var(--border-2)", maxHeight: "70vh", minWidth: 220, boxShadow: "0 10px 40px #000000AA" } }, [
                 { key: "dashboard", label: t("tab_dashboard"), Icon: LineChartIcon },
-                { key: "user", label: t("tab_user"), Icon: User },
-                { key: "live", label: t("tab_live"), Icon: Clock },
+                    { key: "live", label: t("tab_live"), Icon: Clock },
                 { key: "news", label: t("tab_news"), Icon: Newspaper },
                 { key: "prep", label: t("tab_prep"), Icon: Check },
                 { key: "journal", label: t("tab_journal"), Icon: TrendingUp },
@@ -9120,8 +9130,7 @@ function App() {
                 { key: "lifegoals", label: t("tab_lifegoals"), Icon: TreeIcon },
                 { key: "gratitude", label: t("tab_gratitude"), Icon: Heart },
                 { key: "statement", label: t("tab_statement"), Icon: UploadIcon },
-                { key: "analysis", label: t("tab_analysis"), Icon: LineChartIcon },
-                { key: "psychology", label: t("tab_psychology"), Icon: Brain },
+                    { key: "psychology", label: t("tab_psychology"), Icon: Brain },
                 { key: "exportall", label: t("tab_exportall"), Icon: FileSpreadsheet },
                 { key: "library", label: t("tab_library"), Icon: BookOpen },
                 { key: "settings", label: t("tab_settings"), Icon: SettingsIcon },

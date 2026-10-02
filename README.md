@@ -1,3 +1,3 @@
-# Backend data directory
+# Namello runtime data
 
-This folder is reserved for runtime backend data. Do not commit databases or real user data to GitHub.
+این پوشه برای داده‌های runtime بک‌اند است. دیتابیس و اطلاعات واقعی کاربران نباید در GitHub قرار بگیرد.
