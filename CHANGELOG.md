@@ -1,3 +1,9 @@
+# Namello 1.22.6
+
+- Dashboard sections visually separated: Statistical Analysis, Advanced Evaluation, Comprehensive Dashboard Export.
+- Statistical and Advanced Evaluation exports separated; comprehensive dashboard export added as third section.
+- Security/backup/cloud guidance consolidated to avoid overlapping backup paths.
+
 ## 1.22.5 — 2026-10-02
 - Dashboard split into collapsible Statistical Analysis and Advanced Evaluation sections.
 - Plan management moved into Advanced Evaluation.

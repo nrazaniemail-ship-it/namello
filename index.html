@@ -2439,12 +2439,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.5";
+const NM_VERSION_NAME = "1.22.6";
 const NM_VERSION_CODE = 38;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.22.5: داشبورد به تحلیل آماری و ارزیابی پیشرفته تقسیم شد؛ خروجی جامع بازطراحی شد؛ حفظ زمان پادکست و جداسازی باکس‌های پروفایل/تمپلت بهبود یافت.",
+    "نسخه 1.22.6: داشبورد به تحلیل آماری و ارزیابی پیشرفته تقسیم شد؛ خروجی جامع بازطراحی شد؛ حفظ زمان پادکست و جداسازی باکس‌های پروفایل/تمپلت بهبود یافت.",
     "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data",
     "نسخه 1.19: Advanced Edge Discovery، کنترل حداقل نمونه، پایداری نیمه‌دوره و تحلیل چندبعدی Edge اضافه شد.",
     "نسخه 1.18: Namello Intelligence، ماتریس Setup×Session×Plan×Mistake، گزارش هفتگی و Coach قابل‌اقدام اضافه شد.",
@@ -4723,25 +4723,31 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
    React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${activeAccount?`حساب ${activeAccount}`:"بدون حساب"} · ${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
    statisticalAnalysisSection,
-   React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"var(--bg-page)"}},
-     React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-2xl px-4 py-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"},"aria-expanded":showAdvanced},
+   React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, var(--accent-gold) 6%, var(--bg-page))"}},
+     React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-2xl px-4 py-3",style:{background:"color-mix(in srgb, #60A5FA 12%, var(--bg-card))",border:"1px solid color-mix(in srgb, #60A5FA 34%, var(--border-1))"},"aria-expanded":showAdvanced},
        React.createElement("div",{className:"flex items-center gap-2"},React.createElement("span",{className:"text-[14px] font-bold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")),
        showAdvanced?React.createElement(ChevronUp,{size:15,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:15,color:"var(--text-muted)"})),
-     showAdvanced&&React.createElement("div",{className:"pt-3"},
+     showAdvanced&&React.createElement("div",{className:"pt-3 rounded-b-2xl p-2",style:{background:"color-mix(in srgb, #60A5FA 5%, var(--bg-page))"}},
        React.createElement("div",{className:"flex justify-end mb-2"},React.createElement("button",{onClick:()=>setShowPlans(true),className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"مدیریت Plan")),
        baseAccountPanel,
        filterPanel,
        React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
-       React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
-         React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"خروجی جامع بر اساس اطلاعات و حساب‌های مبنای انتخاب‌شده")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
+       React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #60A5FA 9%, var(--bg-card))",border:"1px solid color-mix(in srgb, #60A5FA 28%, var(--border-1))"}},
+         React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی ارزیابی پیشرفته"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"فقط اطلاعات بخش ارزیابی پیشرفته و معاملات فیلترشده")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${filtered.length} معامله`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
-           React.createElement("button",{onClick:onExportExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"Excel جامع"),
-           React.createElement("button",{onClick:onExportPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"var(--accent-gold)",border:"1px solid var(--accent-gold)"}},"PDF جامع"))))),
+           React.createElement("button",{onClick:()=>{const wb=XLSX.utils.book_new();const rows=filtered.filter(t=>t.status==="closed").map(t=>[t.date||"",t.pair||"",t.direction||"",t.pnl??"",t.mfe??"",t.mae??"",t.exitEfficiency??"",(t.disciplineMistakes||t.review?.mistakes||[]).join("، ")]);XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Discipline"],...rows]),"معاملات");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Plan","شروط"],...(plans||[]).map(p=>[p.name,(p.conditions||[]).length])]),"Trade Plans");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Day Plan","شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]),"Day Plans");XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["شاخص","مقدار"],["تعداد معاملات",filtered.length],["P&L",m.pnl],["Win Rate",m.winRate],["Profit Factor",m.pf===Infinity?"∞":m.pf],["Expectancy",m.expectancy??"—"],["Max DD",m.maxDD]]),"KPI");XLSX.writeFile(wb,`namello-advanced-evaluation-${todayStr}.xlsx`)},className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"Excel"),
+           React.createElement("button",{onClick:()=>{const rows=filtered.filter(t=>t.status==="closed").map(t=>[t.date||"",t.pair||"",t.direction||"",t.pnl??"",t.mfe??"",t.mae??"",t.exitEfficiency??"",(t.disciplineMistakes||t.review?.mistakes||[]).join("، ")]);exportMultiTablesAsPdf("ارزیابی پیشرفته",[{name:"KPI",header:["شاخص","مقدار"],rows:[["تعداد معاملات",filtered.length],["P&L",m.pnl],["Win Rate",m.winRate],["Profit Factor",m.pf===Infinity?"∞":m.pf],["Expectancy",m.expectancy??"—"],["Max DD",m.maxDD]]},{name:"معاملات",header:["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Discipline"],rows}]);},className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"var(--accent-gold)",border:"1px solid var(--accent-gold)"}},"PDF"))))),
+   React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #A78BFA 6%, var(--bg-page))",border:"1px solid color-mix(in srgb, #A78BFA 22%, var(--border-1))"}},
+     React.createElement("div",{className:"rounded-2xl px-4 py-3",style:{background:"color-mix(in srgb, #A78BFA 12%, var(--bg-card))"}},
+       React.createElement("div",{className:"flex items-center justify-between"},React.createElement("div",null,React.createElement("div",{className:"text-[14px] font-bold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"گزارش کامل از کل اطلاعات داشبورد")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
+       React.createElement("div",{className:"grid grid-cols-2 gap-2 mt-3"},
+         React.createElement("button",{onClick:onExportExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"Excel جامع"),
+         React.createElement("button",{onClick:onExportPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"var(--accent-gold)",border:"1px solid var(--accent-gold)"}},"PDF جامع"))))),
    selectedModal,
    excursionModal,
    replayModal,
    coachModal,
-   showPlans&&React.createElement(NmPlanBuilder,{plans,setPlans,dayPlans,setDayPlans,onClose:()=>setShowPlans(false)}));
+   showPlans&&React.createElement(NmPlanBuilder,{plans,setPlans,dayPlans,setDayPlans,onClose:()=>setShowPlans(false)});
 
 }
 
@@ -8046,10 +8052,10 @@ function App() {
                                 React.createElement(Tooltip, { contentStyle: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", fontSize: 11 }, labelStyle: { color: "var(--text-primary)" } }),
                                 React.createElement(Bar, { dataKey: "value", radius: [0, 4, 4, 0] }, chart.data.map((d, i) => React.createElement(Cell, { key: i, fill: d.value >= 0 ? "#34D399" : "#F87171" }))))))))),
                 React.createElement("div", { className: "flex gap-2 mb-4" },
-                    React.createElement("button", { onClick: exportAll, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+                    React.createElement("button", { onClick: exportAnalysis, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
                         React.createElement(Download, { size: 16 }),
                         " Excel"),
-                    React.createElement("button", { onClick: exportAllPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } },
+                    React.createElement("button", { onClick: exportAnalysisPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } },
                         React.createElement(Download, { size: 16 }),
                         " PDF"))))))
     );
@@ -8992,7 +8998,9 @@ React.createElement("div", { className: "px-4 mt-4" },
                     React.createElement("button", { onClick: addTemplateFromCurrentSettings, className: "px-4 rounded-lg text-sm flex items-center gap-1", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
                         React.createElement(Plus, { size: 14 }),
                         " \u0630\u062E\u06CC\u0631\u0647 \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0641\u0639\u0644\u06CC"))))),
-            RE(NmSecurityAccountCard, { showToast }),
+            React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "color-mix(in srgb, var(--accent-gold) 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, var(--accent-gold) 25%, var(--border-1))" } },
+                React.createElement("div", { className: "text-[13px] font-semibold mb-1", style: { color: "var(--text-primary)" } }, "مرکز امنیت و پشتیبان"),
+                React.createElement("div", { className: "text-[10px] leading-5", style: { color: "var(--text-muted)" } }, "مسیرهای پشتیبان محلی، ذخیره‌سازی ابری و Sync چنددستگاهی جدا از هم اما مکمل هستند. پشتیبان رمزگذاری‌شده برای بازیابی فایل، Google Drive برای نگهداری ابری و Sync برای همگام‌سازی نسخه‌ای استفاده می‌شود؛ داده خام به سرویس ابری ارسال نمی‌شود.")),
             RE(NmBackendSyncCard, { showToast }),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_theme")),
