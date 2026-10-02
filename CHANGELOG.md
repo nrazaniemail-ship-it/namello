@@ -1,3 +1,12 @@
+# Namello 1.22.11
+
+- Dashboard split into three visually distinct sections: Statistical Analysis, Advanced Evaluation, and Comprehensive Dashboard Export.
+- Added section-specific Excel/PDF exports.
+- Renamed the Advanced Evaluation export box to `خروجی ارزیابی پیشرفته`.
+- Added `خروجی جامع داشبورد` for a combined dashboard report.
+- Reduced Settings duplication: local backup, backend multi-device sync, and storage-capacity tools are separated by purpose; the legacy parallel Google Drive storage UI was removed from the settings flow.
+- Dashboard logic remains based on the stable 1.22.5 baseline to avoid the blank-dashboard regression.
+
 ## 1.22.8 — Dashboard Blank Fix
 - Dashboard widget error isolation so one broken analytics widget cannot blank the entire Dashboard.
 - Corrupted/obsolete Dashboard layout IDs are sanitized and reset safely.
