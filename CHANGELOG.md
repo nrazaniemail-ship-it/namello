@@ -1,3 +1,7 @@
+## 1.22.22
+- همسان‌سازی نسخه اصلی PWA با نسخه Android Native: Version Name `1.22.22` و Version Code `55`.
+- حفظ `.nojekyll` و `/.well-known/assetlinks.json` برای Digital Asset Links.
+
 ## 1.22.21
 - Added GitHub Pages `.nojekyll` and `/.well-known/assetlinks.json` for Digital Asset Links/TWA domain association.
 
