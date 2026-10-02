@@ -1,3 +1,11 @@
+# Namello 1.14.0 (Version Code 25) — ۱۰ مهر ۱۴۰۵
+
+- **Advanced Risk Analytics:** Sharpe، Sortino، Calmar، Recovery Factor، Ulcer Index، بازده کل و میانگین زمان نگهداری معامله به داشبورد اضافه شد.
+- **Exit Insights:** خروج زودهنگام، خروج کارآمد و Round-trip با استفاده از MFE/MAE و Exit Efficiency شناسایی می‌شوند.
+- **Tag / Context Analysis:** تعداد معاملات، Win Rate و P&L هر Tag در بازه فیلترشده نمایش داده می‌شود.
+- فیلترها و چیدمان Dashboard با این تحلیل‌های جدید یکپارچه شدند.
+- همین موتور تحلیل در بسته Android/Widget نیز همگام شد.
+
 # Namello 1.13.0 — MT5 Bridge + Native Widget + Discipline
 
 

@@ -1,12 +1,12 @@
 {
-  "name": "1.13.0",
-  "code": 24,
+  "name": "1.14.0",
+  "code": 25,
   "date": "۱۰ مهر ۱۴۰۵",
   "changes": [
-    "MT5 Bridge برای دریافت خودکار OHLC و محاسبه MFE/MAE، Best Exit و Exit Efficiency",
-    "افزودن فیلد انضباط/اشتباهات در ثبت نتیجه معامله",
-    "اعلان خبری با مسیر نوتیفیکیشن بومی در APK و heads-up notification",
-    "ویجت واقعی Android App Widget برای لانچر",
-    "اصلاح رنگ متن داشبورد در تم‌های تیره"
+    "Advanced Risk Analytics: Sharpe، Sortino، Calmar، Recovery، Ulcer، بازده و زمان نگهداری",
+    "Exit Insights: شناسایی خروج زودهنگام، خروج کارآمد و Round-trip با استفاده از MFE/MAE و Exit Efficiency",
+    "Tag / Context Analysis: تحلیل تعداد، Win Rate و P&L برای برچسب‌های معاملات",
+    "داشبورد قابل‌فیلتر با Drill-down عمیق‌تر و حفظ چیدمان شخصی",
+    "همگام‌سازی همین موتور تحلیل در نسخه Android/Widget"
   ]
 }
