@@ -1,7 +1,9 @@
 {
-  "name": "1.22.6",
-  "versionCode": 39,
+  "name": "1.22.8",
+  "versionCode": 41,
   "channel": "stable",
   "date": "2026-10-02",
-  "label": "Namello 1.22.6"
+  "label": "Namello 1.22.8",
+  "version": "1.22.8",
+  "versionName": "1.22.8"
 }

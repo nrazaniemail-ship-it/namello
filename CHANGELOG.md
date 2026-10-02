@@ -1,3 +1,8 @@
+## 1.22.8 — Dashboard Blank Fix
+- Dashboard widget error isolation so one broken analytics widget cannot blank the entire Dashboard.
+- Corrupted/obsolete Dashboard layout IDs are sanitized and reset safely.
+- Defensive handling for missing account-selection arrays.
+
 # Namello 1.22.6
 
 - Dashboard sections visually separated: Statistical Analysis, Advanced Evaluation, Comprehensive Dashboard Export.
