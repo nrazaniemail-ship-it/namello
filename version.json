@@ -1,10 +1,12 @@
 {
-  "name": "1.12.0",
-  "code": 23,
-  "date": "۱۲ مهر ۱۴۰۵",
+  "name": "1.13.0",
+  "code": 24,
+  "date": "۱۰ مهر ۱۴۰۵",
   "changes": [
-    "MFE/MAE واقعی از مسیر OHLC",
-    "Best Exit و Exit Efficiency واقعی",
-    "Dashboard Widgetهای قابل جابه‌جایی با Drag & Drop و کنترل ↑/↓ برای موبایل"
+    "MT5 Bridge برای دریافت خودکار OHLC و محاسبه MFE/MAE، Best Exit و Exit Efficiency",
+    "افزودن فیلد انضباط/اشتباهات در ثبت نتیجه معامله",
+    "اعلان خبری با مسیر نوتیفیکیشن بومی در APK و heads-up notification",
+    "ویجت واقعی Android App Widget برای لانچر",
+    "اصلاح رنگ متن داشبورد در تم‌های تیره"
   ]
 }

@@ -1,3 +1,14 @@
+# Namello 1.13.0 — MT5 Bridge + Native Widget + Discipline
+
+
+- MT5 Bridge برای دریافت دوره‌ای معاملات و مسیر OHLC از یک EA/Bridge سازگار با HTTPS
+- محاسبه خودکار MFE/MAE، Best Exit و Exit Efficiency از OHLC دریافتی
+- فیلد جدید «انضباط/اشتباهات» قبل از «یادداشت» با ۹ گزینه و انتخاب چندگانه
+- اعلان خبرها و رویدادها با مسیر نوتیفیکیشن بومی در APK و کانال Android با اهمیت بالا
+- پروژه Android App Widget واقعی برای نمایش ویجت سشن‌ها در لانچر
+- تثبیت رنگ متن داشبورد روی توکن‌های روشن برای جلوگیری از متن سیاه روی زمینه تیره
+- Version Code 24
+
 # Namello 1.12.0 — Real Excursion & Modular Dashboard
 
 - MFE/MAE واقعی از مسیر قیمت OHLC معامله
