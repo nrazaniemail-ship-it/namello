@@ -2356,6 +2356,11 @@ function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, curs
     const monthHasPnl = monthDays.some(d => d.pnl !== null && d.pnl !== undefined);
     const chartData = monthDays.map(d => ({ name: String(d.d), value: d.count }));
     const selectedTrades = selectedDate ? (tradesByDate[selectedDate] || []) : [];
+    const selectedClosedTrades = selectedTrades.filter(t => t.status === "closed");
+    const selectedDayPnl = selectedClosedTrades.reduce((sum, t) => sum + Number(t.pnl || 0), 0);
+    const selectedDayWins = selectedClosedTrades.filter(t => Number(t.pnl || 0) > 0).length;
+    const selectedDayLosses = selectedClosedTrades.filter(t => Number(t.pnl || 0) < 0).length;
+    const selectedDayMistakes = selectedClosedTrades.reduce((sum, t) => sum + ((t.disciplineMistakes || t.review?.mistakes || []).length), 0);
     return (React.createElement("div", { className: "px-4 mt-4" },
         topSlot,
         React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -2393,6 +2398,21 @@ function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, curs
                 React.createElement(BarChart, { data: rangeChartData },
                     React.createElement(Bar, { dataKey: "value" }))))),
         selectedDate ? (React.createElement("div", { className: "mb-4" },
+            React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "color-mix(in srgb, var(--accent-gold) 5%, var(--bg-card))", border: "1px solid color-mix(in srgb, var(--accent-gold) 22%, var(--border-1))" } },
+                React.createElement("div", { className: "text-[11px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, lang === "en" ? "Day Review" : "مرور روز"),
+                React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                    React.createElement("div", { className: "rounded-lg p-2 text-center", style: { background: "var(--bg-card2)" } },
+                        React.createElement("div", { className: "text-[13px] font-bold mono", style: { color: selectedDayPnl >= 0 ? "#34D399" : "#F87171", fontFamily: "JetBrains Mono, monospace" } }, selectedDayPnl > 0 ? "+" + selectedDayPnl.toFixed(2) : selectedDayPnl.toFixed(2)),
+                        React.createElement("div", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, "P&L")),
+                    React.createElement("div", { className: "rounded-lg p-2 text-center", style: { background: "var(--bg-card2)" } },
+                        React.createElement("div", { className: "text-[13px] font-bold", style: { color: "#34D399" } }, selectedDayWins),
+                        React.createElement("div", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, lang === "en" ? "Wins" : "برد")),
+                    React.createElement("div", { className: "rounded-lg p-2 text-center", style: { background: "var(--bg-card2)" } },
+                        React.createElement("div", { className: "text-[13px] font-bold", style: { color: "#F87171" } }, selectedDayLosses),
+                        React.createElement("div", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, lang === "en" ? "Losses" : "باخت")),
+                    React.createElement("div", { className: "rounded-lg p-2 text-center", style: { background: "var(--bg-card2)" } },
+                        React.createElement("div", { className: "text-[13px] font-bold", style: { color: selectedDayMistakes ? "#F59E0B" : "var(--text-primary)" } }, selectedDayMistakes),
+                        React.createElement("div", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, lang === "en" ? "Discipline mistakes" : "اشتباه انضباطی")))),
             React.createElement("h3", { className: "text-[12px] font-semibold mb-2", style: { color: "var(--text-primary)" } },
                 lang === "en" ? "Trades " : "معاملات ",
                 selectedDate,
@@ -6362,6 +6382,32 @@ function App() {
     /* ---------------- journal derived ---------------- */
     const derived = useMemo(() => computeDerived(trades, accSettings), [trades, accSettings]);
     const closedTrades = trades.filter(t => t.status === "closed");
+    const [journalSearch, setJournalSearch] = useState(() => { try { return localStorage.getItem("namello_journal_search_v1") || ""; } catch (e) { return ""; } });
+    const [journalResultFilter, setJournalResultFilter] = useState("all");
+    const [journalDirectionFilter, setJournalDirectionFilter] = useState("all");
+    const [journalSessionFilter, setJournalSessionFilter] = useState("all");
+    const [journalMistakeOnly, setJournalMistakeOnly] = useState(false);
+    const journalSessions = useMemo(() => Array.from(new Set(closedTrades.map(t => t.session).filter(Boolean))).sort(), [closedTrades]);
+    const journalFilteredTrades = useMemo(() => {
+        const q = journalSearch.trim().toLowerCase();
+        return closedTrades.filter(t => {
+            const pnl = Number(t.pnl || 0);
+            const mistakes = (t.disciplineMistakes || t.review?.mistakes || []);
+            const hay = [t.pair, t.date, t.time, t.note, t.system, ...(t.systems || []), ...(t.tags || []).map(x => x.label), ...mistakes].filter(Boolean).join(" ").toLowerCase();
+            return (!q || hay.includes(q)) &&
+                (journalResultFilter === "all" || (journalResultFilter === "win" ? pnl > 0 : journalResultFilter === "loss" ? pnl < 0 : pnl === 0)) &&
+                (journalDirectionFilter === "all" || t.direction === journalDirectionFilter) &&
+                (journalSessionFilter === "all" || t.session === journalSessionFilter) &&
+                (!journalMistakeOnly || mistakes.length > 0);
+        });
+    }, [closedTrades, journalSearch, journalResultFilter, journalDirectionFilter, journalSessionFilter, journalMistakeOnly]);
+    useEffect(() => { try { localStorage.setItem("namello_journal_search_v1", journalSearch); } catch (e) {} }, [journalSearch]);
+    const journalFilteredSummary = useMemo(() => {
+        const n = journalFilteredTrades.length;
+        const pnl = journalFilteredTrades.reduce((a, t) => a + Number(t.pnl || 0), 0);
+        const wins = journalFilteredTrades.filter(t => Number(t.pnl || 0) > 0).length;
+        return { n, pnl, winRate: n ? Math.round(wins / n * 1000) / 10 : null };
+    }, [journalFilteredTrades]);
     const closedTradeNumberById = useMemo(() => {
         const asc = closedTrades.slice().sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
         const map = {};
@@ -8446,8 +8492,21 @@ function App() {
                 React.createElement("button", { onClick: () => setShowExportPicker(true), className: "flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
                     React.createElement(Download, { size: 16 }),
                     " ", t("common_excel"))),
+            React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "color-mix(in srgb, #60A5FA 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, #60A5FA 24%, var(--border-1))" } },
+                React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
+                    React.createElement("div", { className: "text-[12px] font-semibold", style: { color: "var(--text-primary)" } }, "جستجو و فیلتر ژورنال"),
+                    React.createElement("span", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, `${journalFilteredSummary.n} معامله · ${journalFilteredSummary.pnl > 0 ? "+" : ""}${journalFilteredSummary.pnl.toFixed(2)} · ${journalFilteredSummary.winRate === null ? "—" : journalFilteredSummary.winRate + "% برد"}`)),
+                React.createElement("input", { value: journalSearch, onChange: e => setJournalSearch(e.target.value), placeholder: "نماد، تاریخ، یادداشت، سیستم یا تگ...", className: "w-full rounded-xl px-3 py-2.5 text-[12px] outline-none mb-2", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
+                React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                    React.createElement("select", { value: journalResultFilter, onChange: e => setJournalResultFilter(e.target.value), className: "rounded-lg px-2 py-2 text-[10px]", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } },
+                        React.createElement("option", { value: "all" }, "همه نتایج"), React.createElement("option", { value: "win" }, "سودده"), React.createElement("option", { value: "loss" }, "زیان‌ده"), React.createElement("option", { value: "flat" }, "خنثی")),
+                    React.createElement("select", { value: journalDirectionFilter, onChange: e => setJournalDirectionFilter(e.target.value), className: "rounded-lg px-2 py-2 text-[10px]", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } },
+                        React.createElement("option", { value: "all" }, "همه جهت‌ها"), React.createElement("option", { value: "buy" }, "Buy"), React.createElement("option", { value: "sell" }, "Sell")),
+                    React.createElement("select", { value: journalSessionFilter, onChange: e => setJournalSessionFilter(e.target.value), className: "rounded-lg px-2 py-2 text-[10px]", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } },
+                        React.createElement("option", { value: "all" }, "همه سشن‌ها"), journalSessions.map(x => React.createElement("option", { key: x, value: x }, x))),
+                    React.createElement("button", { type: "button", onClick: () => setJournalMistakeOnly(v => !v), className: "rounded-lg px-2 py-2 text-[10px]", style: { background: journalMistakeOnly ? "#F59E0B22" : "var(--bg-card2)", color: journalMistakeOnly ? "#F59E0B" : "var(--text-secondary)", border: "1px solid " + (journalMistakeOnly ? "#F59E0B55" : "var(--border-2)") } }, "فقط معاملات دارای اشتباه"))),
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("journal_closed_trades")),
-            closedTrades.length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, t("journal_no_closed"))) : (React.createElement("div", { className: "grid grid-cols-1 gap-2" }, closedTrades.map(t => (React.createElement("div", { key: t.id, className: "rounded-xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+            journalFilteredTrades.length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, closedTrades.length ? "با فیلتر فعلی معامله‌ای پیدا نشد." : t("journal_no_closed"))) : (React.createElement("div", { className: "grid grid-cols-1 gap-2" }, journalFilteredTrades.map(t => (React.createElement("div", { key: t.id, className: "rounded-xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("div", { className: "flex items-center justify-between mb-1.5" },
                     React.createElement("div", { className: "flex items-center gap-2" },
                         t.direction === "buy" ? React.createElement(TrendingUp, { size: 15, color: "#34D399" }) : React.createElement(TrendingDown, { size: 15, color: "#F87171" }),
