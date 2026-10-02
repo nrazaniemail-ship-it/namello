@@ -1491,6 +1491,9 @@ const CALC_PROB_STATIC_PARAMS = [
             const n = typeof v === "string" ? parseFloat(v) : v;
             return isNaN(n) ? undefined : `1:${n}`;
         } },
+    { key: "lot", label: "حجم (لات)", multi: false, get: t => { const v=Number(t.lot); return Number.isFinite(v) && v>0 ? nmNumericBand(v) : undefined; } },
+    { key: "riskDollar", label: "ریسک دلاری", multi: false, get: t => nmTradeRiskDollarBand(t) || undefined },
+    { key: "successProb", label: "احتمال موفقیت ذهنی (%)", multi: false, get: t => nmTradeSubjectiveSuccessBand(t) || undefined },
     { key: "psychology", label: "روانشناسی", multi: true, get: t => t.psychology || [] },
     { key: "direction", label: "جهت معامله (خرید/فروش)", multi: false, get: t => t.direction === "buy" ? "خرید" : t.direction === "sell" ? "فروش" : undefined },
     { key: "pair", label: "جفت‌ارز / نماد", multi: false, get: t => t.pair || undefined },
@@ -1542,6 +1545,9 @@ const DEFAULT_CALC_PROB_WEIGHTS = {
     target: 5, // حد سود (TP) — متوسط
     stop: 8, // حد ضرر (SL) — زیاد
     rr: 8, // R-Multiple / Risk:Reward — زیاد
+    lot: 0, // حجم (لات) — قابل تنظیم توسط کاربر
+    riskDollar: 0, // ریسک دلاری — قابل تنظیم توسط کاربر
+    successProb: 0, // احتمال موفقیت ذهنی — قابل تنظیم توسط کاربر
     systems: 4, // سیستم معاملاتی تایم اصلی — متوسط
     entryTimeSystems: 5, // سیستم معاملاتی تایم ورود — متوسط
     mainGuideLevels: 4, // سطوح راهنمای تایم اصلی — متوسط
@@ -1702,6 +1708,13 @@ const FONT_OPTIONS = [
 ];
 const PARAM_DEFS = {
     lot: { label: "لات", get: t => String(t.lot) },
+    riskDollar: { label: "ریسک دلاری", get: t => nmTradeRiskDollarBand(t) || "—" },
+    successProb: { label: "احتمال موفقیت ذهنی", get: t => nmTradeSubjectiveSuccessBand(t) || "—" },
+    calcSuccessProb: { label: "احتمال موفقیت محاسباتی", get: t => nmTradeCalculatedSuccessBand(t) || "—" },
+    direction: { label: "جهت معامله", get: t => t.direction === "buy" ? "خرید" : t.direction === "sell" ? "فروش" : "—" },
+    pair: { label: "نماد", get: t => t.pair || "—" },
+    divergenceMain: { label: "واگرایی تایم اصلی", get: t => (t.divergenceMain && t.divergenceMain.length ? t.divergenceMain.join("، ") : "—") },
+    divergenceEntry: { label: "واگرایی تایم ورود", get: t => (t.divergenceEntry && t.divergenceEntry.length ? t.divergenceEntry.join("، ") : "—") },
     weekday: { label: "روز هفته", get: t => weekdayFromDateStr(t.date) },
     system: { label: "سیستم معاملاتی", get: t => t.system || "—" },
     fractal: { label: "فراکتال", get: t => t.fractal || "—" },
@@ -2529,11 +2542,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.19";
-const NM_VERSION_CODE = 52;
+const NM_VERSION_NAME = "1.22.20";
+const NM_VERSION_CODE = 53;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۰ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.20: مقدار R-multiple و ریسک دلاری ثبت ورود با باکس «مقدار جدید/حالت جدید» همگام شد؛ ریسک دلاری، احتمال موفقیت ذهنی/محاسباتی و سایر پارامترهای جدید ثبت ورود به تحلیل سودآوری داشبورد اضافه شدند و پارامترهای جدید در وزن‌دهی احتمال موفقیت محاسباتی قابل تنظیم شدند.",
     "نسخه 1.22.19: مدیریت Chart/Trade/Day Plan ساده‌تر شد، متن شروط چندسطره شد، امتیاز آمادگی ستاپ و ارزیابی چارت به پارامترهای تحلیلی اضافه شد، R/R برنامه‌ریزی‌شده حذف و استخراج چارت برای R-multiple و ریسک دلاری بهبود یافت.",
     "نسخه 1.22.17: بهبود گرافیکی لایه‌ها، پلیر درون آیتم کتابخانه، تفکیک رنگی فرم ورود/نتیجه، باکس‌های تنظیمات، دکمه شناور Native، OCR قیمت از چارت، و مدیریت Chart/Trade/Day Plan اضافه شد.",
     "نسخه 1.22.16: گزینه «نصب Namello به‌عنوان اپ» از تنظیمات حذف شد؛ نصب PWA فقط از مسیر استاندارد مرورگر انجام می‌شود. همچنین مسیر Android Native از TWA/Chrome جدا نگه داشته شد تا APK مستقل اجرا شود.",
@@ -4969,6 +4983,15 @@ function nmReadinessScore(plan, answers){
  const s=nmPlanChecklistScore(plan,answers);
  return s && Number.isFinite(Number(s.score)) ? Number(s.score) : null;
 }
+function nmNumericBand(v, kind="number") {
+ const n=Number(v); if(!Number.isFinite(n)) return null;
+ if(kind==="risk") { if(n<10) return "کمتر از $10"; if(n<25) return "$10–24.99"; if(n<50) return "$25–49.99"; if(n<100) return "$50–99.99"; return "$100+"; }
+ if(kind==="success") { if(n<40) return "0–39٪"; if(n<60) return "40–59٪"; if(n<80) return "60–79٪"; return "80–100٪"; }
+ return String(Math.round(n*100)/100);
+}
+function nmTradeRiskDollarBand(t){ const v=Number(t?.riskDollar); return Number.isFinite(v) ? nmNumericBand(v,"risk") : null; }
+function nmTradeSubjectiveSuccessBand(t){ const v=Number(t?.successProb); return Number.isFinite(v) ? nmNumericBand(v,"success") : null; }
+function nmTradeCalculatedSuccessBand(t){ const v=Number(t?.calcSuccessProb); return Number.isFinite(v) ? nmNumericBand(v,"success") : null; }
 function nmReadinessBand(v){
  const n=Number(v); if(!Number.isFinite(n)) return null;
  if(n<25) return "0–24٪"; if(n<50) return "25–49٪"; if(n<75) return "50–74٪"; return "75–100٪";
@@ -6942,7 +6965,8 @@ function App() {
             return;
         if (!riskOptions.includes(v))
             persistRiskOptions([...riskOptions, v]);
-        setNewRiskText("");
+        setOpenForm(f => ({ ...f, riskDollar: v }));
+        setNewRiskText(v);
     }
     function removeTradeManagementOption(name) { persistTradeManagementOptions(tradeManagementOptions.filter(x => x !== name)); }
     function renameTradeManagementOption(index, text) { renameOptionAt(tradeManagementOptions, persistTradeManagementOptions, index, text); }
@@ -7027,7 +7051,8 @@ function App() {
             return;
         if (!rrOptions.includes(v))
             persistRrOptions([...rrOptions, v]);
-        setNewRrText("");
+        setOpenForm(f => ({ ...f, rrReward: v }));
+        setNewRrText(v);
     }
     function addSuccessProbOptionInline() {
         const v = newSuccessProbText.trim();
@@ -8043,6 +8068,13 @@ function App() {
     const byDuration = useMemo(() => groupProfitability(closedTrades, t => durationBucketFa(t.durationMinutes)), [trades]);
     const bySetupReadiness = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.setupReadiness.get), [trades]);
     const byChartReadiness = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.chartReadiness.get), [trades]);
+    const byRiskDollar = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.riskDollar.get), [trades]);
+    const bySubjectiveSuccessProb = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.successProb.get), [trades]);
+    const byCalculatedSuccessProb = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.calcSuccessProb.get), [trades]);
+    const byDirection = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.direction.get), [trades]);
+    const byPair = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.pair.get), [trades]);
+    const byDivergenceMain = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.divergenceMain || []), [trades]);
+    const byDivergenceEntry = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.divergenceEntry || []), [trades]);
     const [param3dX, setParam3dX] = useState("system");
     const [param3dY, setParam3dY] = useState("weekday");
     const rows3d = useMemo(() => get3DRows(closedTrades, param3dX, param3dY), [trades, param3dX, param3dY]);
@@ -8121,6 +8153,13 @@ function App() {
         mk("سودآوری-سشن", bySession);
         mk("سودآوری-روند", byTrend);
         mk("سودآوری-RR", byRR);
+        mk("سودآوری-ریسک-دلاری", byRiskDollar);
+        mk("سودآوری-احتمال-ذهنی", bySubjectiveSuccessProb);
+        mk("سودآوری-احتمال-محاسباتی", byCalculatedSuccessProb);
+        mk("سودآوری-جهت", byDirection);
+        mk("سودآوری-نماد", byPair);
+        mk("سودآوری-واگرایی-اصلی", byDivergenceMain);
+        mk("سودآوری-واگرایی-ورود", byDivergenceEntry);
         mk("سودآوری-آمادگی-ستاپ", bySetupReadiness);
         mk("سودآوری-ارزیابی-چارت", byChartReadiness);
         mk("سودآوری-بایاس", byBias);
@@ -8150,10 +8189,10 @@ function App() {
     function dashboardStatExportData() {
         const src = (dashboardSelectedTrades || []).filter(t => t.status === "closed");
         const multi = fn => groupProfitabilityMulti(src, fn);
-        return {byLot:groupProfitability(src,t=>t.lot),byWeekday:groupProfitability(src,t=>weekdayFromDateStr(t.date)),bySystem:groupProfitability(src,t=>t.system),bySession:groupProfitability(src,sessionLabelOf),byTrend:groupProfitability(src,PARAM_DEFS.trend.get),byRR:groupProfitability(src,PARAM_DEFS.rr.get),byBias:groupProfitability(src,PARAM_DEFS.bias.get),byFractal:groupProfitability(src,PARAM_DEFS.fractal.get),byMainTrend:groupProfitability(src,PARAM_DEFS.mainTrend.get),byCondition:groupProfitability(src,PARAM_DEFS.condition.get),byTrig:multi(t=>(t.trigs&&t.trigs.length)?t.trigs:(t.trig?[t.trig]:[])),byTarget:multi(t=>(t.targets&&t.targets.length)?t.targets:(t.target?[t.target]:[])),byStop:multi(t=>(t.stops&&t.stops.length)?t.stops:(t.stop?[t.stop]:[])),byNews:groupProfitability(src,PARAM_DEFS.news.get),byDuration:groupProfitability(src,t=>durationBucketFa(t.durationMinutes)),bySetupReadiness:groupProfitability(src,PARAM_DEFS.setupReadiness.get),byChartReadiness:groupProfitability(src,PARAM_DEFS.chartReadiness.get),bySystemWeekday:groupProfitability(src,t=>`${t.system||"-"} | ${weekdayFromDateStr(t.date)}`).slice(0,8),bySessionLot:groupProfitability(src,t=>`${sessionLabelOf(t)} | لات ${t.lot}`).slice(0,8),source:src};
+        return {byLot:groupProfitability(src,t=>t.lot),byRiskDollar:groupProfitability(src,PARAM_DEFS.riskDollar.get),bySubjectiveSuccessProb:groupProfitability(src,PARAM_DEFS.successProb.get),byCalculatedSuccessProb:groupProfitability(src,PARAM_DEFS.calcSuccessProb.get),byDirection:groupProfitability(src,PARAM_DEFS.direction.get),byPair:groupProfitability(src,PARAM_DEFS.pair.get),byDivergenceMain:multi(t=>t.divergenceMain||[]),byDivergenceEntry:multi(t=>t.divergenceEntry||[]),byWeekday:groupProfitability(src,t=>weekdayFromDateStr(t.date)),bySystem:groupProfitability(src,t=>t.system),bySession:groupProfitability(src,sessionLabelOf),byTrend:groupProfitability(src,PARAM_DEFS.trend.get),byRR:groupProfitability(src,PARAM_DEFS.rr.get),byBias:groupProfitability(src,PARAM_DEFS.bias.get),byFractal:groupProfitability(src,PARAM_DEFS.fractal.get),byMainTrend:groupProfitability(src,PARAM_DEFS.mainTrend.get),byCondition:groupProfitability(src,PARAM_DEFS.condition.get),byTrig:multi(t=>(t.trigs&&t.trigs.length)?t.trigs:(t.trig?[t.trig]:[])),byTarget:multi(t=>(t.targets&&t.targets.length)?t.targets:(t.target?[t.target]:[])),byStop:multi(t=>(t.stops&&t.stops.length)?t.stops:(t.stop?[t.stop]:[])),byNews:groupProfitability(src,PARAM_DEFS.news.get),byDuration:groupProfitability(src,t=>durationBucketFa(t.durationMinutes)),bySetupReadiness:groupProfitability(src,PARAM_DEFS.setupReadiness.get),byChartReadiness:groupProfitability(src,PARAM_DEFS.chartReadiness.get),bySystemWeekday:groupProfitability(src,t=>`${t.system||"-"} | ${weekdayFromDateStr(t.date)}`).slice(0,8),bySessionLot:groupProfitability(src,t=>`${sessionLabelOf(t)} | لات ${t.lot}`).slice(0,8),source:src};
     }
-    function exportDashboardStatisticalExcel(){const d=dashboardStatExportData(),wb=XLSX.utils.book_new(),mk=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["پارامتر","سودآوری"],...a.map(x=>[x.name,x.value])]),n.slice(0,31));[["سودآوری-لات",d.byLot],["سودآوری-روزهفته",d.byWeekday],["سودآوری-سیستم",d.bySystem],["سودآوری-سشن",d.bySession],["سودآوری-روند",d.byTrend],["سودآوری-RR",d.byRR],["سودآوری-آمادگی-ستاپ",d.bySetupReadiness],["سودآوری-ارزیابی-چارت",d.byChartReadiness],["سودآوری-بایاس",d.byBias],["سودآوری-فراکتال",d.byFractal],["سودآوری-شرایط",d.byCondition],["سودآوری-Trig",d.byTrig],["سودآوری-Target",d.byTarget],["سودآوری-Stop",d.byStop],["سودآوری-خبر",d.byNews],["سودآوری-مدت",d.byDuration],["ترکیب-سیستم-روز",d.bySystemWeekday],["ترکیب-سشن-لات",d.bySessionLot]].forEach(x=>mk(x[0],x[1]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["حساب‌های مبنا"],...(dashboardSelectedAccounts||[]).map(c=>[c])]),"حساب‌های مبنا");XLSX.writeFile(wb,`namello-statistical-dashboard-${activeAccount}-${todayStr}.xlsx`)}
-    function exportDashboardStatisticalPdf(){const d=dashboardStatExportData(),sec=(n,a)=>({name:n,header:["پارامتر","سودآوری"],rows:a.map(x=>[x.name,x.value])});exportMultiTablesAsPdf("خروجی تحلیل آماری",[{name:"حساب‌های مبنا",header:["حساب"],rows:(dashboardSelectedAccounts||[]).map(c=>[c])},sec("سودآوری بر اساس لات",d.byLot),sec("سودآوری بر اساس روز هفته",d.byWeekday),sec("سودآوری بر اساس سیستم",d.bySystem),sec("سودآوری بر اساس سشن",d.bySession),sec("سودآوری بر اساس روند",d.byTrend),sec("سودآوری بر اساس R:R",d.byRR),sec("سودآوری بر اساس آمادگی ستاپ",d.bySetupReadiness),sec("سودآوری بر اساس ارزیابی چارت",d.byChartReadiness),sec("سودآوری بر اساس بایاس",d.byBias),sec("سودآوری بر اساس فراکتال",d.byFractal),sec("سودآوری بر اساس شرایط بازار",d.byCondition),sec("سودآوری بر اساس ورود/TP/SL",d.byTrig.concat(d.byTarget,d.byStop)),sec("سودآوری بر اساس خبر",d.byNews),sec("سودآوری بر اساس مدت معامله",d.byDuration)])}
+    function exportDashboardStatisticalExcel(){const d=dashboardStatExportData(),wb=XLSX.utils.book_new(),mk=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["پارامتر","سودآوری"],...a.map(x=>[x.name,x.value])]),n.slice(0,31));[["سودآوری-لات",d.byLot],["سودآوری-ریسک-دلاری",d.byRiskDollar],["سودآوری-احتمال-ذهنی",d.bySubjectiveSuccessProb],["سودآوری-احتمال-محاسباتی",d.byCalculatedSuccessProb],["سودآوری-جهت",d.byDirection],["سودآوری-نماد",d.byPair],["سودآوری-واگرایی-اصلی",d.byDivergenceMain],["سودآوری-واگرایی-ورود",d.byDivergenceEntry],["سودآوری-روزهفته",d.byWeekday],["سودآوری-سیستم",d.bySystem],["سودآوری-سشن",d.bySession],["سودآوری-روند",d.byTrend],["سودآوری-RR",d.byRR],["سودآوری-آمادگی-ستاپ",d.bySetupReadiness],["سودآوری-ارزیابی-چارت",d.byChartReadiness],["سودآوری-بایاس",d.byBias],["سودآوری-فراکتال",d.byFractal],["سودآوری-شرایط",d.byCondition],["سودآوری-Trig",d.byTrig],["سودآوری-Target",d.byTarget],["سودآوری-Stop",d.byStop],["سودآوری-خبر",d.byNews],["سودآوری-مدت",d.byDuration],["ترکیب-سیستم-روز",d.bySystemWeekday],["ترکیب-سشن-لات",d.bySessionLot]].forEach(x=>mk(x[0],x[1]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["حساب‌های مبنا"],...(dashboardSelectedAccounts||[]).map(c=>[c])]),"حساب‌های مبنا");XLSX.writeFile(wb,`namello-statistical-dashboard-${activeAccount}-${todayStr}.xlsx`)}
+    function exportDashboardStatisticalPdf(){const d=dashboardStatExportData(),sec=(n,a)=>({name:n,header:["پارامتر","سودآوری"],rows:a.map(x=>[x.name,x.value])});exportMultiTablesAsPdf("خروجی تحلیل آماری",[{name:"حساب‌های مبنا",header:["حساب"],rows:(dashboardSelectedAccounts||[]).map(c=>[c])},sec("سودآوری بر اساس لات",d.byLot),sec("سودآوری بر اساس ریسک دلاری",d.byRiskDollar),sec("سودآوری بر اساس احتمال موفقیت ذهنی",d.bySubjectiveSuccessProb),sec("سودآوری بر اساس احتمال موفقیت محاسباتی",d.byCalculatedSuccessProb),sec("سودآوری بر اساس جهت معامله",d.byDirection),sec("سودآوری بر اساس نماد",d.byPair),sec("سودآوری بر اساس واگرایی تایم اصلی",d.byDivergenceMain),sec("سودآوری بر اساس واگرایی تایم ورود",d.byDivergenceEntry),sec("سودآوری بر اساس روز هفته",d.byWeekday),sec("سودآوری بر اساس سیستم",d.bySystem),sec("سودآوری بر اساس سشن",d.bySession),sec("سودآوری بر اساس روند",d.byTrend),sec("سودآوری بر اساس R:R",d.byRR),sec("سودآوری بر اساس آمادگی ستاپ",d.bySetupReadiness),sec("سودآوری بر اساس ارزیابی چارت",d.byChartReadiness),sec("سودآوری بر اساس بایاس",d.byBias),sec("سودآوری بر اساس فراکتال",d.byFractal),sec("سودآوری بر اساس شرایط بازار",d.byCondition),sec("سودآوری بر اساس ورود/TP/SL",d.byTrig.concat(d.byTarget,d.byStop)),sec("سودآوری بر اساس خبر",d.byNews),sec("سودآوری بر اساس مدت معامله",d.byDuration)])}
     function dashboardAdvancedExportData(){const src=(dashboardSelectedTrades||[]).filter(t=>t.status==="closed"),m=nmDashMetrics(src,dashboardStartingBalance),a=nmAdvancedStats(src,dashboardStartingBalance),x=src.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae))),eff=src.filter(t=>Number.isFinite(Number(t.exitEfficiency))),mistakes={};src.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>mistakes[k]=(mistakes[k]||0)+1));const edge=fn=>{const map={};src.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return[name,ts.length,mm.pnl,mm.winRate,mm.expectancy]})};return{src,m,a,avgM:x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA:x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null,mistakes,session:edge(nmDashSession),setup:edge(nmDashSetup)}}
     function exportDashboardAdvancedExcel(){const d=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("شاخص‌های ارزیابی",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Ulcer",d.a.ulcer],["Avg Hold (min)",d.a.avgHold??"—"],["میانگین آمادگی ستاپ (%)",d.a.avgSetupReadiness??"—"],["میانگین ارزیابی چارت (%)",d.a.avgChartReadiness??"—"],["Early Exit",d.a.exits.early],["Round-trip",d.a.exits.roundTrip],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]);add("Session Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.session]);add("Setup Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(d.mistakes)]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات ارزیابی",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...d.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-advanced-evaluation-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardAdvancedPdf(){const d=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی ارزیابی پیشرفته",[{name:"شاخص‌های ریسک و خروج",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(d.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
@@ -8362,6 +8401,13 @@ function App() {
                         { label: "حد سود (TP)", data: byTarget },
                         { label: "حد ضرر (SL)", data: byStop },
                         { label: "R-multiple", data: byRR },
+                        { label: "ریسک دلاری", data: byRiskDollar },
+                        { label: "احتمال موفقیت ذهنی", data: bySubjectiveSuccessProb },
+                        { label: "احتمال موفقیت محاسباتی", data: byCalculatedSuccessProb },
+                        { label: "جهت معامله", data: byDirection },
+                        { label: "نماد", data: byPair },
+                        { label: "واگرایی تایم اصلی", data: byDivergenceMain },
+                        { label: "واگرایی تایم ورود", data: byDivergenceEntry },
                         { label: "آمادگی ستاپ (%)", data: bySetupReadiness },
                         { label: "ارزیابی چارت (%)", data: byChartReadiness },
                         { label: "حجم (لات)", data: byLot },
@@ -9945,7 +9991,7 @@ function App() {
                         React.createElement("button", { type: "button", onClick: () => setRrEditMode(m => !m), style: { position: "absolute", top: -6, left: -6, zIndex: 1, background: rrEditMode ? "#F8717122" : "var(--bg-card2)", border: `1px solid ${rrEditMode ? "#F8717155" : "var(--border-2)"}`, borderRadius: 8, padding: 4 }, "aria-label": "\u062D\u0630\u0641 \u06AF\u0632\u06CC\u0646\u0647\u200C\u0647\u0627" },
                             React.createElement(Trash2, { size: 11, color: rrEditMode ? "#F87171" : "var(--text-muted)" })),
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, rrOptions.map(opt => (React.createElement("span", { key: opt, className: "flex items-center gap-1 px-3 py-2 rounded-lg text-[12px] mono", style: { background: openForm.rrReward === opt ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: openForm.rrReward === opt ? "var(--accent-gold)" : "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } },
-                            React.createElement("button", { type: "button", onClick: () => setOpenForm({ ...openForm, rrReward: opt }) }, opt),
+                            React.createElement("button", { type: "button", onClick: () => { setOpenForm({ ...openForm, rrReward: opt }); setNewRrText(String(opt)); } }, opt),
                             rrEditMode && (React.createElement("button", { type: "button", onClick: e => { e.stopPropagation(); removeRrOption(opt); if (openForm.rrReward === opt)
                                     setOpenForm(f => ({ ...f, rrReward: "" })); } },
                                 React.createElement(X, { size: 10 }))))))),
@@ -9964,12 +10010,12 @@ function App() {
                                 React.createElement(ChevronDown, { size: 12, color: "var(--text-muted)" })),
                             React.createElement("input", { value: opt, onChange: e => renameRiskOption(i, e.target.value), className: "bg-transparent outline-none text-[12px] mono", style: { color: "var(--text-primary)", width: Math.max(2, opt.length) + "ch", fontFamily: "JetBrains Mono, monospace" } }),
                             React.createElement("button", { type: "button", onClick: () => removeRiskOption(opt) },
-                                React.createElement(X, { size: 10, color: "#F87171" })))) : (React.createElement("button", { key: i, type: "button", onClick: () => setOpenForm({ ...openForm, riskDollar: opt }), className: "px-3 py-1.5 rounded-lg text-[12px] mono", style: { background: openForm.riskDollar === opt ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: openForm.riskDollar === opt ? "var(--accent-gold)" : "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } }, opt)))),
+                                React.createElement(X, { size: 10, color: "#F87171" })))) : (React.createElement("button", { key: i, type: "button", onClick: () => { setOpenForm({ ...openForm, riskDollar: opt }); setNewRiskText(String(opt)); }, className: "px-3 py-1.5 rounded-lg text-[12px] mono", style: { background: openForm.riskDollar === opt ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: openForm.riskDollar === opt ? "var(--accent-gold)" : "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } }, opt)))),
                         React.createElement("div", { className: "flex gap-1.5 mb-2" },
                             React.createElement("input", { type: "text", inputMode: "decimal", value: newRiskText, onChange: e => setNewRiskText(e.target.value), onKeyDown: e => e.key === "Enter" && addRiskOptionInline(), placeholder: "\u062D\u0627\u0644\u062A \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addRiskOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))),
-                        React.createElement("input", { type: "number", inputMode: "decimal", value: openForm.riskDollar, onChange: e => setOpenForm({ ...openForm, riskDollar: e.target.value }), placeholder: "\u06CC\u0627 \u0645\u0642\u062F\u0627\u0631 \u062F\u0642\u06CC\u0642 \u0631\u0648 \u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633...", className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
+                        React.createElement("input", { type: "number", inputMode: "decimal", value: openForm.riskDollar, onChange: e => { const v=e.target.value; setOpenForm({ ...openForm, riskDollar: v }); setNewRiskText(v); }, placeholder: "\u06CC\u0627 \u0645\u0642\u062F\u0627\u0631 \u062F\u0642\u06CC\u0642 \u0631\u0648 \u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633...", className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
                 openForm.riskDollar !== "" && !isNaN(parseFloat(openForm.riskDollar)) && derived.currentBalance > 0 && (React.createElement("p", { className: "text-[11px] mb-2", style: { color: "var(--text-muted)" } },
                     "= ",
                     React.createElement("b", { style: { color: "var(--accent-gold)" } },
@@ -10063,7 +10109,9 @@ function App() {
  const e=Number(r.entry), sl=Number(r.stop), tp=Number(r.target);
  if(Number.isFinite(e)&&Number.isFinite(sl)&&Number.isFinite(tp)&&sl!==e){
    const rrVal=openForm.direction==='sell' ? ((e-tp)/(sl-e)) : ((tp-e)/(e-sl));
-   if(Number.isFinite(rrVal)&&rrVal>0){ const rrText=String(Math.round(rrVal*100)/100); if(!rrOptions.includes(rrText)) persistRrOptions([...rrOptions,rrText]); }
+   if(Number.isFinite(rrVal)&&rrVal>0){ const rrText=String(Math.round(rrVal*100)/100); if(!rrOptions.includes(rrText)) persistRrOptions([...rrOptions,rrText]); setNewRrText(rrText); }
+   const mirrorEntry=Number(r.entry!=null?r.entry:openForm.entry), mirrorStop=Number(r.stop!=null?r.stop:openForm.plannedStopPrice), mirrorLot=Number(openForm.lot);
+   if(Number.isFinite(mirrorEntry)&&Number.isFinite(mirrorStop)&&Number.isFinite(mirrorLot)&&mirrorLot>0){ const mirrorRisk=Math.abs(mirrorEntry-mirrorStop)/pipSize(openForm.pair)*pipValuePerLot(openForm.pair)*mirrorLot; if(Number.isFinite(mirrorRisk)&&mirrorRisk>0) setNewRiskText(String(Math.round(mirrorRisk*100)/100)); }
  }
  const msgs=[]; if(r.entry!=null) msgs.push('Entry'); if(r.target!=null) msgs.push('TP'); if(r.stop!=null) msgs.push('SL');
  msgs.push('R-multiple'); if(Number.isFinite(Number(openForm.lot))&&Number(openForm.lot)>0) msgs.push('ریسک $');
