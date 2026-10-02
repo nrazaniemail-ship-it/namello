@@ -2462,11 +2462,13 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.14";
-const NM_VERSION_CODE = 47;
+const NM_VERSION_NAME = "1.22.15";
+const NM_VERSION_CODE = 48;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
+const NM_VERSION_DATE = "۱۰ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.15: بررسی تطبیقی Trading Journal، FX Journal و TraderSync انجام شد؛ Strategy Checker قبل از ورود، ذخیره پاسخ‌های Plan در Review و محاسبه R:R برنامه‌ریزی‌شده از روی TP/SL قیمتی اضافه شد.",
+    "نسخه 1.22.15: قابلیت‌های موجود Namello مثل Psychology، اسکرین‌شات و Voice Note، فیلترهای ژورنال، Replay/What-if، MFE/MAE، Plan Analysis و Journal Coach حفظ و با قابلیت‌های مشابه اپ‌های بررسی‌شده یکپارچه شدند.",
     "نسخه 1.22.14: «ارزیابی استیتمنت» از لایه مستقل به Dashboard منتقل شد؛ برای هر تحلیل آماری/ارزیابی پیشرفته می‌توان منبع ژورنال یا استیتمنت را انتخاب کرد و استیتمنت MT4/MT5/CSV/Excel را مستقیماً به حساب مبنا وارد کرد.",
     "نسخه 1.22.14: دکمه «نصب Namello به‌عنوان اپ» بازطراحی شد؛ دریافت beforeinstallprompt پایدارتر شد و در صورت نبودن prompt، مسیر رسمی Chrome برای Install app به‌صورت واضح راهنمایی می‌شود.",
     "نسخه 1.22.14: لوگوی لایه ژورنال با لوگوی جدید ارسالی جایگزین شد.",
@@ -4805,9 +4807,24 @@ React.createElement("section",{className:"rounded-2xl p-3 mt-3 mb-3",style:{back
 
 
 
-function NmPlanChecklistField({plan,answers,onChange}){
- return React.createElement(Field,{label:"Trade Plan / Checklist"},
-   React.createElement("div",{className:"space-y-1.5"},(plan.conditions||[]).map(c=>
+function nmPlanChecklistScore(plan, answers){
+ const cs=plan?.conditions||[];
+ if(!cs.length) return null;
+ const answered=cs.filter(c=>answers?.[c.id]!==undefined && answers?.[c.id]!==null && answers?.[c.id]!=="");
+ const yes=cs.filter(c=>c.type==="checkbox" && answers?.[c.id]===true).length;
+ const no=cs.filter(c=>c.type==="checkbox" && answers?.[c.id]===false).length;
+ const scored=cs.filter(c=>c.type==="checkbox");
+ return {total:cs.length,answered:answered.length,yes,no,score:scored.length?Math.round((yes/scored.length)*100):null};
+}
+
+function NmPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist"}){
+ const score=nmPlanChecklistScore(plan,answers);
+ return React.createElement(Field,{label},
+   React.createElement(React.Fragment,null,
+    score && React.createElement("div",{className:"rounded-lg px-2.5 py-2 mb-1.5 flex items-center justify-between",style:{background:score.no?"#F8717110":"#34D39910",border:"1px solid "+(score.no?"#F8717138":"#34D39938")}},
+      React.createElement("span",{className:"text-[10px]",style:{color:"var(--text-secondary)"}},"آمادگی ستاپ: ",React.createElement("b",{style:{color:score.no?"#F87171":"#34D399"}},score.score===null?"—":score.score+"%")," · ",score.answered,"/",score.total," پاسخ"),
+      React.createElement("span",{className:"text-[9px]",style:{color:score.no?"#F87171":"var(--text-muted)"}},score.no?score.no+" نقض قانون":"بدون نقض قانون")),
+    React.createElement("div",{className:"space-y-1.5"},(plan.conditions||[]).map(c=>
      React.createElement("div",{key:c.id,className:"rounded-lg px-2.5 py-2",style:{background:"var(--bg-card2)"}},
        React.createElement("div",{className:"flex items-center justify-between gap-2"},
          React.createElement("span",{className:"text-[10px]",style:{color:"var(--text-secondary)"}},c.label),
@@ -4817,6 +4834,7 @@ function NmPlanChecklistField({plan,answers,onChange}){
        )
      )
    )
+  )
   )
  );
 }
@@ -6865,7 +6883,7 @@ function App() {
             marketBias: d.marketBias, marketCondition: d.marketCondition, wave: d.wave, trigs: d.trigs || [], targets: d.targets || [], stops: d.stops || [],
             reversalPatterns: d.reversalPatterns || [],
             divergenceMain: d.divergenceMain || [], divergenceEntry: d.divergenceEntry || [],
-            successProb: "", psychology: [],
+            successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: {},
             chartImageMain: "", chartImageEntryStart: "", voiceNoteBefore: "",
         });
         setShowOpenForm(true);
@@ -6877,6 +6895,15 @@ function App() {
         const tags = tagsForMinutes(config, hh * 60 + mi, now.dst);
         const riskDollar = openForm.riskDollar === "" ? null : parseFloat(openForm.riskDollar);
         const riskPercent = riskDollar !== null && derived.currentBalance > 0 ? Math.round((riskDollar / derived.currentBalance) * 10000) / 100 : null;
+        const plannedTargetPrice = openForm.plannedTargetPrice === "" ? null : parseFloat(openForm.plannedTargetPrice);
+        const plannedStopPrice = openForm.plannedStopPrice === "" ? null : parseFloat(openForm.plannedStopPrice);
+        const plannedEntryPrice = openForm.entry === "" ? null : parseFloat(openForm.entry);
+        const plannedRR = plannedEntryPrice !== null && plannedTargetPrice !== null && plannedStopPrice !== null && Number.isFinite(plannedEntryPrice) && Number.isFinite(plannedTargetPrice) && Number.isFinite(plannedStopPrice)
+            ? (openForm.direction === "sell" ? ((plannedEntryPrice - plannedTargetPrice) / (plannedStopPrice - plannedEntryPrice)) : ((plannedTargetPrice - plannedEntryPrice) / (plannedEntryPrice - plannedStopPrice)))
+            : null;
+        const plan = tradePlans[0] || null;
+        const planAnswers = openForm.planAnswers || {};
+        const ruleViolationsAtEntry = (plan?.conditions || []).filter(c => c.type === "checkbox" && planAnswers[c.id] === false).map(c => c.id);
         const trade = {
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             status: "open", schemaVersion: 2, review: null, mfe: null, mae: null, bestExit: null, exitEfficiency: null,
@@ -6897,10 +6924,12 @@ function App() {
             entry: openForm.entry === "" ? null : parseFloat(openForm.entry),
             lot: openForm.lot, tags,
             rrReward: openForm.rrReward === "" ? null : parseFloat(openForm.rrReward),
+            plannedTargetPrice, plannedStopPrice, plannedRR: plannedRR !== null && Number.isFinite(plannedRR) ? Math.round(plannedRR * 100) / 100 : null,
             riskDollar, riskPercent,
             successProb: openForm.successProb === "" ? null : parseFloat(openForm.successProb),
             calcSuccessProb: calcSuccessProbResult,
             psychology: openForm.psychology || [],
+            review: plan ? { planAnswers: { templateId: plan.id || null, answers: planAnswers }, ruleViolations: ruleViolationsAtEntry, entryChecklistScore: nmPlanChecklistScore(plan, planAnswers) } : null,
             chartImageMain: openForm.chartImageMain || "", chartImageEntryStart: openForm.chartImageEntryStart || "", voiceNoteBefore: openForm.voiceNoteBefore || "",
             chartImageAfter: "", voiceNoteAfter: "",
             newsName: findNewsForTrade(newsEvents, openForm.pair, openForm.date, openForm.time),
@@ -7005,6 +7034,8 @@ function App() {
             exit: t.exit === null || t.exit === undefined ? "" : String(t.exit),
             lot: t.lot || "",
             rrReward: t.rrReward === null || t.rrReward === undefined ? "" : String(t.rrReward),
+            plannedTargetPrice: t.plannedTargetPrice === null || t.plannedTargetPrice === undefined ? "" : String(t.plannedTargetPrice),
+            plannedStopPrice: t.plannedStopPrice === null || t.plannedStopPrice === undefined ? "" : String(t.plannedStopPrice),
             riskDollar: t.riskDollar === null || t.riskDollar === undefined ? "" : String(t.riskDollar),
             successProb: t.successProb === null || t.successProb === undefined ? "" : String(t.successProb),
             psychology: t.psychology || [],
@@ -7067,6 +7098,9 @@ function App() {
                 exit: editForm.exit === "" ? null : parseFloat(editForm.exit),
                 lot: editForm.lot,
                 rrReward: editForm.rrReward === "" ? null : parseFloat(editForm.rrReward),
+                plannedTargetPrice: editForm.plannedTargetPrice === "" ? null : parseFloat(editForm.plannedTargetPrice),
+                plannedStopPrice: editForm.plannedStopPrice === "" ? null : parseFloat(editForm.plannedStopPrice),
+                plannedRR: (() => { const e=Number(editForm.entry),tp=Number(editForm.plannedTargetPrice),sl=Number(editForm.plannedStopPrice); if(!Number.isFinite(e)||!Number.isFinite(tp)||!Number.isFinite(sl)) return null; const rr=editForm.direction==="sell"?((e-tp)/(sl-e)):((tp-e)/(e-sl)); return Number.isFinite(rr)?Math.round(rr*100)/100:null; })(),
                 riskDollar: editForm.riskDollar === "" ? null : parseFloat(editForm.riskDollar),
                 successProb: editForm.successProb === "" ? null : parseFloat(editForm.successProb),
                 psychology: editForm.psychology || [],
@@ -9751,6 +9785,11 @@ React.createElement("div", { className: "px-4 mt-4" },
                         React.createElement("input", { type: "number", inputMode: "decimal", value: openForm.entry, onChange: e => setOpenForm({ ...openForm, entry: e.target.value }), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } })),
                     React.createElement(Field, { label: numLabel(28, appLanguage === "en" ? `Volume (Lot) — suggested: ${derived.nextLot}` : `حجم (لات) — پیشنهادی: ${derived.nextLot}`) },
                         React.createElement("input", { type: "text", inputMode: "decimal", value: openForm.lot, onChange: e => setOpenForm({ ...openForm, lot: e.target.value }), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
+                React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                    React.createElement(Field, { label: "حد سود قیمتی برنامه‌ریزی‌شده (اختیاری)" },React.createElement("input",{type:"number",inputMode:"decimal",value:openForm.plannedTargetPrice,onChange:e=>setOpenForm({...openForm,plannedTargetPrice:e.target.value}),placeholder:"TP Price",className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}})),
+                    React.createElement(Field, { label: "حد ضرر قیمتی برنامه‌ریزی‌شده (اختیاری)" },React.createElement("input",{type:"number",inputMode:"decimal",value:openForm.plannedStopPrice,onChange:e=>setOpenForm({...openForm,plannedStopPrice:e.target.value}),placeholder:"SL Price",className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}}))),
+                (()=>{ const e=Number(openForm.entry),tp=Number(openForm.plannedTargetPrice),sl=Number(openForm.plannedStopPrice); if(!Number.isFinite(e)||!Number.isFinite(tp)||!Number.isFinite(sl)) return null; const rr=openForm.direction==="sell"?((e-tp)/(sl-e)):((tp-e)/(e-sl)); if(!Number.isFinite(rr)) return null; return React.createElement("div",{className:"rounded-lg px-3 py-2 mb-2",style:{background:rr>0?"#34D39910":"#F8717110",border:"1px solid "+(rr>0?"#34D39938":"#F8717138")}},React.createElement("div",{className:"text-[10px]",style:{color:"var(--text-muted)"}},"R:R برنامه‌ریزی‌شده"),React.createElement("div",{className:"text-sm font-bold mono",style:{color:rr>0?"#34D399":"#F87171",fontFamily:"JetBrains Mono, monospace"}},Number(rr).toFixed(2),"R")); })(),
+                tradePlans[0] && React.createElement(NmPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v})),label:"Strategy Checker · چک‌لیست قبل از ورود"}),
                 React.createElement(Field, { label: numLabel(29, appLanguage === "en" ? "Psychology (multi-select)" : "روانشناسی (چند تا هم می‌تونی انتخاب کنی)") },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         React.createElement("button", { type: "button", onClick: () => setPsychEditMode(m => !m), style: { position: "absolute", top: -6, left: -6, zIndex: 1, background: psychEditMode ? "#F8717122" : "var(--bg-card2)", border: `1px solid ${psychEditMode ? "#F8717155" : "var(--border-2)"}`, borderRadius: 8, padding: 4 }, "aria-label": "\u062D\u0630\u0641 \u062D\u0627\u0644\u062A\u200C\u0647\u0627" },
@@ -10006,7 +10045,10 @@ React.createElement("div", { className: "px-4 mt-4" },
                     React.createElement(Field, { label: "\u0642\u06CC\u0645\u062A \u062E\u0631\u0648\u062C" },
                         React.createElement("input", { type: "number", inputMode: "decimal", value: editForm.exit, onChange: e => onEditFieldChange("exit", e.target.value), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
-                    React.createElement(Field, { label: "\u062D\u062C\u0645 (\u0644\u0627\u062A)" },
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                    React.createElement(Field, { label: "TP قیمتی برنامه‌ریزی‌شده" },React.createElement("input",{type:"number",inputMode:"decimal",value:editForm.plannedTargetPrice,onChange:e=>onEditFieldChange("plannedTargetPrice",e.target.value),className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}})),
+                    React.createElement(Field, { label: "SL قیمتی برنامه‌ریزی‌شده" },React.createElement("input",{type:"number",inputMode:"decimal",value:editForm.plannedStopPrice,onChange:e=>onEditFieldChange("plannedStopPrice",e.target.value),className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}}))),
+                React.createElement(Field, { label: "\u062D\u062C\u0645 (\u0644\u0627\u062A)" },
                         React.createElement("input", { type: "text", inputMode: "decimal", value: editForm.lot, onChange: e => onEditFieldChange("lot", e.target.value), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } })),
                     React.createElement(Field, { label: "\u0631\u06CC\u0633\u06A9 \u0645\u0639\u0627\u0645\u0644\u0647 ($)" },
                         React.createElement("input", { type: "number", inputMode: "decimal", value: editForm.riskDollar, onChange: e => onEditFieldChange("riskDollar", e.target.value), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
