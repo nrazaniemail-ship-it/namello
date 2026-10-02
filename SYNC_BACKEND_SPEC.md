@@ -1,36 +1,29 @@
-# Namello 1.21 — Account & Sync Backend Contract
+# Namello 1.22 — Backend Account & Sync
 
-## هدف
-این نسخه Sync را به‌صورت client-side encrypted envelope آماده می‌کند. Google فقط هویت/مجوز Drive را فراهم می‌کند؛ سرور نباید رمزگشایی داده‌های معاملاتی را انجام دهد.
+## Architecture
+- Google ID token is verified **server-side**.
+- `google_sub` is the stable account identifier; email is profile metadata only.
+- Namello creates a short-lived HMAC session token after successful Google verification.
+- Google access/refresh tokens are not required for Namello sync and are not stored.
+- The client encrypts all journal data with AES-256-GCM + PBKDF2-SHA256 before upload.
+- Backend stores only the encrypted envelope plus non-secret revision metadata.
 
-## Identity
-- Google OAuth/OIDC access token باید در backend با Google token verification بررسی شود.
-- `sub` شناسه پایدار کاربر است؛ email فقط attribute است و نباید primary key باشد.
-- client نباید access token را در localStorage/IndexedDB ذخیره کند.
-
-## Sync envelope
-- `kind: namello-sync`
-- `schema: 3`
-- `meta.revision`: عدد افزایشی
-- `meta.deviceId`: شناسه دستگاه غیرحساس
-- `meta.updatedAt`: ISO-8601
-- `meta.appVersion`: نسخه Namello
-- `alg: AES-GCM`
-- `kdf: PBKDF2-SHA256`
-- `iterations: 210000`
-- `salt`, `iv`, `data`: base64url
-
-## Conflict
-1. revision بالاتر: نسخه جدیدتر است، اما قبل از overwrite باید policy مشخص شود.
-2. revision برابر ولی timestamp متفاوت: Conflict؛ هیچ overwrite خودکاری انجام نشود.
-3. client باید نسخه محلی را تا تأیید کاربر نگه دارد.
-4. backend بهتر است immutable revisions نگه دارد تا rollback ممکن باشد.
-
-## Backend API پیشنهادی
+## API
 - `POST /v1/auth/google/verify`
+- `POST /v1/auth/logout`
+- `GET /v1/me`
 - `GET /v1/sync/latest`
-- `PUT /v1/sync/revisions/{revision}`
-- `GET /v1/sync/revisions/{revision}`
+- `GET /v1/sync/revisions/:revision`
+- `PUT /v1/sync/revisions/:revision` with `If-Match` optimistic concurrency
 - `DELETE /v1/account`
 
-سرور فقط envelope رمزگذاری‌شده را ذخیره می‌کند و به plaintext معاملات دسترسی ندارد.
+## Conflict model
+- Server revision is monotonic and immutable.
+- Client sends `If-Match: currentRevision`.
+- A stale writer receives HTTP 409 and no overwrite occurs.
+- A client that discovers a newer server revision asks the user before replacing local data.
+- Server retains all revisions for rollback/audit until the account is deleted.
+
+## Deployment
+See `backend/README.md` and `backend/.env.example`.
+Use HTTPS in production and restrict `CORS_ORIGINS` to the actual PWA/Android web origin(s).

@@ -1,12 +1,7 @@
 {
-  "name": "1.21.0",
-  "code": 32,
-  "date": "۱۵ مهر ۱۴۰۵",
-  "changes": [
-    "امنیت داده: پشتیبان رمزگذاری‌شده AES-256-GCM با PBKDF2-SHA256",
-    "Google Sign-In برای پروفایل هویتی بدون ذخیره رمز Google",
-    "Google Drive App Data برای پشتیبان خصوصی و رمزگذاری‌شده",
-    "بازیابی داده و وضعیت آخرین پشتیبان در مرکز امنیت"
-  ],
-  "label": "Namello 1.21.0"
+  "name": "1.22.2",
+  "versionCode": 35,
+  "channel": "stable",
+  "date": "2026-10-02",
+  "label": "Namello 1.22.2"
 }

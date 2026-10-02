@@ -2439,8 +2439,8 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.21.0";
-const NM_VERSION_CODE = 32;
+const NM_VERSION_NAME = "1.22.2";
+const NM_VERSION_CODE = 35;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
@@ -4719,9 +4719,10 @@ const NM_DEVICE_KEY = "namello_device_id_v1";
 function nmDeviceId(){ let id=localStorage.getItem(NM_DEVICE_KEY); if(!id){ id=(crypto.randomUUID?crypto.randomUUID():"nm-"+Date.now()+"-"+Math.random().toString(16).slice(2)); try{localStorage.setItem(NM_DEVICE_KEY,id)}catch(e){} } return id; }
 function nmSyncState(){ return nmSecRead(NM_SYNC_STATE_KEY,{revision:0,updatedAt:null,lastRemoteAt:null,lastStatus:"local-only",conflictCount:0}); }
 function nmSaveSyncState(p){ const n={...nmSyncState(),...p}; nmSecWrite(NM_SYNC_STATE_KEY,n); return n; }
-async function nmBuildSyncEnvelope(pass){
+async function nmBuildSyncEnvelope(pass,revisionOverride=null){
   const state=nmSyncState(), data=await nmCollectAllData();
-  const meta={schema:3,revision:Number(state.revision||0)+1,deviceId:nmDeviceId(),updatedAt:new Date().toISOString(),appVersion:NM_VERSION_NAME};
+  const nextRevision=revisionOverride==null?Number(state.revision||0)+1:Number(revisionOverride);
+  const meta={schema:3,revision:nextRevision,deviceId:nmDeviceId(),updatedAt:new Date().toISOString(),appVersion:NM_VERSION_NAME};
   const pack=await nmEncryptJson({meta,data},pass); pack.kind="namello-sync"; pack.meta=meta; return pack;
 }
 async function nmDecodeSyncEnvelope(pack,pass){
@@ -4749,9 +4750,87 @@ function nmGoogleCfg(){ return nmSecRead(NM_GOOGLE_CFG_KEY,{clientId:"",driveEna
 function nmGoogleProfile(){ try{return JSON.parse(localStorage.getItem(NM_GOOGLE_PROFILE_KEY)||"null");}catch(e){return null;} }
 function nmGoogleDecodeJwt(token){ const part=String(token||"").split(".")[1]; if(!part) throw new Error("Google credential نامعتبر است."); return JSON.parse(new TextDecoder().decode(nmUnb64(part))); }
 function nmLoadGoogleScript(){ return new Promise((resolve,reject)=>{ if(window.google?.accounts?.id)return resolve(); const old=document.querySelector('script[data-namello-google]'); if(old){old.addEventListener("load",resolve,{once:true});old.addEventListener("error",reject,{once:true});return;} const sc=document.createElement("script"); sc.src="https://accounts.google.com/gsi/client"; sc.async=true;sc.defer=true;sc.dataset.namelloGoogle="1";sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc); }); }
-async function nmGoogleSignIn(onProfile){ const cfg=nmGoogleCfg(); if(!cfg.clientId) throw new Error("اول Google OAuth Client ID را در تنظیمات وارد کن."); await nmLoadGoogleScript(); await new Promise((resolve,reject)=>{ let done=false; window.__nmGoogleResolve=(credential)=>{try{const p=nmGoogleDecodeJwt(credential); if(!p.sub)throw new Error("شناسه Google یافت نشد."); const profile={sub:p.sub,email:p.email||"",name:p.name||"",picture:p.picture||"",verified:!!p.email_verified,signedAt:new Date().toISOString()}; nmSecWrite(NM_GOOGLE_PROFILE_KEY,profile); onProfile(profile); done=true;resolve();}catch(e){reject(e)}}; google.accounts.id.initialize({client_id:cfg.clientId,callback:r=>window.__nmGoogleResolve(r.credential),auto_select:false,cancel_on_tap_outside:true}); const host=document.createElement("div");host.style.position="fixed";host.style.left="-99999px";document.body.appendChild(host);google.accounts.id.renderButton(host,{theme:"outline",size:"large",text:"signin_with",shape:"pill"});setTimeout(()=>{const btn=host.querySelector("div[role=button]");if(btn)btn.click();},50);setTimeout(()=>{if(!done)reject(new Error("ورود Google در زمان مجاز انجام نشد."));host.remove();},120000); }); }
+async function nmGoogleSignIn(onProfile,onCredential){ const cfg=nmGoogleCfg(); if(!cfg.clientId) throw new Error("اول Google OAuth Client ID را در تنظیمات وارد کن."); await nmLoadGoogleScript(); await new Promise((resolve,reject)=>{ let done=false; window.__nmGoogleResolve=(credential)=>{try{const p=nmGoogleDecodeJwt(credential); if(!p.sub)throw new Error("شناسه Google یافت نشد."); const profile={sub:p.sub,email:p.email||"",name:p.name||"",picture:p.picture||"",verified:!!p.email_verified,signedAt:new Date().toISOString()}; nmSecWrite(NM_GOOGLE_PROFILE_KEY,profile); onProfile(profile); if(onCredential) onCredential(credential); done=true;resolve();}catch(e){reject(e)}}; google.accounts.id.initialize({client_id:cfg.clientId,callback:r=>window.__nmGoogleResolve(r.credential),auto_select:false,cancel_on_tap_outside:true}); const host=document.createElement("div");host.style.position="fixed";host.style.left="-99999px";document.body.appendChild(host);google.accounts.id.renderButton(host,{theme:"outline",size:"large",text:"signin_with",shape:"pill"});setTimeout(()=>{const btn=host.querySelector("div[role=button]");if(btn)btn.click();},50);setTimeout(()=>{if(!done)reject(new Error("ورود Google در زمان مجاز انجام نشد."));host.remove();},120000); }); }
 async function nmDriveAccessToken(clientId){ await nmLoadGoogleScript(); return await new Promise((resolve,reject)=>{ const tokenClient=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:"https://www.googleapis.com/auth/drive.appdata",callback:r=>r.error?reject(new Error(r.error)):resolve(r.access_token)}); tokenClient.requestAccessToken({prompt:"consent"}); }); }
 async function nmDriveUpload(pack,clientId){ const token=await nmDriveAccessToken(clientId); const boundary="namello_"+Math.random().toString(16).slice(2); const meta=JSON.stringify({name:"namello-secure-backup.json",parents:["appDataFolder"]}); const body=JSON.stringify(pack); const payload='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+body+'\r\n--'+boundary+'--'; const r=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"multipart/related; boundary="+boundary},body:payload}); if(!r.ok) throw new Error("Google Drive: "+r.status); return await r.json(); }
+const NM_BACKEND_CFG_KEY = "namello_backend_config_v1";
+const NM_BACKEND_SESSION_KEY = "namello_backend_session_v1";
+function nmBackendCfg(){ return nmSecRead(NM_BACKEND_CFG_KEY,{baseUrl:"http://localhost:8787"}); }
+function nmBackendSession(){ try{return JSON.parse(sessionStorage.getItem(NM_BACKEND_SESSION_KEY)||"null");}catch(e){return null;} }
+function nmSaveBackendSession(v){ try{if(v)sessionStorage.setItem(NM_BACKEND_SESSION_KEY,JSON.stringify(v));else sessionStorage.removeItem(NM_BACKEND_SESSION_KEY);}catch(e){} }
+async function nmBackendRequest(path,options={}){
+  const cfg=nmBackendCfg(); if(!cfg.baseUrl) throw new Error("آدرس Backend را وارد کن.");
+  const session=nmBackendSession(); const headers={"Content-Type":"application/json",...(options.headers||{})};
+  if(session?.token) headers.Authorization="Bearer "+session.token;
+  const r=await fetch(cfg.baseUrl.replace(/\/$/,"")+path,{...options,headers});
+  let body=null; try{body=await r.json();}catch(e){}
+  if(!r.ok){ const err=new Error(body?.error||("Backend HTTP "+r.status)); err.status=r.status; err.body=body; throw err; }
+  return body;
+}
+async function nmBackendDevLogin(onUpdate){
+  const result=await nmBackendRequest("/v1/auth/dev",{method:"POST",body:"{}"});
+  nmSaveBackendSession(result); onUpdate?.({session:result}); return result;
+}
+async function nmBackendGoogleLogin(onUpdate){
+  const cfg=nmGoogleCfg(); if(!cfg.clientId) return nmBackendDevLogin(onUpdate);
+  let credential="";
+  await nmGoogleSignIn((p)=>onUpdate?.({profile:p}), (token)=>{credential=token;});
+  const result=await nmBackendRequest("/v1/auth/google/verify",{method:"POST",body:JSON.stringify({idToken:credential})});
+  nmSaveBackendSession(result); onUpdate?.({session:result}); return result;
+}
+async function nmBackendLogout(){ const s=nmBackendSession(); if(s?.token){try{await nmBackendRequest("/v1/auth/logout",{method:"POST",body:"{}"});}catch(e){}} nmSaveBackendSession(null); }
+async function nmBackendSync(pass){
+  if(pass.length<10) throw new Error("گذرواژه Sync حداقل ۱۰ کاراکتر باشد.");
+  const local=nmSyncState(); let remote=null;
+  try{remote=await nmBackendRequest("/v1/sync/latest");}catch(e){if(e.status!==404)throw e;}
+  const serverRevision=Number(remote?.revision||0), localRevision=Number(local.revision||0);
+  if(remote && serverRevision>localRevision){
+    const body=await nmDecodeSyncEnvelope(remote.pack,pass);
+    const ok=confirm("نسخه جدیدتری روی حساب Namello وجود دارد. داده محلی با آن جایگزین شود؟");
+    if(!ok){nmSaveSyncState({lastStatus:"remote-newer-preserved-local",lastRemoteAt:remote.updatedAt,conflictCount:Number(local.conflictCount||0)+1});return {status:"preserved",revision:serverRevision};}
+    await nmRestoreAllData(body.data); nmSaveSyncState({revision:serverRevision,updatedAt:remote.updatedAt,lastRemoteAt:remote.updatedAt,lastStatus:"pulled"}); return {status:"pulled",revision:serverRevision};
+  }
+  const nextRevision=serverRevision+1;
+  const pack=await nmBuildSyncEnvelope(pass,nextRevision);
+  try{
+    const out=await nmBackendRequest("/v1/sync/revisions/"+nextRevision,{method:"PUT",headers:{"If-Match":String(serverRevision)},body:JSON.stringify({pack})});
+    nmSaveSyncState({revision:out.revision,updatedAt:pack.meta.updatedAt,lastRemoteAt:pack.meta.updatedAt,lastStatus:"synced"});
+    return {status:"pushed",revision:out.revision};
+  }catch(e){
+    if(e.status===409){nmSaveSyncState({lastStatus:"conflict",conflictCount:Number(local.conflictCount||0)+1}); throw new Error("Conflict: دستگاه دیگری همزمان Sync کرده است. ابتدا دریافت Sync را انجام بده.");}
+    throw e;
+  }
+}
+async function nmBackendPull(pass){
+  if(pass.length<10) throw new Error("گذرواژه Sync حداقل ۱۰ کاراکتر باشد.");
+  const remote=await nmBackendRequest("/v1/sync/latest"); const body=await nmDecodeSyncEnvelope(remote.pack,pass); const local=nmSyncState();
+  if(Number(remote.revision)===Number(local.revision)) return {status:"same",revision:remote.revision};
+  const ok=confirm("نسخه حساب Namello با داده محلی متفاوت است. نسخه حساب جایگزین شود؟");
+  if(!ok){nmSaveSyncState({lastStatus:"pull-cancelled",conflictCount:Number(local.conflictCount||0)+1});return {status:"preserved",revision:remote.revision};}
+  await nmRestoreAllData(body.data); nmSaveSyncState({revision:remote.revision,updatedAt:remote.updatedAt,lastRemoteAt:remote.updatedAt,lastStatus:"pulled"}); return {status:"pulled",revision:remote.revision};
+}
+function NmBackendSyncCard({showToast}){
+  const [cfg,setCfg]=React.useState(()=>nmBackendCfg()); const [session,setSession]=React.useState(()=>nmBackendSession()); const [busy,setBusy]=React.useState(false); const [pass,setPass]=React.useState("");
+  const saveCfg=(p)=>{const n={...cfg,...p};setCfg(n);nmSecWrite(NM_BACKEND_CFG_KEY,n)};
+  const login=async()=>{setBusy(true);try{const r=await nmBackendGoogleLogin(({session:s})=>s&&setSession(s));setSession(r);showToast("حساب Namello با Google در Backend تأیید شد.");}catch(e){showToast("ورود Backend ناموفق بود: "+(e.message||"خطا"));}finally{setBusy(false)}};
+  const sync=async()=>{if(!session?.token){showToast("ابتدا ورود به Backend را انجام بده.");return;}const p=pass||window.prompt("گذرواژه رمزگذاری Sync را وارد کن:");if(!p)return;setBusy(true);try{const r=await nmBackendSync(p);setPass(p);showToast(r.status==="pushed"?"Sync روی سرور ذخیره شد (Revision "+r.revision+").":r.status==="pulled"?"Sync از حساب دریافت شد.":"داده‌ها از قبل همگام بودند.");if(r.status==="pulled")setTimeout(()=>location.reload(),700);}catch(e){showToast("Sync ناموفق بود: "+(e.message||"خطا"));}finally{setBusy(false)}};
+  const pull=async()=>{if(!session?.token){showToast("ابتدا ورود به Backend را انجام بده.");return;}const p=pass||window.prompt("گذرواژه رمزگذاری Sync را وارد کن:");if(!p)return;setBusy(true);try{const r=await nmBackendPull(p);setPass(p);showToast(r.status==="pulled"?"نسخه حساب دریافت شد.":"تغییری برای دریافت نبود.");if(r.status==="pulled")setTimeout(()=>location.reload(),700);}catch(e){showToast("دریافت Sync ناموفق بود: "+(e.message||"خطا"));}finally{setBusy(false)}};
+  const del=async()=>{if(!session?.token)return;if(!confirm("حذف حساب Namello، همه Sessionها و همه revisionهای سرور را حذف می‌کند. داده محلی دستگاه حذف نمی‌شود. ادامه؟"))return;setBusy(true);try{await nmBackendRequest("/v1/account",{method:"DELETE"});nmSaveBackendSession(null);setSession(null);showToast("حساب و داده‌های سرور حذف شد.");}catch(e){showToast("حذف حساب ناموفق بود: "+(e.message||"خطا"));}finally{setBusy(false)}};
+  const st=nmSyncState();
+  return RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+    RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"Namello Backend · حساب و Sync واقعی"),
+    RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"هویت Google سمت سرور بررسی می‌شود؛ سرور فقط نسخه رمزگذاری‌شده داده‌ها را می‌بیند و کلید رمزگشایی نزد تو می‌ماند."),
+    RE("input",{value:cfg.baseUrl,onChange:e=>saveCfg({baseUrl:e.target.value}),placeholder:"http://localhost:8787",className:"w-full rounded-lg px-3 py-2 text-[11px] mb-2 mono",style:{background:"var(--bg-card2)",color:"var(--text-primary)",border:"1px solid var(--border-2)"}}),
+    session ? RE(React.Fragment,null,
+      RE("div",{className:"rounded-lg p-2 mb-2",style:{background:"var(--bg-card2)"}},RE("div",{className:"text-[11px] font-semibold",style:{color:"var(--text-primary)"}},session.user?.name||"Namello User"),RE("div",{className:"text-[9px] mt-1",style:{color:"var(--text-secondary)"}},session.user?.email||"", " · Revision ",String(st.revision||0))),
+      RE("input",{type:"password",value:pass,onChange:e=>setPass(e.target.value),placeholder:"گذرواژه Sync (حداقل ۱۰ کاراکتر)",className:"w-full rounded-lg px-3 py-2 text-[11px] mb-2",style:{background:"var(--bg-card2)",color:"var(--text-primary)",border:"1px solid var(--border-2)"}}),
+      RE("div",{className:"grid grid-cols-2 gap-2"},RE("button",{disabled:busy,onClick:sync,className:"py-2.5 rounded-lg text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},busy?"...":"Sync دوطرفه"),RE("button",{disabled:busy,onClick:pull,className:"py-2.5 rounded-lg text-[11px]",style:{background:"var(--bg-card2)",color:"var(--text-primary)",border:"1px solid var(--border-2)"}},"دریافت نسخه سرور")),
+      RE("div",{className:"flex gap-2 mt-2"},RE("button",{disabled:busy,onClick:async()=>{await nmBackendLogout();setSession(null);showToast("از Backend خارج شدی.");},className:"flex-1 py-2 rounded-lg text-[10px]",style:{background:"var(--bg-card2)",color:"var(--text-secondary)"}},"خروج"),RE("button",{disabled:busy,onClick:del,className:"flex-1 py-2 rounded-lg text-[10px]",style:{background:"#7f1d1d22",color:"#F87171"}},"حذف حساب سرور"))
+    ) : RE("button",{disabled:busy||!cfg.baseUrl,onClick:login,className:"w-full py-2.5 rounded-lg text-[11px]",style:{background:cfg.baseUrl?"var(--accent-gold)":"var(--bg-card2)",color:cfg.baseUrl?"var(--bg-page)":"var(--text-muted)"}},busy?"...":(nmGoogleCfg().clientId?"ورود/ساخت حساب با Google":"ورود آزمایشی محلی")),
+    RE("div",{className:"text-[9px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"وضعیت: ",String(st.lastStatus||"local-only")," · Device ID: ",RE("span",{className:"mono"},nmDeviceId()))
+  );
+}
+
 function NmSecurityAccountCard({showToast}){ const [sec,setSec]=React.useState(()=>nmSecRead(NM_SEC_KEY,NM_SEC_DEFAULT)); const [cfg,setCfg]=React.useState(()=>nmGoogleCfg()); const [profile,setProfile]=React.useState(()=>nmGoogleProfile()); const [busy,setBusy]=React.useState(false); const [pass,setPass]=React.useState(""); const [file,setFile]=React.useState(null); const saveSec=(p)=>{const n={...sec,...p};setSec(n);nmSecWrite(NM_SEC_KEY,n)}; const saveCfg=(p)=>{const n={...cfg,...p};setCfg(n);nmSecWrite(NM_GOOGLE_CFG_KEY,n)};
  const backup=async()=>{if(pass.length<10){showToast("برای پشتیبان رمزگذاری‌شده یک گذرواژه حداقل ۱۰ کاراکتری وارد کن.");return;}setBusy(true);try{const raw=await nmCollectAllData(),pack=await nmEncryptJson(raw,pass);nmDownloadBlob("namello-secure-backup.json",new Blob([JSON.stringify(pack)],{type:"application/json"}));saveSec({lastBackupAt:new Date().toISOString()});showToast("پشتیبان رمزگذاری‌شده ساخته شد.");}catch(e){showToast("ساخت پشتیبان ناموفق بود: "+e.message)}finally{setBusy(false)}};
  const restore=async()=>{if(!file||pass.length<10){showToast("فایل پشتیبان و گذرواژه را وارد کن.");return;}if(!confirm("بازیابی، داده‌های فعلی را با داده‌های پشتیبان ادغام می‌کند. ادامه می‌دهی؟"))return;setBusy(true);try{const pack=JSON.parse(await file.text()),data=await nmDecryptJson(pack,pass),n=await nmRestoreAllData(data);showToast(""+n+" بخش داده بازیابی شد. برنامه را یک‌بار بازخوانی کن.");setTimeout(()=>location.reload(),900);}catch(e){showToast("بازیابی ناموفق بود؛ گذرواژه یا فایل را بررسی کن.");}finally{setBusy(false)}};
@@ -4778,7 +4857,7 @@ function NmSecurityAccountCard({showToast}){ const [sec,setSec]=React.useState((
   RE("div",{className:"text-[10px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"این اتصال هویت Google را برای پروفایل نگه می‌دارد؛ رمز Google هرگز در Namello ذخیره نمی‌شود. برای همگام‌سازی واقعی، OAuth Client ID لازم است."),
   RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"امنیت داده و پشتیبان"),RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"پشتیبان با AES-256-GCM و PBKDF2-SHA256 رمزگذاری می‌شود. گذرواژه روی دستگاه ذخیره نمی‌شود؛ اگر فراموش شود، بازیابی رمزگشایی ممکن نیست."),RE("input",{type:"password",value:pass,onChange:e=>setPass(e.target.value),placeholder:"گذرواژه پشتیبان (حداقل ۱۰ کاراکتر)",className:"w-full rounded-lg px-3 py-2 text-[11px] mb-2",style:{background:"var(--bg-card2)",color:"var(--text-primary)",border:"1px solid var(--border-2)"}}),RE("div",{className:"grid grid-cols-2 gap-2"},RE("button",{disabled:busy,onClick:backup,className:"py-2.5 rounded-lg text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ساخت پشتیبان رمزگذاری‌شده"),RE("label",{className:"py-2.5 rounded-lg text-[11px] text-center cursor-pointer",style:{background:"var(--bg-card2)",color:"var(--text-secondary)",border:"1px solid var(--border-2)"}},"انتخاب فایل بازیابی",RE("input",{type:"file",accept:".json",className:"hidden",onChange:e=>setFile(e.target.files?.[0]||null)}))),file&&RE("div",{className:"text-[10px] mt-2",style:{color:"var(--accent-gold)"}},file.name),RE("button",{disabled:busy||!file,onClick:restore,className:"w-full mt-2 py-2.5 rounded-lg text-[11px]",style:{background:"var(--bg-card2)",color:"var(--text-secondary)",border:"1px solid var(--border-2)"}},"بازیابی پشتیبان"),RE("div",{className:"text-[10px] mt-2",style:{color:"var(--text-muted)"}},"آخرین پشتیبان: "+(sec.lastBackupAt?new Date(sec.lastBackupAt).toLocaleString("fa-IR"):"ثبت نشده"))),
   RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"Google Drive · App Data"),RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"فقط پوشه خصوصی App Data قابل دسترسی برای Namello استفاده می‌شود؛ فایل قبل از ارسال رمزگذاری می‌شود. برای فعال‌سازی باید OAuth Client ID وب را از Google Cloud وارد کنی."),RE("input",{value:cfg.clientId,onChange:e=>saveCfg({clientId:e.target.value}),placeholder:"Google OAuth Web Client ID",className:"w-full rounded-lg px-3 py-2 text-[11px] mb-2 mono",style:{background:"var(--bg-card2)",color:"var(--text-primary)",border:"1px solid var(--border-2)"}}),RE("button",{disabled:busy||!cfg.clientId,onClick:drive,className:"w-full py-2.5 rounded-lg text-[11px]",style:{background:cfg.clientId?"var(--accent-gold)":"var(--bg-card2)",color:cfg.clientId?"var(--bg-page)":"var(--text-muted)"}},"پشتیبان‌گیری امن در Google Drive"),RE("p",{className:"text-[9px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"توکن دسترسی Google فقط در حافظه نشست استفاده می‌شود و در storage برنامه ذخیره نمی‌شود.")),
-  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},(()=>{const st=nmSyncState();return RE(React.Fragment,null,RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"مرکز Sync چنددستگاهی"),RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"هر دستگاه شناسه مستقل دارد؛ داده قبل از ارسال رمزگذاری می‌شود و نسخه/زمان برای تشخیص Conflict نگه‌داری می‌شود."),RE("div",{className:"grid grid-cols-2 gap-2 text-[10px] mb-2"},RE("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},"Revision: ",RE("b",null,String(st.revision||0))),RE("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},"وضعیت: ",RE("b",null,String(st.lastStatus||"local-only")))),RE("div",{className:"text-[9px] leading-5",style:{color:"var(--text-muted)"}},"Device ID: ",RE("span",{className:"mono",style:{direction:"ltr"}},nmDeviceId())))}),RE("div",{className:"text-[9px] leading-5 mt-1",style:{color:"var(--text-muted)"}},"برای Sync خودکارِ بدون دخالت کاربر، در نسخه سرورمحور بعدی باید Backend با اعتبارسنجی توکن Google و Conflict API اضافه شود.")),
+  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},(()=>{const st=nmSyncState();return RE(React.Fragment,null,RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"مرکز Sync چنددستگاهی"),RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"هر دستگاه شناسه مستقل دارد؛ داده قبل از ارسال رمزگذاری می‌شود و نسخه/زمان برای تشخیص Conflict نگه‌داری می‌شود."),RE("div",{className:"grid grid-cols-2 gap-2 text-[10px] mb-2"},RE("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},"Revision: ",RE("b",null,String(st.revision||0))),RE("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},"وضعیت: ",RE("b",null,String(st.lastStatus||"local-only")))),RE("div",{className:"text-[9px] leading-5",style:{color:"var(--text-muted)"}},"Device ID: ",RE("span",{className:"mono",style:{direction:"ltr"}},nmDeviceId())))}),RE("div",{className:"text-[9px] leading-5 mt-1",style:{color:"var(--text-muted)"}},"برای Sync سرورمحور، ابتدا Backend را در تنظیمات وارد کن و با Google وارد شو؛ سپس همگام‌سازی چنددستگاهی از طریق revision و Conflict API انجام می‌شود.")),
   RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},RE("div",{className:"flex items-center justify-between"},RE("div",null,RE("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"حریم خصوصی"),RE("div",{className:"text-[10px]",style:{color:"var(--text-muted)"}},"داده‌ها پیش‌فرض محلی هستند")),RE("button",{onClick:()=>saveSec({privacyMode:!sec.privacyMode}),className:"px-3 py-1.5 rounded-full text-[11px]",style:{background:sec.privacyMode?"#34D39922":"var(--bg-card2)",color:sec.privacyMode?"#34D399":"var(--text-muted)"}},sec.privacyMode?"فعال":"غیرفعال")),RE("p",{className:"text-[10px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"حالت حریم خصوصی برای پنهان‌کردن داده‌های حساس در رابط کاربری آماده شده و در نسخه‌های بعدی به نمایشگرهای مالی بیشتری تعمیم پیدا می‌کند."))
  ); }
 
@@ -8662,6 +8741,7 @@ function App() {
         tab === "settings" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_title")),
             RE(NmSecurityAccountCard, { showToast }),
+            RE(NmBackendSyncCard, { showToast }),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_theme")),
                 React.createElement("div", { className: "flex gap-2" },

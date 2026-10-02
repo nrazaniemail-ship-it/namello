@@ -1,3 +1,18 @@
+## 1.22.2 — Zero-configuration defaults
+- Local development backend mode without Google credentials.
+- PWA defaults to `http://localhost:8787`.
+- Production explicitly requires Google server-side authentication.
+- Added local Docker Compose profile and deployment guidance.
+
+## 1.22.1 — Production Backend Hardening
+
+- Production Docker/Caddy deployment
+- HTTPS security headers
+- `.env.example` and production deployment guide
+- Atomic revision writes with race-safe conflict handling
+- Persistent SQLite volume configuration
+- PWA wording updated for live Backend Sync
+
 
 ## 1.21.0 — حساب و Sync چنددستگاهی
 - شناسه مستقل دستگاه و revision برای Sync
@@ -29,3 +44,13 @@
 
 ## 1.17.0
 - Analytics Engine و Journal Coach مبتنی بر داده‌های واقعی
+
+## 1.22.0 — Backend Account & Multi-device Sync
+- Google ID token verification on the server.
+- Stable account identity by Google `sub`.
+- Short-lived HMAC backend sessions.
+- Encrypted sync envelope stored server-side without trade plaintext.
+- Immutable revisions and optimistic concurrency / conflict handling.
+- Two-way Sync and server pull UI.
+- Full server account/data deletion endpoint.
+- Deployable Node.js 22 backend with SQLite WAL.
