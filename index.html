@@ -2439,12 +2439,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.8";
-const NM_VERSION_CODE = 41;
+const NM_VERSION_NAME = "1.22.9";
+const NM_VERSION_CODE = 42;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.22.8: رفع خطای خالی‌شدن کامل Dashboard؛ ایزوله‌سازی خطای ویجت‌ها، بازیابی layout خراب و محافظت از داده‌های Dashboard.",
+    "نسخه 1.22.9: رفع کامل‌تر خالی‌شدن Dashboard؛ محاسبات مقاوم، ویجت‌های lazy و fallback امن برای داده‌های ناقص.",
     "نسخه 1.22.6: داشبورد به تحلیل آماری و ارزیابی پیشرفته تقسیم شد؛ خروجی جامع بازطراحی شد؛ حفظ زمان پادکست و جداسازی باکس‌های پروفایل/تمپلت بهبود یافت.",
     "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data",
     "نسخه 1.19: Advanced Edge Discovery، کنترل حداقل نمونه، پایداری نیمه‌دوره و تحلیل چندبعدی Edge اضافه شد.",
@@ -4663,6 +4663,21 @@ function NmJournalCoach({trades,plans,onClose}){
  const insights=React.useMemo(()=>nmCoachInsights(trades,plans),[trades,plans]);
  return React.createElement("div",{className:"fixed inset-0 z-[140] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.78)"}},React.createElement("div",{className:"w-full max-w-xl rounded-2xl p-4 max-h-[92vh] overflow-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-3"},React.createElement("div",null,React.createElement("b",{style:{color:"var(--accent-gold)"}},"Journal Coach"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"تحلیل deterministic از داده‌های خود Namello؛ بدون حدس درباره آینده.")),React.createElement("button",{onClick:onClose},"✕")),insights.map((x,i)=>React.createElement("div",{key:i,className:"rounded-xl p-3 mb-2",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"text-[10px] font-semibold",style:{color:x.kind==="attention"?"#F87171":x.kind==="positive"?"#34D399":"var(--text-primary)"}},x.title),React.createElement("div",{className:"text-[10px] leading-5 mt-1",style:{color:"var(--text-secondary)"}},x.text))),React.createElement("div",{className:"text-[8px] mt-3",style:{color:"var(--text-muted)"}},"این گزارش توصیفی است؛ برای تصمیم معاملاتی باید زمینه، نمونه‌حجم و کیفیت داده را هم بررسی کنی.")));
 }
+class NmDashboardRootBoundary extends React.Component {
+  constructor(props){super(props);this.state={error:null};}
+  static getDerivedStateFromError(error){return {error};}
+  componentDidCatch(error){try{console.error("[Namello Dashboard root error]",error)}catch(e){}}
+  render(){
+    if(this.state.error){
+      return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
+        React.createElement("div",{className:"rounded-2xl p-4",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+          React.createElement("div",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),
+          React.createElement("div",{className:"text-[11px] mt-2 leading-6",style:{color:"var(--text-secondary)"}},"یک داده یا محاسبه‌ی ناسازگار مانع نمایش کامل داشبورد شد. برنامه به حالت امن برگشت؛ داده‌های معاملات شما حذف نشده‌اند."),
+          React.createElement("button",{type:"button",onClick:()=>this.setState({error:null}),className:"mt-3 rounded-lg px-3 py-2 text-[10px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"تلاش دوباره")));
+    }
+    return this.props.children;
+  }
+}
 class NmDashboardErrorBoundary extends React.Component {
   constructor(props){ super(props); this.state={error:null}; }
   static getDerivedStateFromError(error){ return {error}; }
@@ -4684,12 +4699,12 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  const [showAdvanced,setShowAdvanced]=React.useState(true);
  const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");const valid=Array.isArray(x)?x.filter(id=>NM_DASH_DEFAULT_LAYOUT.includes(id)):[];return valid.length?Array.from(new Set(valid)):NM_DASH_DEFAULT_LAYOUT}catch(e){try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(_e){}return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);const [replay,setReplay]=React.useState(null);const [coach,setCoach]=React.useState(false);
  const persistFilters=x=>{setFilters(x);try{localStorage.setItem(NM_DASH_FILTER_KEY,JSON.stringify(x))}catch(e){}};const saveLayout=a=>{setLayout(a);try{localStorage.setItem(NM_DASH_LAYOUT_KEY,JSON.stringify(a))}catch(e){}};const reorder=(from,to)=>{if(!from||from===to)return;const a=[...layout],i=a.indexOf(from),j=a.indexOf(to);if(i<0||j<0)return;a.splice(i,1);a.splice(j,0,from);saveLayout(a);};const moveWidget=(id,dir)=>{const a=[...layout],i=a.indexOf(id),j=i+dir;if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];saveLayout(a);};
- const closed=(trades||[]).filter(t=>t.status==="closed");const sessions=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSession))).filter(Boolean).sort(),[trades]);const setups=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSetup))).filter(Boolean).sort(),[trades]);const filtered=React.useMemo(()=>closed.filter(t=>nmDashFilterDate(t,filters.range,todayStr)&&(filters.session==="all"||nmDashSession(t)===filters.session)&&(filters.setup==="all"||nmDashSetup(t)===filters.setup)&&(filters.direction==="all"||t.direction===filters.direction)),[closed,filters,todayStr]);const m=React.useMemo(()=>nmDashMetrics(filtered,startingBalance),[filtered,startingBalance]);
- const edge=React.useMemo(()=>{const make=fn=>{const map={};filtered.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return{name,count:ts.length,pnl:mm.pnl,win:mm.winRate,exp:mm.expectancy}}).sort((a,b)=>b.pnl-a.pnl)};return{session:make(nmDashSession),setup:make(nmDashSetup)}},[filtered]);
- const excursionStats=React.useMemo(()=>{const x=filtered.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae)));const avgM=x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA=x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,eff=x.filter(t=>Number.isFinite(Number(t.exitEfficiency)));return{count:x.length,avgM,avgA,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null}} , [filtered]);
- const mistakes=React.useMemo(()=>{const map={};filtered.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>{map[k]??={count:0,pnl:0};map[k].count++;map[k].pnl+=Number(t.pnl)||0}));return Object.entries(map).map(([key,v])=>({key,label:(NM_DISCIPLINE_OPTIONS.find(x=>x[0]===key)||NM_REVIEW_MISTAKES.find(x=>x[0]===key)||[key,key])[1],...v})).sort((a,b)=>a.pnl-b.pnl)},[filtered]);
- const advanced=React.useMemo(()=>nmAdvancedStats(filtered,startingBalance),[filtered,startingBalance]);
- const tagStats=React.useMemo(()=>nmTagStats(filtered),[filtered]);
+ const closed=Array.isArray(trades)?trades.filter(t=>t&&t.status==="closed"):[];const sessions=React.useMemo(()=>{try{return Array.from(new Set(closed.map(nmDashSession))).filter(Boolean).sort()}catch(_e){return[]}},[trades]);const setups=React.useMemo(()=>{try{return Array.from(new Set(closed.map(nmDashSetup))).filter(Boolean).sort()}catch(_e){return[]}},[trades]);const filtered=React.useMemo(()=>{try{return closed.filter(t=>nmDashFilterDate(t,filters.range,todayStr)&&(filters.session==="all"||nmDashSession(t)===filters.session)&&(filters.setup==="all"||nmDashSetup(t)===filters.setup)&&(filters.direction==="all"||t.direction===filters.direction))}catch(_e){return closed}},[closed,filters,todayStr]);const m=React.useMemo(()=>{try{return nmDashMetrics(filtered,startingBalance)}catch(_e){return nmDashMetrics([],startingBalance)}},[filtered,startingBalance]);
+ const edge=React.useMemo(()=>{try{const make=fn=>{const map={};(filtered||[]).forEach(t=>{try{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)}catch(_e){}});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return{name,count:ts.length,pnl:mm.pnl,win:mm.winRate,exp:mm.expectancy}}).sort((a,b)=>b.pnl-a.pnl)};return{session:make(nmDashSession),setup:make(nmDashSetup)}}catch(_e){return{session:[],setup:[]}}},[filtered]);
+ const excursionStats=React.useMemo(()=>{try{const x=(filtered||[]).filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae)));const avgM=x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA=x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,eff=x.filter(t=>Number.isFinite(Number(t.exitEfficiency)));return{count:x.length,avgM,avgA,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null}}catch(_e){return{count:0,avgM:null,avgA:null,avgEff:null}}},[filtered]);
+ const mistakes=React.useMemo(()=>{try{const map={};(filtered||[]).forEach(t=>(Array.isArray(t.disciplineMistakes)?t.disciplineMistakes:(Array.isArray(t.review?.mistakes)?t.review.mistakes:[])).forEach(k=>{map[k]??={count:0,pnl:0};map[k].count++;map[k].pnl+=Number(t.pnl)||0}));return Object.entries(map).map(([key,v])=>({key,label:(NM_DISCIPLINE_OPTIONS.find(x=>x[0]===key)||NM_REVIEW_MISTAKES.find(x=>x[0]===key)||[key,key])[1],...v})).sort((a,b)=>a.pnl-b.pnl)}catch(_e){return[]}},[filtered]);
+ const advanced=React.useMemo(()=>{try{return nmAdvancedStats(filtered,startingBalance)}catch(_e){return{count:0,mean:0,sd:0,sharpe:null,sortino:null,calmar:null,recovery:null,ulcer:0,maxDD:0,totalReturn:null,avgHold:null,exits:{early:0,efficient:0,roundTrip:0},rs:[]}}},[filtered,startingBalance]);
+ const tagStats=React.useMemo(()=>{try{return nmTagStats(filtered)}catch(_e){return[]}},[filtered]);
  const saveExc=(x)=>{const next=trades.map(t=>t.id===excursion.id?{...t,mfe:x.mfe,mae:x.mae,bestExit:x.bestExit,exitEfficiency:x.exitEfficiency,excursion:x}:t);onPersistTrades(next);setExcursion(null);setSelected({...excursion,...x,excursion:x});};
  const card=(title,value,sub)=>React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},title),React.createElement("div",{className:"text-base font-bold mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono,monospace",direction:"ltr",textAlign:"right"}},value),React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},sub||""));
  const widgets={
@@ -8128,7 +8143,7 @@ function App() {
                 " ",
                 jy)),
         RE(NmGlobalPlayer, { tab }),
-        tab === "dashboard" && (RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportExcel: exportAll, onExportPdf: exportAllPdf })),
+        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportExcel: exportAll, onExportPdf: exportAllPdf }))),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
