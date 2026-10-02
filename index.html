@@ -309,7 +309,7 @@
   }
 </script>
 <script>
-(function(){let deferred=null;window.__nmPwaInstall=async function(showToast){try{if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches){if(showToast)showToast('Namello همین حالا به‌صورت اپ نصب شده است.');return true;}if(!deferred){if(showToast)showToast('برای نصب واقعی اپ، از منوی Chrome گزینه «Install app / نصب برنامه» را انتخاب کن؛ «Add to Home screen» فقط میانبر وب می‌سازد.');return false;}deferred.prompt();const choice=await deferred.userChoice;deferred=null;if(showToast)showToast(choice&&choice.outcome==='accepted'?'نصب Namello آغاز شد.':'نصب لغو شد.');return !!(choice&&choice.outcome==='accepted');}catch(e){if(showToast)showToast('پنجره نصب توسط مرورگر در دسترس نیست؛ از گزینه Install app استفاده کن.');return false;}};window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e});window.addEventListener('appinstalled',()=>{deferred=null});})();
+(function(){let deferred=null;let installSeen=false;window.__nmPwaInstallState=function(){return{ready:!!deferred,installed:!!(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)}};window.__nmPwaInstall=async function(showToast){try{if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches){if(showToast)showToast('Namello همین حالا به‌صورت اپ نصب شده است.');return true;}if(!deferred){try{if(navigator.serviceWorker&&navigator.serviceWorker.ready)await Promise.race([navigator.serviceWorker.ready,new Promise(r=>setTimeout(r,1200))]);}catch(e){}if(!deferred){if(showToast)showToast('Chrome هنوز پنجره نصب را در اختیار برنامه نگذاشته است. از منوی ⋮ Chrome → «Install app / نصب برنامه» استفاده کن؛ «Add to Home screen» فقط میانبر وب است.');return false;}}deferred.prompt();const choice=await deferred.userChoice;deferred=null;installSeen=true;if(showToast)showToast(choice&&choice.outcome==='accepted'?'نصب Namello آغاز شد.':'نصب لغو شد.');return !!(choice&&choice.outcome==='accepted');}catch(e){deferred=null;if(showToast)showToast('پنجره نصب توسط مرورگر در دسترس نیست؛ از Chrome → ⋮ → Install app استفاده کن.');return false;}};window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;installSeen=true;window.dispatchEvent(new CustomEvent('namello-install-ready'))});window.addEventListener('appinstalled',()=>{deferred=null;window.dispatchEvent(new CustomEvent('namello-app-installed'))});window.addEventListener('load',()=>setTimeout(()=>window.dispatchEvent(new CustomEvent('namello-install-state'))),800);})();
 </script>
 <script>document.getElementById('boot-status').textContent = 'Loading libraries…';</script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" onerror="showBootError('Failed to load React', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
@@ -2462,40 +2462,25 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.12";
-const NM_VERSION_CODE = 44;
+const NM_VERSION_NAME = "1.22.14";
+const NM_VERSION_CODE = 47;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.14: «ارزیابی استیتمنت» از لایه مستقل به Dashboard منتقل شد؛ برای هر تحلیل آماری/ارزیابی پیشرفته می‌توان منبع ژورنال یا استیتمنت را انتخاب کرد و استیتمنت MT4/MT5/CSV/Excel را مستقیماً به حساب مبنا وارد کرد.",
+    "نسخه 1.22.14: دکمه «نصب Namello به‌عنوان اپ» بازطراحی شد؛ دریافت beforeinstallprompt پایدارتر شد و در صورت نبودن prompt، مسیر رسمی Chrome برای Install app به‌صورت واضح راهنمایی می‌شود.",
+    "نسخه 1.22.14: لوگوی لایه ژورنال با لوگوی جدید ارسالی جایگزین شد.",
+    "نسخه 1.22.14: بخش بروزرسانی در «درباره برنامه» به آخرین نسخه و آخرین تغییرات واقعی پروژه به‌روزرسانی شد.",
+    "نسخه 1.22.13: جستجو و فیلتر سریع ژورنال با خلاصه KPI و فیلتر اشتباهات/نتیجه/جهت/سشن اضافه شد.",
+    "نسخه 1.22.13: Calendar Day Review با P&L، تعداد برد/باخت و تعداد Discipline Mistake برای روز انتخاب‌شده اضافه شد.",
+    "نسخه 1.22.12: داشبورد سه بخش مجزا با خروجی مستقل برای تحلیل آماری، ارزیابی پیشرفته و خروجی جامع اضافه شد؛ مسیرهای امنیت، پشتیبان و Sync در تنظیمات تفکیک شدند.",
     "نسخه 1.22.10: منطق Dashboard به baseline سالم 1.22.5 بازگردانده شد تا خطای خالی‌شدن Dashboard برطرف شود؛ قابلیت‌های مستقل نسخه‌های بعدی حفظ شدند.",
-    "نسخه 1.22.12: داشبورد سه بخش مجزا با رنگ زمینه متفاوت و خروجی مستقل برای تحلیل آماری، ارزیابی پیشرفته و خروجی جامع اضافه شد؛ مسیرهای امنیت، پشتیبان، ذخیره ابری و Sync برای جلوگیری از موازی‌کاری در تنظیمات تفکیک شدند.",
-    "نسخه 1.22.9: رفع کامل‌تر خالی‌شدن Dashboard؛ محاسبات مقاوم، ویجت‌های lazy و fallback امن برای داده‌های ناقص.",
-    "نسخه 1.22.6: داشبورد به تحلیل آماری و ارزیابی پیشرفته تقسیم شد؛ خروجی جامع بازطراحی شد؛ حفظ زمان پادکست و جداسازی باکس‌های پروفایل/تمپلت بهبود یافت.",
-    "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data",
-    "نسخه 1.19: Advanced Edge Discovery، کنترل حداقل نمونه، پایداری نیمه‌دوره و تحلیل چندبعدی Edge اضافه شد.",
+    "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data.",
+    "نسخه 1.19: Advanced Edge Discovery با کنترل حداقل نمونه، آزمون پایداری و تحلیل چندبعدی Edge اضافه شد.",
     "نسخه 1.18: Namello Intelligence، ماتریس Setup×Session×Plan×Mistake، گزارش هفتگی و Coach قابل‌اقدام اضافه شد.",
-    "نسخه 1.17: Analytics Engine، تحلیل Correlation بین Plan/Discipline و عملکرد، و Journal Coach مبتنی بر داده‌های واقعی اضافه شد.",
-    "نسخه 1.16: Trade Replay با مسیر OHLC، اسکراب زمانی، MFE/MAE تا لحظه و خروج فرضی اضافه شد.",
-    "نسخه 1.16: What-if Exit Analysis برای مقایسه خروج واقعی، خروج در نقاط مختلف مسیر و Best Exit اضافه شد.",
-    "نسخه 1.16: Plan Analysis برای عددی/دسته‌ای هم خلاصه آماری و P&L تفکیکی ارائه می‌کند و Day Plan تاریخچه روزانه نگه می‌دارد.",
-    "نسخه 1.15: موتور Trade/Day Plan و Checklist اضافه شد؛ شروط قابل تحلیل هستند و وضعیت رعایت/نقض/بی‌پاسخ جدا نگه داشته می‌شود.",
-    "نسخه 1.15: Rule Compliance و Discipline به Planها متصل شد و آمار رعایت قوانین بر اساس معاملات فیلترشده نمایش داده می‌شود.",
-    "نسخه 1.15: پنل Plan Analysis با Win Rate، P&L، R و تعداد رعایت/نقض هر شرط به داشبورد اضافه شد.",
-    "نسخه 1.11: داشبورد عملکرد جدید با فیلترهای سراسری، کارت‌های KPI، منحنی سرمایه و کشف Edge بر اساس سشن و سیستم اضافه شد.",
-    "نسخه 1.11: از هر نتیجه‌ی داشبورد می‌توان مستقیماً به معاملات سازنده‌ی آن نتیجه Drill-down کرد.",
-    "نسخه 1.11: مرور معامله، Rule Compliance و ثبت Mistakeهای پرهزینه به مدل معامله اضافه شد؛ داده‌های قدیمی بدون تغییر قابل استفاده‌اند.",
-    "نسخه 1.11: ساختار داده‌ی معامله با schemaVersion ارتقا یافت تا مهاجرت نسخه‌های بعدی بدون از دست رفتن اطلاعات انجام شود.",
-    "تحلیل ← سودآورترین شرایط معامله: انتخاب «حساب‌های مبنا» حالا نوع حساب را هم لحاظ می‌کند؛ دکمه‌های «فقط واقعی‌ها» و «فقط آزمایشی‌ها» و نشان واقعی/آزمایشی کنار هر حساب (با لمس نشان، نوع حساب قابل تغییر است).",
-    "تحلیل ← سودآورترین شرایط: برای هر پارامتر هم بهترین و هم بدترین حالت نمایش داده می‌شود.",
-    "تحلیل ← پارامترهای جاافتاده‌ی فرم ژورنال اضافه شد: جهت معامله (خرید/فروش)، جفت‌ارز، روز هفته، واگرایی تایم اصلی، واگرایی تایم ورود، خبر همزمان و فیلدهای سفارشی انتخابی/بله‌خیر. (وزن پیش‌فرض پارامترهای جدید برای احتمال موفقیت صفر است و از «وزن‌ها» قابل تنظیم است.)",
-    "کتابخانه: باکس کامل پخش‌کننده بالای همین لایه (چپ‌چین، پخش/توقف بین عقب و جلو) نمایش داده می‌شود.",
-    "پخش‌کننده در سایر لایه‌ها: ویجت کوچک کنار دکمه‌ی تیره/روشن بالای صفحه؛ با مثلث کوچک سمت چپ آن باکس کامل وسط صفحه باز/بسته می‌شود. پخش در پس‌زمینه ادامه دارد.",
-    "نشست‌ها ← تنظیمات: رنگ زمینه و رنگ کادر کارت‌های «همین الان فعال هستند» سفارشی‌شدنی است (با پیش‌نمایش و بازگشت به پیش‌فرض).",
-    "اخبار: دکمه‌ی بروزرسانی دو برابر شد و سمت راست لوگو/عنوان «اخبار اقتصادی» قرار گرفت؛ با کلیک، رنگ زمینه بین رنگ فعلی و سبز فسفری تغییر می‌کند و دو فلش می‌چرخد. بعد از دریافت: موفق ← سبز، ناموفق ← قرمز.",
-    "اخبار ← تنظیمات: یک کلید برای فعال/غیرفعال‌کردن آلارم صوتی همه‌ی خبرها با هم (کلید جداگانه‌ی هر خبر هم مثل قبل است).",
-    "ژورنال: ویرایش تصاویر چارت (قبل/بعد) و ارزیابی صوتی چارت (قبل/بعد) برای معاملات ثبت‌شده و معاملات باز در فرم ویرایش معامله.",
-    "کتابخانه: دکمه‌ی کتاب باز (📖) منوی انتخاب برنامه‌ی گوشی را برای باز کردن فایل نشان می‌دهد؛ دکمه‌ی 👁 فایل را داخل برنامه می‌خواند.",
-    "درباره برنامه ← آخرین تغییرات: فقط تغییرات همین نسخه نمایش داده می‌شود."
+    "نسخه 1.17: Analytics Engine و Journal Coach مبتنی بر داده‌های واقعی اضافه شد.",
+    "نسخه 1.16: Trade Replay، What-if Exit Analysis و Plan Analysis اضافه شد.",
+    "نسخه 1.15: موتور Trade/Day Plan و Checklist با Rule Compliance و Discipline اضافه شد."
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -4718,7 +4703,7 @@ class NmDashboardErrorBoundary extends React.Component {
   }
 }
 
-function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,setPlans,setDayPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf}){
+function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,setPlans,setDayPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades}){
  const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")} }catch(e){return{range:"all",session:"all",setup:"all",direction:"all"}}});
  const [showPlans,setShowPlans]=React.useState(false);
  const [showAdvanced,setShowAdvanced]=React.useState(true);
@@ -4750,6 +4735,17 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
   trades:React.createElement(NmDashWidget,{id:"trades",title:"Trade Drill-down",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"space-y-1"},filtered.slice().reverse().slice(0,12).map(t=>React.createElement("button",{key:t.id,onClick:()=>setSelected(t),className:"w-full text-right rounded-lg px-2 py-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"flex justify-between text-[10px]"},React.createElement("span",null,`${t.date||""} · ${t.pair||""} · ${t.direction||""}`),React.createElement("b",{style:{color:Number(t.pnl)>=0?"#34D399":"#F87171"}},nmDashPnl(t.pnl))),React.createElement("div",{className:"text-[8px] mt-1",style:{color:"var(--text-muted)"}},`MFE ${t.mfe==null?"—":nmDashNum(t.mfe,2)} · MAE ${t.mae==null?"—":nmDashNum(t.mae,2)} · Best ${t.bestExit?.price==null?"—":nmDashNum(t.bestExit.price,2)}`)))))
  };
  const baseAccountPanel=React.createElement("div",{className:"rounded-2xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+   React.createElement("div",{className:"rounded-xl p-2.5 mb-2",style:{background:"color-mix(in srgb, #F59E0B 7%, var(--bg-card2))",border:"1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))"}},
+     React.createElement("div",{className:"text-[11px] font-semibold mb-1.5",style:{color:"var(--text-primary)"}},"منبع ارزیابی این Dashboard"),
+     React.createElement("div",{className:"text-[9px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"با انتخاب استیتمنت، تمام تحلیل آماری و ارزیابی پیشرفته بر اساس معاملات واردشده از استیتمنت همین حساب‌های مبنا محاسبه می‌شود."),
+     React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},[["journal","معاملات ژورنال"],["statement","ارزیابی استیتمنت"]].map(([mode,label])=>React.createElement("button",{key:mode,type:"button",onClick:()=>{onDashboardDataSourceChange(mode);},className:"py-2 rounded-lg text-[10px] font-semibold",style:{background:dashboardDataSource===mode?"var(--accent-gold)":"var(--bg-page)",color:dashboardDataSource===mode?"var(--bg-page)":"var(--text-secondary)",border:"1px solid "+(dashboardDataSource===mode?"var(--accent-gold)":"var(--border-2)")}},label))),
+     dashboardDataSource==="statement" && React.createElement("div",{className:"mt-2"},
+       React.createElement("div",{className:"text-[9px] mb-1.5",style:{color:"var(--text-muted)"}},activeAccount?`حساب مقصد ایمپورت: ${activeAccount}`:"ابتدا یک حساب را فعال کن"),
+       React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},
+         React.createElement("label",{className:"py-2 rounded-lg text-[10px] text-center cursor-pointer",style:{background:"#F59E0B",color:"#17130b"}},statementImporting?"در حال پردازش…":"ایمپورت استیتمنت",React.createElement("input",{type:"file",accept:".csv,.xlsx,.xls,.htm,.html",multiple:true,className:"hidden",disabled:statementImporting||!activeAccount,onChange:e=>{if(e.target.files?.length)onImportDashboardStatementFiles(e.target.files);e.target.value="";}})),
+         React.createElement("button",{type:"button",disabled:!statementTrades.length,onClick:onClearDashboardStatement,className:"py-2 rounded-lg text-[10px]",style:{background:"var(--bg-page)",color:statementTrades.length?"#F87171":"var(--text-muted)",border:"1px solid var(--border-2)"}},"پاک‌کردن استیتمنت")),
+       statementImportError&&React.createElement("div",{className:"text-[9px] mt-1.5",style:{color:"#F87171"}},statementImportError),
+       React.createElement("div",{className:"text-[9px] mt-1.5",style:{color:"var(--text-muted)"}},`${dashboardStatementTrades.filter(t=>t.status==="closed").length} معامله بسته‌شده از استیتمنت در حساب‌های مبنا`))),
    React.createElement("button",{type:"button",onClick:onOpenBasePicker,className:"w-full flex items-center justify-between rounded-lg px-3 py-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
      React.createElement("span",{className:"text-[12px]",style:{color:"var(--text-primary)"}},"حساب‌های مبنا: ",selectedBaseAccounts.length===baseAccounts.length&&baseAccounts.length>1?"همه حساب‌ها":selectedBaseAccounts.length>0&&selectedBaseAccounts.every(c=>accountTypeOf(c)==="real")&&baseAccounts.some(c=>accountTypeOf(c)==="demo")?"فقط واقعی":selectedBaseAccounts.length>0&&selectedBaseAccounts.every(c=>accountTypeOf(c)==="demo")&&baseAccounts.some(c=>accountTypeOf(c)==="real")?"فقط آزمایشی":`${selectedBaseAccounts.length} حساب`),
      showBasePicker?React.createElement(ChevronUp,{size:14,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:14,color:"var(--text-muted)"})),
@@ -5031,6 +5027,8 @@ function App() {
     const [statementTrades, setStatementTrades] = useState([]);
     const [statementImporting, setStatementImporting] = useState(false);
     const [statementImportError, setStatementImportError] = useState("");
+    const [dashboardDataSource, setDashboardDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_dashboard_data_source_v1") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
+    const [dashboardStatementCache, setDashboardStatementCache] = useState({});
     const [analysisSource, setAnalysisSource] = useState("journal");
     const [showStatisticalAnalysis, setShowStatisticalAnalysis] = useState(false);
     const [namelloReturnSettings, setNamelloReturnSettings] = useState(DEFAULT_NAMELLO_RETURN_SETTINGS);
@@ -6468,6 +6466,21 @@ function App() {
             setMultiAccountTradesCache(prev => ({ ...prev, ...updates }));
         })();
     }, [selectedStatsAccounts.join(","), activeAccount]);
+    useEffect(() => {
+        const codesToFetch = selectedStatsAccounts.filter(code => code !== activeAccount && !(code in dashboardStatementCache));
+        if (codesToFetch.length === 0) return;
+        (async () => {
+            const updates = {};
+            for (const code of codesToFetch) {
+                try {
+                    const r = await window.storage.get(`namello_statement_trades_${code}`);
+                    updates[code] = r ? JSON.parse(r.value) : [];
+                } catch (e) { updates[code] = []; }
+            }
+            setDashboardStatementCache(prev => ({ ...prev, ...updates }));
+        })();
+    }, [selectedStatsAccounts.join(","), activeAccount]);
+    useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_data_source_v1", dashboardDataSource); } catch (e) {} setAnalysisSource(dashboardDataSource); }, [dashboardDataSource]);
     const statsClosedTrades = useMemo(() => {
         const all = [];
         selectedStatsAccounts.forEach(code => {
@@ -6478,7 +6491,7 @@ function App() {
         return all;
     }, [selectedStatsAccounts.join(","), trades, multiAccountTradesCache, activeAccount]);
     const dashboardSelectedAccounts = selectedStatsAccounts;
-    const dashboardSelectedTrades = useMemo(() => {
+    const dashboardJournalTrades = useMemo(() => {
         const all = [];
         dashboardSelectedAccounts.forEach(code => {
             const src = code === activeAccount ? trades : (multiAccountTradesCache[code] || []);
@@ -6486,6 +6499,15 @@ function App() {
         });
         return all;
     }, [dashboardSelectedAccounts.join(","), trades, multiAccountTradesCache, activeAccount]);
+    const dashboardStatementTrades = useMemo(() => {
+        const all = [];
+        dashboardSelectedAccounts.forEach(code => {
+            const src = code === activeAccount ? statementTrades : (dashboardStatementCache[code] || []);
+            src.forEach(t => all.push(code === activeAccount ? t : { ...t, __acct: code, source: "statement" }));
+        });
+        return all;
+    }, [dashboardSelectedAccounts.join(","), statementTrades, dashboardStatementCache, activeAccount]);
+    const dashboardSelectedTrades = dashboardDataSource === "statement" ? dashboardStatementTrades : dashboardJournalTrades;
     const dashboardStartingBalance = accSettings.startingBalance;
     const conditionStats = useMemo(() => computeConditionStats(statsClosedTrades, calcProbParams), [statsClosedTrades, calcProbParams]);
     function toggleStatsAccount(code) {
@@ -8007,8 +8029,8 @@ function App() {
             RE(NmEntryVsExtremesCard, { trades: dashboardSelectedTrades }),
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u062A\u062D\u0644\u06CC\u0644 \u0622\u0645\u0627\u0631\u06CC \u2014 \u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0647\u0627"),
             React.createElement("div", { className: "flex gap-2 mb-4" },
-                React.createElement("button", { onClick: () => setAnalysisSource("journal"), className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: analysisSource === "journal" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: analysisSource === "journal" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "معاملات ژورنال"),
-                React.createElement("button", { onClick: () => setAnalysisSource("statement"), className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: analysisSource === "statement" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: analysisSource === "statement" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "معاملات استیتمنت")),
+                React.createElement("button", { onClick: () => { setAnalysisSource("journal"); setDashboardDataSource("journal"); }, className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: analysisSource === "journal" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: analysisSource === "journal" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "معاملات ژورنال"),
+                React.createElement("button", { onClick: () => { setAnalysisSource("statement"); setDashboardDataSource("statement"); }, className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: analysisSource === "statement" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: analysisSource === "statement" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "معاملات استیتمنت")),
             analysisSource === "statement" ? (React.createElement(StatementAnalysisView, { statementTrades: statementTrades })) : (
             dashboardSelectedTrades.filter(t => t.status === "closed").length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644\u060C \u062D\u062F\u0627\u0642\u0644 \u0686\u0646\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u0644\u0627\u0632\u0645 \u0627\u0633\u062A.")) : (React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
@@ -8207,7 +8229,7 @@ function App() {
                 " ",
                 jy)),
         RE(NmGlobalPlayer, { tab }),
-        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf }))),
+        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades }))),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
@@ -8370,7 +8392,12 @@ function App() {
                 React.createElement("div", { className: "flex gap-2" }, [["real", appLanguage === "en" ? "Real" : "واقعی"], ["demo", appLanguage === "en" ? "Demo" : "آزمایشی"]].map(([val, label]) => (React.createElement("button", { key: val, type: "button", onClick: () => setNewAccType(val), className: "flex-1 py-2 rounded-lg text-[12px] font-medium", style: { background: newAccType === val ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: newAccType === val ? "var(--accent-gold)" : "var(--text-muted)", border: newAccType === val ? "1px solid var(--accent-gold)" : "1px solid var(--border-1)" } }, label))))),
             accCodeError && React.createElement("p", { className: "text-[11px] mb-2", style: { color: "#F87171" } }, accCodeError),
             React.createElement("button", { onClick: addAccount, className: "w-full py-3 rounded-xl text-sm font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, appLanguage === "en" ? "Create / Switch Account" : "\u0627\u06CC\u062C\u0627\u062F / \u0648\u0631\u0648\u062F \u0628\u0647 \u062D\u0633\u0627\u0628"))) : (React.createElement(React.Fragment, null,
-            React.createElement("div", { className: "flex items-center gap-2 mb-3" },
+            React.createElement("div", { className: "rounded-2xl p-3 mb-3 flex items-center gap-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+            React.createElement("img", { src: "icon-journal.png", alt: "Namello Journal", className: "w-14 h-14 rounded-xl object-cover shrink-0", style: { background: "#000" } }),
+            React.createElement("div", null,
+                React.createElement("div", { className: "text-[15px] font-bold", style: { color: "var(--text-primary)" } }, "ژورنال"),
+                React.createElement("div", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, "ثبت، مرور و تحلیل معاملات"))),
+        React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                 React.createElement("button", { onClick: () => setDeleteAccountConfirm(activeAccount), className: "p-2.5 rounded-lg shrink-0", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" }, "aria-label": appLanguage === "en" ? "Delete Account" : "\u062D\u0630\u0641 \u062D\u0633\u0627\u0628" },
                     React.createElement(Trash2, { size: 15, color: "#F87171" })),
                 React.createElement("select", { value: activeAccount, onChange: e => e.target.value === "__new__" ? setActiveAccount(null) : persistActiveAccount(e.target.value), className: "flex-1 text-sm rounded-lg px-3 py-2 mono", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)", fontFamily: "JetBrains Mono, monospace" } },
@@ -8876,7 +8903,7 @@ function App() {
         tab === "goals" && (React.createElement(GoalsLayer, { title: "\u0627\u0647\u062F\u0627\u0641 \u0645\u0639\u0627\u0645\u0644\u0647 \u06AF\u0631\u06CC", activeAccount: activeAccount, list: goals, newText: newGoalText, setNewText: setNewGoalText, onAdd: addGoalRow, onUpdateText: updateGoalRow, onUpdateProgress: updateGoalProgress, onDelete: deleteGoalRow, onMove: moveGoalRow, onExport: exportGoals, onExportPdf: exportGoalsPdf, askDeleteConfirm: askDeleteConfirm })),
         tab === "lifegoals" && (React.createElement(GoalsLayer, { title: "\u0627\u0647\u062F\u0627\u0641 \u0632\u0646\u062F\u06AF\u06CC", activeAccount: activeAccount, list: lifeGoals, newText: newLifeGoalText, setNewText: setNewLifeGoalText, onAdd: addLifeGoalRow, onUpdateText: updateLifeGoalRow, onUpdateProgress: updateLifeGoalProgress, onDelete: deleteLifeGoalRow, onMove: moveLifeGoalRow, onExport: exportLifeGoals, onExportPdf: exportLifeGoalsPdf, askDeleteConfirm: askDeleteConfirm })),
         tab === "gratitude" && (React.createElement(GoalsLayer, { title: "\u0634\u06A9\u0631 \u06AF\u0632\u0627\u0631\u06CC", activeAccount: activeAccount, list: gratitude, newText: newGratitudeText, setNewText: setNewGratitudeText, onAdd: addGratitudeRow, onUpdateText: updateGratitudeRow, onUpdateProgress: updateGratitudeProgress, onDelete: deleteGratitudeRow, onMove: moveGratitudeRow, onExport: exportGratitude, onExportPdf: exportGratitudePdf, askDeleteConfirm: askDeleteConfirm, itemLabel: "\u0645\u062A\u0646" })),
-        tab === "statement" && (!activeAccount ? (React.createElement("div", { className: "px-4 mt-4" },
+        false && tab === "statement" && (!activeAccount ? (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0627\u0648\u0644 \u0627\u0632 \u062A\u0628 \u0698\u0648\u0631\u0646\u0627\u0644 \u06CC\u06A9 \u062D\u0633\u0627\u0628 \u0627\u06CC\u062C\u0627\u062F \u06A9\u0646."))) : (React.createElement(StatementLayer, {
             statementTrades: statementTrades,
             onImport: importStatementFiles,
@@ -9242,7 +9269,6 @@ React.createElement("div", { className: "px-4 mt-4" },
             { key: "goals", label: t("tab_goals"), Icon: Flag },
             { key: "lifegoals", label: t("tab_lifegoals"), Icon: TreeIcon },
             { key: "gratitude", label: t("tab_gratitude"), Icon: Heart },
-            { key: "statement", label: t("tab_statement"), Icon: UploadIcon },
             { key: "psychology", label: t("tab_psychology"), Icon: Brain },
             { key: "exportall", label: t("tab_exportall"), Icon: FileSpreadsheet },
             { key: "library", label: t("tab_library"), Icon: BookOpen },
@@ -9267,8 +9293,7 @@ React.createElement("div", { className: "px-4 mt-4" },
                 { key: "goals", label: t("tab_goals"), Icon: Flag },
                 { key: "lifegoals", label: t("tab_lifegoals"), Icon: TreeIcon },
                 { key: "gratitude", label: t("tab_gratitude"), Icon: Heart },
-                { key: "statement", label: t("tab_statement"), Icon: UploadIcon },
-                    { key: "psychology", label: t("tab_psychology"), Icon: Brain },
+                        { key: "psychology", label: t("tab_psychology"), Icon: Brain },
                 { key: "exportall", label: t("tab_exportall"), Icon: FileSpreadsheet },
                 { key: "library", label: t("tab_library"), Icon: BookOpen },
                 { key: "settings", label: t("tab_settings"), Icon: SettingsIcon },
