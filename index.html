@@ -10300,20 +10300,14 @@ function App() {
      const rrVal=f.direction==='sell' ? ((e-tp)/(sl-e)) : ((tp-e)/(e-sl));
      if(Number.isFinite(rrVal)&&rrVal>0) rr=String(Math.round(rrVal*100)/100);
    }
-   let risk=f.riskDollar;
-   const lot=Number(f.lot);
-   if(Number.isFinite(e)&&Number.isFinite(sl)&&Number.isFinite(lot)&&lot>0){
-     const riskVal=Math.abs(e-sl)/pipSize(f.pair)*pipValuePerLot(f.pair)*lot;
-     if(Number.isFinite(riskVal)&&riskVal>0) risk=String(Math.round(riskVal*100)/100);
-   }
-   return {...f,entry,plannedStopPrice:stop,plannedTargetPrice:target,rrReward:rr,riskDollar:risk};
+   return {...f,entry,plannedStopPrice:stop,plannedTargetPrice:target,rrReward:rr};
  });
  const e=Number(r.entry), sl=Number(r.stop), tp=Number(r.target);
  if(Number.isFinite(e)&&Number.isFinite(sl)&&Number.isFinite(tp)&&sl!==e){
    const rrVal=openForm.direction==='sell' ? ((e-tp)/(sl-e)) : ((tp-e)/(e-sl));
    if(Number.isFinite(rrVal)&&rrVal>0){ const rrText=String(Math.round(rrVal*100)/100); if(!rrOptions.includes(rrText)) persistRrOptions([...rrOptions,rrText]); setNewRrText(rrText); }
    const mirrorEntry=Number(r.entry!=null?r.entry:openForm.entry), mirrorStop=Number(r.stop!=null?r.stop:openForm.plannedStopPrice), mirrorLot=Number(openForm.lot);
-   if(Number.isFinite(mirrorEntry)&&Number.isFinite(mirrorStop)&&Number.isFinite(mirrorLot)&&mirrorLot>0){ const mirrorRisk=Math.abs(mirrorEntry-mirrorStop)/pipSize(openForm.pair)*pipValuePerLot(openForm.pair)*mirrorLot; /* keep the calculated risk only in the main risk field; do not mirror it into the add-option input */ }
+   if(Number.isFinite(mirrorEntry)&&Number.isFinite(mirrorStop)&&Number.isFinite(mirrorLot)&&mirrorLot>0){ const mirrorRisk=Math.abs(mirrorEntry-mirrorStop)/pipSize(openForm.pair)*pipValuePerLot(openForm.pair)*mirrorLot; if(Number.isFinite(mirrorRisk)&&mirrorRisk>0) setNewRiskText(String(Math.round(mirrorRisk*100)/100)); }
  }
  const msgs=[]; if(r.entry!=null) msgs.push('Entry'); if(r.target!=null) msgs.push('TP'); if(r.stop!=null) msgs.push('SL');
  msgs.push('R-multiple'); if(Number.isFinite(Number(openForm.lot))&&Number(openForm.lot)>0) msgs.push('ریسک $');
