@@ -4536,11 +4536,12 @@ const NM_REVIEW_MISTAKES = [
     ["revenge", "Revenge Trade"], ["overtrade", "Overtrade"], ["no_liquidity", "بدون Liquidity Sweep"],
     ["against_bias", "خلاف HTF Bias"], ["news_entry", "ورود هنگام خبر"],
 ];
-const NM_DISCIPLINE_OPTIONS = [
+const NM_DEFAULT_DISCIPLINE_OPTIONS = [
  ["no_setup","عدم رعایت ستاپ"], ["no_prep","عدم آماده سازی"], ["early_entry","ورود زود هنگام"],
  ["high_risk","معامله پر ریسک"], ["wrong_sl","حدضرر اشتباه"], ["wrong_tp","حد سود اشتباه"],
  ["overtrade","over trade"], ["bad_session_event","نشست/رویداد نامناسب"], ["not_ready","عدم آمادگی"]
 ];
+let NM_DISCIPLINE_OPTIONS = [...NM_DEFAULT_DISCIPLINE_OPTIONS];
 const NM_DASH_DEFAULT_LAYOUT = ["kpi","equity","advanced","chartplan","plans","dayplananalysis","analytics","edge","intelligence","coach","excursion","session","setup","tags","discipline","dayplan","trades"];
 function nmDashNum(v,digits=2){const n=Number(v);return Number.isFinite(n)?n.toLocaleString("en-US",{maximumFractionDigits:digits}):"—";}
 function nmDashPnl(v){const n=Number(v)||0;return `${n>=0?"+":""}${n.toLocaleString("en-US",{maximumFractionDigits:2})}`;}
@@ -5156,7 +5157,7 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
        RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}})
    )
  )));
- return RE(Field,{label:RE('span',{className:'flex items-center gap-1.5'},label,RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
+ return RE(Field,{label:RE('span',{className:'flex items-center gap-1.5'},label,RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش / جابجایی'))},RE(React.Fragment,null,scoreBox,editor,viewer));
 }
 
 function NmPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist"}){
@@ -5372,6 +5373,8 @@ function App() {
     const [divergenceEntryOptions, setDivergenceEntryOptions] = useState(DEFAULT_DIVERGENCE_OPTIONS);
     const [riskOptions, setRiskOptions] = useState(DEFAULT_RISK_OPTIONS);
     const [tradeManagementOptions, setTradeManagementOptions] = useState(DEFAULT_TRADE_MANAGEMENT_OPTIONS);
+    const [disciplineOptions, setDisciplineOptions] = useState(NM_DEFAULT_DISCIPLINE_OPTIONS);
+    React.useEffect(() => { NM_DISCIPLINE_OPTIONS.splice(0, NM_DISCIPLINE_OPTIONS.length, ...disciplineOptions); }, [disciplineOptions]);
     const [successProbOptions, setSuccessProbOptions] = useState(DEFAULT_SUCCESS_PROB_OPTIONS);
     const [psychOptions, setPsychOptions] = useState(DEFAULT_PSYCH_OPTIONS);
     const [calcProbWeights, setCalcProbWeights] = useState(DEFAULT_CALC_PROB_WEIGHTS);
@@ -5421,6 +5424,7 @@ function App() {
     const [divergenceEntryEditMode, setDivergenceEntryEditMode] = useState(false);
     const [riskEditMode, setRiskEditMode] = useState(false);
     const [tradeManagementEditMode, setTradeManagementEditMode] = useState(false);
+    const [disciplineEditMode, setDisciplineEditMode] = useState(false);
     const [successProbEditMode, setSuccessProbEditMode] = useState(false);
     const [psychEditMode, setPsychEditMode] = useState(false);
     const [closeTypeEditMode, setCloseTypeEditMode] = useState(false);
@@ -5439,6 +5443,7 @@ function App() {
     const [newDivergenceEntryText, setNewDivergenceEntryText] = useState("");
     const [newRiskText, setNewRiskText] = useState("");
     const [newTradeManagementText, setNewTradeManagementText] = useState("");
+    const [newDisciplineText, setNewDisciplineText] = useState("");
     const [newSuccessProbText, setNewSuccessProbText] = useState("");
     const [newPsychText, setNewPsychText] = useState("");
     const [newCloseTypeText, setNewCloseTypeText] = useState("");
@@ -6014,6 +6019,10 @@ function App() {
         await window.storage.set("namello_trade_management_options_v1", JSON.stringify(next));
     }
     catch (e) { } }, []);
+    const persistDisciplineOptions = useCallback(async (next) => { setDisciplineOptions(next); NM_DISCIPLINE_OPTIONS.splice(0, NM_DISCIPLINE_OPTIONS.length, ...next); try {
+        await window.storage.set("namello_discipline_options_v1", JSON.stringify(next));
+    }
+    catch (e) { } }, []);
     const persistCapitalMgmtRows = useCallback(async (next) => { setCapitalMgmtRows(next); try {
         await window.storage.set("namello_capital_mgmt_rows_v1", JSON.stringify(next));
     }
@@ -6500,6 +6509,7 @@ function App() {
         { key: "divergenceEntryOptions", value: divergenceEntryOptions, persist: persistDivergenceEntryOptions, def: DEFAULT_DIVERGENCE_OPTIONS },
         { key: "riskOptions", value: riskOptions, persist: persistRiskOptions, def: DEFAULT_RISK_OPTIONS },
         { key: "tradeManagementOptions", value: tradeManagementOptions, persist: persistTradeManagementOptions, def: DEFAULT_TRADE_MANAGEMENT_OPTIONS },
+        { key: "disciplineOptions", value: disciplineOptions, persist: persistDisciplineOptions, def: NM_DEFAULT_DISCIPLINE_OPTIONS },
         { key: "successProbOptions", value: successProbOptions, persist: persistSuccessProbOptions, def: DEFAULT_SUCCESS_PROB_OPTIONS },
         { key: "psychOptions", value: psychOptions, persist: persistPsychOptions, def: DEFAULT_PSYCH_OPTIONS },
         { key: "calcProbWeights", value: calcProbWeights, persist: persistCalcProbWeights, def: DEFAULT_CALC_PROB_WEIGHTS },
@@ -7165,6 +7175,9 @@ function App() {
     function removeTradeManagementOption(name) { persistTradeManagementOptions(tradeManagementOptions.filter(x => x !== name)); }
     function renameTradeManagementOption(index, text) { renameOptionAt(tradeManagementOptions, persistTradeManagementOptions, index, text); }
     function moveTradeManagementOption(index, dir) { moveOptionAt(tradeManagementOptions, persistTradeManagementOptions, index, dir); }
+    function removeDisciplineOption(name) { persistDisciplineOptions(disciplineOptions.filter(x => x[1] !== name && x[0] !== name)); }
+    function renameDisciplineOption(index, text) { const next=disciplineOptions.slice(); if(next[index]) next[index]=[next[index][0], text]; persistDisciplineOptions(next); }
+    function moveDisciplineOption(index, dir) { const next=disciplineOptions.slice(); const j=index+dir; if(j<0||j>=next.length)return; [next[index],next[j]]=[next[j],next[index]]; persistDisciplineOptions(next); }
     function addTradeManagementOptionInline() {
         const v = newTradeManagementText.trim();
         if (!v)
@@ -7173,6 +7186,7 @@ function App() {
             persistTradeManagementOptions([...tradeManagementOptions, v]);
         setNewTradeManagementText("");
     }
+    function addDisciplineOptionInline() { const v=String(newDisciplineText||"").trim(); if(!v)return; const key="custom_"+Date.now().toString(36); persistDisciplineOptions([...disciplineOptions,[key,v]]); setNewDisciplineText(""); }
     function addFractalOptionInline() {
         const v = newFractalText.trim();
         if (!v)
@@ -10246,16 +10260,11 @@ function App() {
                         })())),
                 React.createElement("div", { className: "mb-2 mt-2" },
                     tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ")}),
-                React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(33, appLanguage === "en" ? "Buy/Sell" : "خرید/فروش")),
+                React.createElement("div", { className: "rounded-xl p-2.5 mb-2", style: { background: "#FBBF2412", border: "1px solid #FBBF2438" } },
+                    React.createElement("label", { className: "text-[12px] block mb-2 font-bold", style: { color: "#FBBF24" } }, numLabel(33, appLanguage === "en" ? "Buy/Sell" : "خرید/فروش")),
                     React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "buy", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "buy") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { background: openForm.direction === "buy" ? "#34D39922" : "var(--bg-card2)", color: openForm.direction === "buy" ? "#34D399" : "var(--text-muted)" } },
-                            React.createElement(TrendingUp, { size: 14 }),
-                            " ",
-                            React.createElement("b", { className: "font-extrabold" }, "\u062E\u0631\u06CC\u062F")),
-                        React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "sell", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "sell") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { background: openForm.direction === "sell" ? "#F8717122" : "var(--bg-card2)", color: openForm.direction === "sell" ? "#F87171" : "var(--text-muted)" } },
-                            React.createElement(TrendingDown, { size: 14 }),
-                            " ",
-                            React.createElement("b", { className: "font-extrabold" }, "\u0641\u0631\u0648\u0634")))),
+                        React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "buy", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "buy") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { background: openForm.direction === "buy" ? "#34D39922" : "var(--bg-card2)", color: openForm.direction === "buy" ? "#34D399" : "var(--text-muted)" } }, React.createElement(TrendingUp, { size: 14 }), " ", React.createElement("b", { className: "font-extrabold" }, "خرید")),
+                        React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "sell", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "sell") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { background: openForm.direction === "sell" ? "#F8717122" : "var(--bg-card2)", color: openForm.direction === "sell" ? "#F87171" : "var(--text-muted)" } }, React.createElement(TrendingDown, { size: 14 }), " ", React.createElement("b", { className: "font-extrabold" }, "فروش")))),
                 React.createElement(Field, { label: numLabel(34, hlLabel(appLanguage === "en" ? "Trade Alignment with Main Trend" : "هم راستایی معامله با روند اصلی")) },
                     React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "with" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "with" ? "#60A5FA22" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "with" ? "#60A5FA" : "var(--text-muted)" } }, "\u0647\u0645 \u062C\u0647\u062A \u0628\u0627 \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC"),
@@ -10378,14 +10387,29 @@ function App() {
                             React.createElement("button", { type: "button", onClick: addTradeManagementOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
                 React.createElement(Field, { label: numLabel(7, appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات") },
-                    React.createElement("div", { className: "flex flex-wrap gap-1.5" },
-                        NM_DISCIPLINE_OPTIONS.map(([key,label]) => {
-                            const active = (closeForm.disciplineMistakes || []).includes(key);
-                            return React.createElement("button", { key, type: "button", onClick: () => {
-                                const cur = closeForm.disciplineMistakes || [];
-                                onCloseFieldChange("disciplineMistakes", active ? cur.filter(x => x !== key) : [...cur, key]);
-                            }, className: "px-3 py-2 rounded-lg text-[11px]", style: { background: active ? "color-mix(in srgb, var(--accent-gold) 16%, transparent)" : "var(--bg-card2)", color: active ? "var(--accent-gold)" : "var(--text-secondary)", border: "1px solid " + (active ? "color-mix(in srgb, var(--accent-gold) 40%, transparent)" : "var(--border-1)") } }, label);
-                        }))),
+                    React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
+                        React.createElement("button", { type: "button", onClick: () => setDisciplineEditMode(v => !v), style: { position: "absolute", top: -6, left: -6, zIndex: 1, background: disciplineEditMode ? "#F8717122" : "var(--bg-card2)", border: `1px solid ${disciplineEditMode ? "#F8717155" : "var(--border-2)"}`, borderRadius: 8, padding: 4 } },
+                            React.createElement(Edit3, { size: 11, color: disciplineEditMode ? "#FBBF24" : "var(--text-muted)" })),
+                        React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                            disciplineOptions.map(([key, label], i) => {
+                                const active = (closeForm.disciplineMistakes || []).includes(key);
+                                if (disciplineEditMode) {
+                                    return React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+                                        React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? 0.3 : 1 } }, React.createElement(ChevronUp, { size: 12 })),
+                                        React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, 1), disabled: i === disciplineOptions.length - 1, style: { opacity: i === disciplineOptions.length - 1 ? 0.3 : 1 } }, React.createElement(ChevronDown, { size: 12 })),
+                                        React.createElement("input", { value: label, onChange: e => renameDisciplineOption(i, e.target.value), className: "bg-transparent outline-none text-[12px]", style: { color: "var(--text-primary)", width: Math.max(4, label.length) + "ch" } }),
+                                        React.createElement("button", { type: "button", onClick: () => { removeDisciplineOption(label); onCloseFieldChange("disciplineMistakes", (closeForm.disciplineMistakes || []).filter(x => x !== key)); } }, React.createElement(X, { size: 10, color: "#F87171" }))
+                                    );
+                                }
+                                return React.createElement("button", { key, type: "button", onClick: () => onCloseFieldChange("disciplineMistakes", active ? (closeForm.disciplineMistakes || []).filter(x => x !== key) : [...(closeForm.disciplineMistakes || []), key]), className: "px-3 py-2 rounded-lg text-[11px]", style: { background: active ? "color-mix(in srgb, var(--accent-gold) 16%, transparent)" : "var(--bg-card2)", color: active ? "var(--accent-gold)" : "var(--text-secondary)", border: "1px solid " + (active ? "color-mix(in srgb, var(--accent-gold) 40%, transparent)" : "var(--border-1)") } }, label);
+                            })
+                        ),
+                        React.createElement("div", { className: "flex gap-1.5 mt-1.5" },
+                            React.createElement("input", { type: "text", value: newDisciplineText, onChange: e => setNewDisciplineText(e.target.value), onKeyDown: e => e.key === "Enter" && addDisciplineOptionInline(), placeholder: appLanguage === "en" ? "New discipline/mistake..." : "حالت جدید...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
+                            React.createElement("button", { type: "button", onClick: addDisciplineOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } }, React.createElement(Plus, { size: 12 }))
+                        )
+                    )
+                )),
                 React.createElement(Field, { label: numLabel(8, appLanguage === "en" ? "Note" : "یادداشت") },
                     React.createElement("textarea", { rows: 2, value: closeForm.note, onChange: e => onCloseFieldChange("note", e.target.value), className: "w-full bg-transparent outline-none text-sm resize-none", style: { color: "var(--text-primary)" } })),
                 React.createElement(Field, { label: numLabel(9, appLanguage === "en" ? "Post-Trade Chart Image" : "تصویر چارت بعد از معامله") },
