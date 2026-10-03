@@ -4535,17 +4535,21 @@ function NmLibraryPodcastsSection({ showToast, askDeleteConfirm }) {
 function NmLibrarySettingsCard({ open, onToggle }) {
     const ls = useNmLibSettings();
     const opt = (active, label, onClick) => RE("button", { type: "button", onClick, className: "flex-1 py-2 rounded-lg text-[12px]", style: { background: active ? nmTint(13) : "var(--bg-card2)", color: active ? "var(--accent-gold)" : "var(--text-muted)", border: active ? "1px solid var(--accent-gold)" : "1px solid var(--border-1)" } }, label);
+    const skipOptions = [10, 15, 30, 60].map(n => opt(Number(ls.skipSeconds) === n, n + " ثانیه", () => nmLibSetSettings({ skipSeconds: n })));
     return RE("div", { className: "rounded-xl p-4 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
         RE("button", { type: "button", onClick: onToggle, className: "w-full flex items-center justify-between" },
             RE("span", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, "📚 کتابخانه"),
-            RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, open ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })),
-        open && RE("div", { className: "mt-3" },
+            RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, open ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" }))
+        ),
+        open ? RE("div", { className: "mt-3" },
             RE("div", { className: "text-[11px] mb-1.5", style: { color: "var(--text-muted)" } }, "تأیید دوباره قبل از حذف فایل (کتاب، پادکست، اپیزود)"),
             RE("div", { className: "flex gap-2 mb-3" }, opt(ls.confirmDelete, "روشن", () => nmLibSetSettings({ confirmDelete: true })), opt(!ls.confirmDelete, "خاموش", () => nmLibSetSettings({ confirmDelete: false }))),
             RE("div", { className: "text-[11px] mb-1.5", style: { color: "var(--text-muted)" } }, "پهنای باکس پخش‌کننده"),
             RE("div", { className: "flex gap-2 mb-3" }, opt(ls.playerWidth !== "wide", "کم‌عرض", () => nmLibSetSettings({ playerWidth: "compact" })), opt(ls.playerWidth === "wide", "عریض‌تر", () => nmLibSetSettings({ playerWidth: "wide" }))),
             RE("div", { className: "text-[11px] mb-1.5", style: { color: "var(--text-muted)" } }, "مقدار پرش دکمه‌های جلو/عقب"),
-            RE("div", { className: "flex gap-2" }, [10, 15, 30, 60].map(n => RE(React.Fragment, { key: n }, opt(Number(ls.skipSeconds) === n, n + " ثانیه", () => nmLibSetSettings({ skipSeconds: n })))))));
+            RE("div", { className: "flex gap-2" }, skipOptions)
+        ) : null
+    );
 }
 function NmLibraryLayer({ showToast, askDeleteConfirm }) {
     return RE("div", { className: "px-4 mt-4 pb-16" },
