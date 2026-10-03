@@ -3628,12 +3628,13 @@ function NmPriceExtremesAnalysis() {
 const NM_GUIDE_MAIN_DEFAULT = ["PMH", "PML", "PWH", "PWL", "PDH", "PDL", "سطوح طلایی تایم روزانه", "خط روند Daily", "خط روند 4H", "خط روند 1H", "خط روند M15", "خط میانه Daily", "خط میانه 4H", "خط میانه 1H", "خط میانه M15", "پترن N", "کانال رگرسیون"];
 const NM_GUIDE_ENTRY_DEFAULT = ["PMH", "PML", "PWH", "PWL", "PDH", "PDL", "سطوح طلایی تایم روزانه", "خط روند Daily", "خط روند 4H", "خط روند 1H", "خط روند M15", "خط روند M5", "خط میانه Daily", "خط میانه 4H", "خط میانه 1H", "خط میانه M15", "خط میانه M5", "پترن N", "کانال رگرسیون"];
 const NM_GUIDE_KEYS = { main: "namello_guide_levels_main_v1", entry: "namello_guide_levels_entry_v1" };
-function NmGuideLevelsField({ kind, value, onChange }) {
+function NmGuideLevelsField({ kind, value, onChange, editMode: externalEditMode }) {
     const storeKey = NM_GUIDE_KEYS[kind];
     const defaults = kind === "main" ? NM_GUIDE_MAIN_DEFAULT : NM_GUIDE_ENTRY_DEFAULT;
     const [options, setOptions] = useState(defaults);
-    const [editMode, setEditMode] = useState(false);
+    const [internalEditMode, setInternalEditMode] = useState(false);
     const [newText, setNewText] = useState("");
+    const editMode = externalEditMode === undefined ? internalEditMode : externalEditMode;
     const sel = value || [];
     useEffect(() => { (async () => { try { const r = await window.storage.get(storeKey); const a = JSON.parse(r.value); if (Array.isArray(a)) setOptions(a); } catch (e) { } })(); }, []);
     const persist = (next) => { setOptions(next); try { window.storage.set(storeKey, JSON.stringify(next)); } catch (e) { } };
@@ -3643,7 +3644,7 @@ function NmGuideLevelsField({ kind, value, onChange }) {
     const remove = (o) => { persist(options.filter(x => x !== o)); if (sel.includes(o)) onChange(sel.filter(x => x !== o)); };
     const add = () => { const v = newText.trim(); if (!v) return; if (!options.includes(v)) persist([...options, v]); if (!sel.includes(v)) onChange([...sel, v]); setNewText(""); };
     return RE("div", { style: { position: "relative", paddingTop: 6 } },
-        JournalEditToggle({ editMode, onToggle: () => setEditMode(m => !m) }),
+        externalEditMode === undefined ? JournalEditToggle({ editMode, onToggle: () => setInternalEditMode(m => !m) }) : null,
         RE("div", { className: "flex flex-wrap gap-1.5" }, options.map((o, i) => editMode
             ? RE("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                 RE("button", { type: "button", onClick: () => move(i, -1), disabled: i === 0, style: { opacity: i === 0 ? 0.3 : 1 } }, RE(ChevronUp, { size: 12, color: "var(--text-muted)" })),
@@ -5418,6 +5419,8 @@ function App() {
     const [rrEditMode, setRrEditMode] = useState(false);
     const [divergenceMainEditMode, setDivergenceMainEditMode] = useState(false);
     const [divergenceEntryEditMode, setDivergenceEntryEditMode] = useState(false);
+    const [mainGuideEditMode, setMainGuideEditMode] = useState(false);
+    const [entryGuideEditMode, setEntryGuideEditMode] = useState(false);
     const [riskEditMode, setRiskEditMode] = useState(false);
     const [tradeManagementEditMode, setTradeManagementEditMode] = useState(false);
     const [disciplineEditMode, setDisciplineEditMode] = useState(false);
@@ -7295,20 +7298,21 @@ function App() {
         mainTrendDirection: "bullish", marketBias: "bullish", marketCondition: "trend",
         wave: "", trigs: [], targets: [], stops: [], reversalPatterns: [],
         divergenceMain: [], divergenceEntry: [],
+        mainGuideLevels: [], entryGuideLevels: [], planAnswers: {},
     });
     function openNewTradeForm() {
         const d = lastTradeDefaultsRef.current;
         setOpenForm({
             date: todayStr, time: `${pad2(now.hh)}:${pad2(now.mi)}`,
             pair: d.pair || pairs[0] || "XAUUSD", direction: d.direction, tradeDirectionRel: d.tradeDirectionRel,
-            system: (d.systems && d.systems[0]) || systems[0] || "", systems: d.systems || [], entryTimeSystems: d.entryTimeSystems || [], mainGuideLevels: [], entryGuideLevels: [], customFields: {}, fractal: d.fractal || "M15-M5",
+            system: (d.systems && d.systems[0]) || systems[0] || "", systems: d.systems || [], entryTimeSystems: d.entryTimeSystems || [], mainGuideLevels: d.mainGuideLevels || [], entryGuideLevels: d.entryGuideLevels || [], customFields: {}, fractal: d.fractal || "M15-M5",
             dailyCandleDirection: d.dailyCandleDirection, dailyTrendDirection: d.dailyTrendDirection,
             mainTrendDirection: d.mainTrendDirection, entry: "", lot: String(derived.nextLot),
             rrReward: "", riskDollar: "",
             marketBias: d.marketBias, marketCondition: d.marketCondition, wave: d.wave, trigs: d.trigs || [], targets: d.targets || [], stops: d.stops || [],
             reversalPatterns: d.reversalPatterns || [],
             divergenceMain: d.divergenceMain || [], divergenceEntry: d.divergenceEntry || [],
-            successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: {}, chartAnswers: {}, dayPlanAnswers: {}, setupReadinessPct: null, chartReadinessPct: null, dayPlanReadinessPct: null,
+            successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: d.planAnswers || {}, chartAnswers: {}, dayPlanAnswers: {}, setupReadinessPct: null, chartReadinessPct: null, dayPlanReadinessPct: null,
             chartImageMain: "", chartImageEntryStart: "", voiceNoteBefore: "",
         });
         setShowOpenForm(true);
@@ -7377,6 +7381,8 @@ function App() {
             wave: openForm.wave, trigs: openForm.trigs || [], targets: openForm.targets || [], stops: openForm.stops || [],
             reversalPatterns: openForm.reversalPatterns || [],
             divergenceMain: openForm.divergenceMain || [], divergenceEntry: openForm.divergenceEntry || [],
+            mainGuideLevels: openForm.mainGuideLevels || [], entryGuideLevels: openForm.entryGuideLevels || [],
+            planAnswers: openForm.planAnswers || {},
         };
         persistTrades([trade, ...trades]);
         setShowOpenForm(false);
@@ -9989,8 +9995,8 @@ function App() {
                             React.createElement("input", { type: "text", value: newSystemText, onChange: e => setNewSystemText(e.target.value), onKeyDown: e => e.key === "Enter" && addSystemOptionInline(), placeholder: "\u0633\u06CC\u0633\u062A\u0645 \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addSystemOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: numLabel(13, hlLabel(appLanguage === "en" ? "Main Timeframe Guide Levels (multi-select)" : "سطوح راهنمای تایم اصلی (چند تا هم می‌تونی انتخاب کنی)")) },
-                    React.createElement(NmGuideLevelsField, { kind: "main", value: openForm.mainGuideLevels, onChange: v => setOpenForm(f => ({ ...f, mainGuideLevels: v })) })),
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(13, hlLabel(appLanguage === "en" ? "Main Timeframe Guide Levels (multi-select)" : "سطوح راهنمای تایم اصلی (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: mainGuideEditMode, onToggle: () => setMainGuideEditMode(m => !m) })) },
+                    React.createElement(NmGuideLevelsField, { kind: "main", value: openForm.mainGuideLevels, editMode: mainGuideEditMode, onChange: v => setOpenForm(f => ({ ...f, mainGuideLevels: v })) })),
                 React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(14, appLanguage === "en" ? "Main Timeframe Divergence (multi-select)" : "واگرایی تایم اصلی (چند تا هم می‌تونی انتخاب کنی)"), JournalEditToggle({ editMode: divergenceMainEditMode, onToggle: () => setDivergenceMainEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
@@ -10057,8 +10063,8 @@ function App() {
                             React.createElement("input", { type: "text", value: newEntryTimeSystemText, onChange: e => setNewEntryTimeSystemText(e.target.value), onKeyDown: e => e.key === "Enter" && addEntryTimeSystemOptionInline(), placeholder: "\u0633\u06CC\u0633\u062A\u0645 \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addEntryTimeSystemOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: numLabel(19, hlLabel(appLanguage === "en" ? "Entry Timeframe Guide Levels (multi-select)" : "سطوح راهنمای تایم ورود (چند تا هم می‌تونی انتخاب کنی)")) },
-                    React.createElement(NmGuideLevelsField, { kind: "entry", value: openForm.entryGuideLevels, onChange: v => setOpenForm(f => ({ ...f, entryGuideLevels: v })) })),
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(19, hlLabel(appLanguage === "en" ? "Entry Timeframe Guide Levels (multi-select)" : "سطوح راهنمای تایم ورود (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: entryGuideEditMode, onToggle: () => setEntryGuideEditMode(m => !m) })) },
+                    React.createElement(NmGuideLevelsField, { kind: "entry", value: openForm.entryGuideLevels, editMode: entryGuideEditMode, onChange: v => setOpenForm(f => ({ ...f, entryGuideLevels: v })) })),
                 React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(20, appLanguage === "en" ? "Entry Timeframe Divergence (multi-select)" : "واگرایی تایم ورود (چند تا هم می‌تونی انتخاب کنی)"), JournalEditToggle({ editMode: divergenceEntryEditMode, onToggle: () => setDivergenceEntryEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
@@ -10274,31 +10280,7 @@ function App() {
                     React.createElement("p", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u00AB\u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC\u00BB \u0648 \u00AB\u062E\u0631\u06CC\u062F/\u0641\u0631\u0648\u0634\u00BB \u062E\u0648\u062F\u06A9\u0627\u0631 \u0627\u0646\u062A\u062E\u0627\u0628 \u0645\u06CC\u200C\u0634\u0647\u061B \u0627\u06AF\u0647 \u0644\u0627\u0632\u0645 \u0628\u0648\u062F \u062F\u0633\u062A\u06CC \u0647\u0645 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0639\u0648\u0636\u0634 \u06A9\u0646\u06CC.")),
                 React.createElement(Field, { label: numLabel(35, appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله") },
                     React.createElement(ChartImageField, { label: "چارت تایم اصلی", value: openForm.chartImageMain || "", onChange: v => setOpenForm({ ...openForm, chartImageMain: v }) }),
-                    React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }), onPriceExtract: r => {
- if(r.error){ showToast(r.error); return; }
- setOpenForm(f => {
-   const entry = r.entry!=null ? String(r.entry) : f.entry;
-   const stop = r.stop!=null ? String(r.stop) : f.plannedStopPrice;
-   const target = r.target!=null ? String(r.target) : f.plannedTargetPrice;
-   const e=Number(entry), sl=Number(stop), tp=Number(target);
-   let rr=f.rrReward;
-   if(Number.isFinite(e)&&Number.isFinite(sl)&&Number.isFinite(tp)&&((f.direction==='sell'&&sl!==e)||(f.direction!=='sell'&&sl!==e))){
-     const rrVal=f.direction==='sell' ? ((e-tp)/(sl-e)) : ((tp-e)/(e-sl));
-     if(Number.isFinite(rrVal)&&rrVal>0) rr=String(Math.round(rrVal*100)/100);
-   }
-   return {...f,entry,plannedStopPrice:stop,plannedTargetPrice:target,rrReward:rr};
- });
- const e=Number(r.entry), sl=Number(r.stop), tp=Number(r.target);
- if(Number.isFinite(e)&&Number.isFinite(sl)&&Number.isFinite(tp)&&sl!==e){
-   const rrVal=openForm.direction==='sell' ? ((e-tp)/(sl-e)) : ((tp-e)/(e-sl));
-   if(Number.isFinite(rrVal)&&rrVal>0){ const rrText=String(Math.round(rrVal*100)/100); if(!rrOptions.includes(rrText)) persistRrOptions([...rrOptions,rrText]); setNewRrText(rrText); }
-   const mirrorEntry=Number(r.entry!=null?r.entry:openForm.entry), mirrorStop=Number(r.stop!=null?r.stop:openForm.plannedStopPrice), mirrorLot=Number(openForm.lot);
-   if(Number.isFinite(mirrorEntry)&&Number.isFinite(mirrorStop)&&Number.isFinite(mirrorLot)&&mirrorLot>0){ const mirrorRisk=Math.abs(mirrorEntry-mirrorStop)/pipSize(openForm.pair)*pipValuePerLot(openForm.pair)*mirrorLot; if(Number.isFinite(mirrorRisk)&&mirrorRisk>0) setNewRiskText(String(Math.round(mirrorRisk*100)/100)); }
- }
- const msgs=[]; if(r.entry!=null) msgs.push('Entry'); if(r.target!=null) msgs.push('TP'); if(r.stop!=null) msgs.push('SL');
- msgs.push('R-multiple'); if(Number.isFinite(Number(openForm.lot))&&Number(openForm.lot)>0) msgs.push('ریسک $');
- showToast(msgs.join(' / ')+' از چارت استخراج/محاسبه شد.');
-} , direction: openForm.direction })),
+                    React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }) })),
                 React.createElement(Field, { label: numLabel(36, appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله") },
                     React.createElement(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت", value: openForm.voiceNoteBefore || "", onChange: v => setOpenForm({ ...openForm, voiceNoteBefore: v }) })),
                 RE(NmCustomFieldsFormSection, { values: openForm.customFields, onChange: v => setOpenForm({ ...openForm, customFields: v }) }),
