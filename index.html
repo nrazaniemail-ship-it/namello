@@ -5383,7 +5383,7 @@ class NmSettingsErrorBoundary extends React.Component {
 
 function App() {
     const [, forceTick] = useState(0);
-    const [tab, setTab] = useState("dashboard");
+    const [tab, setTab] = useState("live");
     useEffect(() => { if (tab === "analysis" || tab === "user" || tab === "prep") setTab("dashboard"); }, [tab]);
     const [showRef, setShowRef] = useState(false);
     const [config, setConfig] = useState(DEFAULT_CONFIG);
