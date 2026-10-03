@@ -1,3 +1,9 @@
+## 1.40.1 — Version Code 66
+
+- برای همه آیتم‌های لایه تنظیمات کنترل جمع/باز شدن استاندارد با مثلث یکسان اضافه/یکپارچه شد.
+- امنیت، پشتیبان و ذخیره ابری، Namello Backend · حساب و Sync واقعی، فونت برنامه، MT5 · دریافت خودکار OHLC و MFE/MAE و بروزرسانی برنامه اکنون کنترل جمع/باز شدن دارند.
+- اندازه، رنگ و ظاهر مثلث‌های جمع/باز شدن یکسان‌سازی شد.
+
 ## 1.22.31 — Version Code 64
 - Dashboard performance header no longer displays the base-account reference.
 - Added a compact dynamic base-account summary below Statistical Analysis and Advanced Evaluation.

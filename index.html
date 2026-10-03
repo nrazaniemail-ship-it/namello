@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello</title>
+<title>Namello1.40.1</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -79,7 +79,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello…</div>
+<div id="boot-status">Loading Namello1.40.1…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -2658,11 +2658,12 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.31";
-const NM_VERSION_CODE = 64;
+const NM_VERSION_NAME = "1.40.1";
+const NM_VERSION_CODE = 66;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "۱۳ مهر ۱۴۰۵";
+const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.40.1: جمع/باز شدن همه آیتم‌های تنظیمات با مثلث‌های یکسان اصلاح شد؛ امنیت، پشتیبان و ذخیره ابری، Namello Backend، فونت برنامه، MT5 و بروزرسانی برنامه نیز کنترل جمع/باز شدن استاندارد دارند.",
     "نسخه 1.22.31: عنوان داشبورد عملکرد دیگر حساب مبنا را نمایش نمی‌دهد؛ خلاصه حساب مبنا زیر تحلیل آماری و ارزیابی پیشرفته اضافه شد و تیترهای سه‌گانه Dashboard به‌صورت پررنگ‌تر نمایش داده می‌شوند.",
     "نسخه 1.22.30: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
     "نسخه 1.22.27: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
@@ -2781,19 +2782,27 @@ function NmCollapsible({ title, subtitle, badge, defaultOpen, children, icon }) 
 }
 function NmSettingsAutoCollapse({ children }) {
     const [open, setOpen] = useState({});
-    const labels = [
-        "پروفایل", "تمپلت", "رنگ زمینه برنامه", "تم برنامه", "تم آیکن‌ها", "چیدمان ناوبری",
-        "ترتیب تب‌ها", "کتابخانه", "زبان برنامه", "امنیت، پشتیبان و ذخیره ابری", "همگام‌سازی ابری",
-        "پشتیبان‌گیری", "ذخیره‌سازی", "فیلدهای سفارشی", "فونت برنامه", "اجرای سریع MT5/TradingView",
-        "نوتیفیکیشن بازگشت به Namello", "MT5 · دریافت خودکار OHLC و MFE/MAE", "ویجت ساعت‌شمار سشن‌ها", "به‌روزرسانی برنامه"
-    ];
+    // ترتیب واقعی آیتم‌های مستقیم لایه تنظیمات در JSX.
+    // چهار آیتم اول (پروفایل/محتوای پروفایل/تمپلت/محتوای تمپلت) کنترل داخلی دارند.
+    // کارت‌های تم، چیدمان و کتابخانه نیز از NmCollapsible/کنترل داخلی استفاده می‌کنند و نباید دوباره قاب‌بندی شوند.
+    const titles = {
+        4: "حالت تیره/روشن",
+        11: "امنیت، پشتیبان و ذخیره ابری",
+        12: "Namello Backend · حساب و Sync واقعی",
+        16: "فونت برنامه",
+        19: "MT5 · دریافت خودکار OHLC و MFE/MAE",
+        21: "بروزرسانی برنامه"
+    };
     const items = React.Children.toArray(children);
     const toggle = i => setOpen(prev => ({ ...prev, [i]: !prev[i] }));
+    // فقط آیتم‌هایی که کنترل جمع/باز شدن داخلی و استاندارد دارند از قاب‌بندی دوباره معاف‌اند.
+    // آیتم‌های 4، 11، 12، 16، 19 و 21 عمداً اینجا قاب‌بندی می‌شوند تا مثلث استاندارد مشترک داشته باشند.
+    const alreadyCollapsible = new Set([0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 13, 14, 15, 17, 18, 20]);
     return RE(React.Fragment, null, items.map((child, i) => {
         if (!child) return null;
-        // پروفایل و تمپلت کنترل داخلی خودشان را دارند؛ فقط مثلث آن‌ها را یکدست می‌کنیم.
-        if (i < 2) return RE(React.Fragment, { key: "raw-" + i }, child);
-        const title = labels[i] || ("بخش تنظیمات " + (i + 1));
+        // این آیتم‌ها از قبل مثلث استاندارد خودشان را دارند.
+        if (alreadyCollapsible.has(i)) return RE(React.Fragment, { key: "native-settings-" + i }, child);
+        const title = titles[i] || ("بخش تنظیمات " + (i + 1));
         const isOpen = open[i] !== false;
         return RE("div", { key: "settings-section-" + i, className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
             RE("button", { type: "button", onClick: () => toggle(i), className: "w-full flex items-center justify-between gap-2", style: { color: "var(--text-primary)", textAlign: "start" }, "aria-expanded": isOpen },
@@ -7719,7 +7728,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello1.40.1</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8434,7 +8443,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello1.40.1</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8829,8 +8838,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello1.40.1", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello1.40.1"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
