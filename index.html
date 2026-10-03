@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<script>
-// Compatibility guard for older cached Namello builds. This must exist before React/ReactDOM load.
-window.dashboardSourceHint = window.dashboardSourceHint || "";
-window.NM_SYNC_STATE_KEY = window.NM_SYNC_STATE_KEY || "nm_sync_state_v1";
-window.NM_DEVICE_KEY = window.NM_DEVICE_KEY || "nm_device_id_v1";
-</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Namello</title>
@@ -2564,11 +2558,12 @@ const RE = React.createElement;
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
 const NM_VERSION_NAME = "1.22.31";
-const NM_VERSION_CODE = 62;
+const NM_VERSION_CODE = 64;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۳ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.22.31: رفع مشکل کش/Service Worker که می‌توانست نسخه قدیمی index.html را بازگرداند و خطای ReferenceError مانند dashboardSourceHint ایجاد کند؛ بارگذاری پوسته برنامه اکنون فقط از کش نسخه جاری fallback می‌گیرد و نسخه‌های قدیمی در زمان فعال‌سازی پاکسازی می‌شوند.",
+    "نسخه 1.22.31: نمایش مبنای ارزیابی زیر عنوان‌های تحلیل آماری و ارزیابی پیشرفته اصلاح شد، اشاره به حساب مبنا از زیر عنوان داشبورد عملکرد حذف شد، جابه‌جایی درون‌باکسی شروط چک‌لیست برای آیتم‌های ۶، ۷ و ۳۲ اضافه شد و ورودی دستی اضافی ریسک دلاری حذف شد.",
+    "نسخه 1.22.30: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
     "نسخه 1.22.27: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
     "نسخه 1.22.25: پایداری لایه تنظیمات و مدیریت ترتیب لایه‌ها اصلاح شد؛ مقدار ترتیب ذخیره‌شده اعتبارسنجی می‌شود و خرابی یک آیتم ترتیب نمی‌تواند کل لایه تنظیمات را از رندر خارج کند.",
     "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
@@ -4924,7 +4919,7 @@ class NmDashboardErrorBoundary extends React.Component {
   }
 }
 
-function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,chartPlans,setPlans,setDayPlans,setChartPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades}){
+function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,chartPlans,setPlans,setDayPlans,setChartPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades,accountScopeText}){
  const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")} }catch(e){return{range:"all",session:"all",setup:"all",direction:"all"}}});
  const [showAdvanced,setShowAdvanced]=React.useState(true);
  const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");return Array.isArray(x)&&x.length?x:NM_DASH_DEFAULT_LAYOUT}catch(e){return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);const [replay,setReplay]=React.useState(null);const [coach,setCoach]=React.useState(false);
@@ -4996,11 +4991,11 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      React.createElement("button",{onClick:()=>{setSelected(null);onEditTrade&&onEditTrade(selected)},className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ویرایش معامله"))));
  const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc}); const replayModal=replay&&React.createElement(NmReplayModal,{trade:replay,onClose:()=>setReplay(null)});
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
-   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${activeAccount?`حساب ${activeAccount}`:"بدون حساب"} · ${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
+   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد")),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
    statisticalAnalysisSection,
    React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
      React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
-       React.createElement("div",{className:"flex items-center gap-2"},React.createElement("span",{className:"text-[14px] font-bold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")),
+       React.createElement("div",{className:"text-right"},React.createElement("div",{className:"text-[14px] font-bold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("div",{className:"text-[9px] mt-1 leading-5",style:{color:"var(--text-muted)"}},`مبنای ارزیابی: ${accountScopeText||"حساب مشخص"} · فیلتر، Plan، ریسک، Edge و جزئیات معاملات`)),
        showAdvanced?React.createElement(ChevronUp,{size:15,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:15,color:"var(--text-muted)"})),
      showAdvanced&&React.createElement("div",{className:"pt-3"},
        baseAccountPanel,
@@ -5013,7 +5008,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
            React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته"))),
        )),
 React.createElement("section",{className:"rounded-2xl p-3 mt-3 mb-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))"}},
-         React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"گزارش کامل از شاخص‌ها، تحلیل آماری، ارزیابی پیشرفته و داده‌های داشبورد")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
+         React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-bold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"گزارش کامل از شاخص‌ها، تحلیل آماری، ارزیابی پیشرفته و داده‌های داشبورد")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
            React.createElement("button",{onClick:onExportComprehensiveExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#10B981",color:"#06150f"}},"Excel جامع داشبورد"),
            React.createElement("button",{onClick:onExportComprehensivePdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#34D399",border:"1px solid #10B981"}},"PDF جامع داشبورد"))),
@@ -5067,7 +5062,7 @@ function nmTradeDayPlanReadiness(t){
  return Number.isFinite(v) ? v : null;
 }
 
-function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist",onPlanChange}){
+function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist",onPlanChange,reorderInline=false}){
  const score=nmPlanChecklistScore(plan,answers);
  const [editing,setEditing]=React.useState(false);
  const [draft,setDraft]=React.useState(plan?.conditions||[]);
@@ -5078,6 +5073,7 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
  const update=(i,k,v)=>setDraft(a=>a.map((x,n)=>n===i?{...x,[k]:v}:x));
  const move=(i,d)=>setDraft(a=>{const j=i+d;if(j<0||j>=a.length)return a;const n=[...a];[n[i],n[j]]=[n[j],n[i]];return n});
  const remove=i=>setDraft(a=>a.filter((_,n)=>n!==i));
+ const moveInline=(i,d)=>{const cur=[...(plan?.conditions||[])];const j=i+d;if(j<0||j>=cur.length)return;[cur[i],cur[j]]=[cur[j],cur[i]];onPlanChange?.({...plan,conditions:cur});};
  const scoreBox=score&&RE('div',{className:'rounded-lg px-2.5 py-2 mb-1.5 flex items-center justify-between',style:{background:score.no?'#F8717110':'#34D39910',border:'1px solid '+(score.no?'#F8717138':'#34D39938')}},
    RE('span',{className:'text-[10px]',style:{color:'var(--text-secondary)'}},RE('span',{className:'inline-flex items-center gap-1'},label,': '),RE('b',{style:{color:score.no?'#F87171':'#34D399'}},score.score==null?'—':score.score+'%'),' · ',score.answered,'/',score.total,' پاسخ'),
    RE('span',{className:'text-[9px]',style:{color:score.no?'#F87171':'var(--text-muted)'}},score.no?score.no+' نقض قانون':'بدون نقض قانون'));
@@ -5097,6 +5093,7 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
      RE('button',{type:'button',onClick:save,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره چک‌لیست')));
  const viewer=RE('div',{className:'space-y-1.5'},(plan?.conditions||[]).map(c=>RE('div',{key:c.id,className:'rounded-lg px-2.5 py-2',style:{background:'var(--bg-card2)'}},
    RE('div',{className:'flex items-center justify-between gap-2'},
+     reorderInline&&RE('div',{className:'flex flex-col gap-0.5 shrink-0'},RE('button',{type:'button',onClick:()=>moveInline(i,-1),disabled:i===0,className:'p-0.5 rounded',style:{opacity:i===0?.3:1,background:'var(--bg-page)'}},RE(ChevronUp,{size:11,color:'var(--text-muted)'})),RE('button',{type:'button',onClick:()=>moveInline(i,1),disabled:i===(plan?.conditions||[]).length-1,className:'p-0.5 rounded',style:{opacity:i===(plan?.conditions||[]).length-1?.3:1,background:'var(--bg-page)'}},RE(ChevronDown,{size:11,color:'var(--text-muted)'}))),
      RE('span',{className:'text-[10px]',style:{color:'var(--text-secondary)',flex:1,minWidth:0,whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:1.75}},c.label),
      c.type==='checkbox' ? RE('div',{className:'flex gap-1'},[[true,'✓'],[false,'✕'],[null,'—']].map(([v,l])=>RE('button',{key:String(v),type:'button',onClick:()=>onChange({...answers,[c.id]:v}),className:'px-2 py-1 rounded',style:{background:answers[c.id]===v?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers[c.id]===v?'var(--accent-gold)':'var(--text-muted)'}},l))) :
        RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}})
@@ -8423,9 +8420,10 @@ function App() {
             { name: "روانشناسی", header: ["دسته", "توضیح"], rows: psychRows },
         ]);
     }
-    const nmStatisticalAnalysisSection = React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
+    const dashboardAccountScopeText = selectedStatsAccounts.length === accounts.length && accounts.length ? "کل حساب‌ها" : (selectedStatsAccounts.length === 1 ? `حساب ${selectedStatsAccounts[0]}` : (selectedStatsAccounts.length > 1 ? `حساب‌های ${selectedStatsAccounts.join("، ")}` : "حساب مشخص"));
+const nmStatisticalAnalysisSection = React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
         React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #3B82F6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))" }, "aria-expanded": showStatisticalAnalysis },
-            React.createElement("span", { className: "text-[14px] font-bold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
+            React.createElement("div", { className: "text-right" }, React.createElement("div", { className: "text-[14px] font-bold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"), React.createElement("div", { className: "text-[9px] mt-1 leading-5", style: { color: "var(--text-muted)" } }, `مبنای ارزیابی: ${dashboardAccountScopeText || "حساب مشخص"}`)),
             showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
@@ -8650,7 +8648,7 @@ function App() {
                 " ",
                 jy)),
         RE(NmGlobalPlayer, { tab }),
-        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, chartPlans: chartPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, setChartPlans: persistChartPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades }))),
+        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, chartPlans: chartPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, setChartPlans: persistChartPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades, accountScopeText: dashboardAccountScopeText }))),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
@@ -9845,8 +9843,8 @@ function App() {
                         const nm = findNewsForTrade(newsEvents, openForm.pair, openForm.date, openForm.time);
                         return nm ? React.createElement("span", { className: "text-[12px]", style: { color: "#FBBF24" } }, nm) : React.createElement("span", { className: "text-[11px]", style: { color: "var(--text-muted)" } });
                     })())),
-                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:openForm.dayPlanAnswers||{},onChange:v=>setOpenForm(f=>({...f,dayPlanAnswers:v,dayPlanReadinessPct:nmReadinessScore(dayPlans[0],v)})),onPlanChange:p=>persistDayPlans([p]),label:numLabel(6,"آمادگی برنامه روزانه")}),
-                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:openForm.chartAnswers||{},onChange:v=>setOpenForm(f=>({...f,chartAnswers:v,chartReadinessPct:nmReadinessScore(chartPlans[0],v)})),onPlanChange:p=>persistChartPlans([p]),label:numLabel(7,"ارزیابی چارت")}),
+                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:openForm.dayPlanAnswers||{},onChange:v=>setOpenForm(f=>({...f,dayPlanAnswers:v,dayPlanReadinessPct:nmReadinessScore(dayPlans[0],v)})),onPlanChange:p=>persistDayPlans([p]),label:numLabel(6,"آمادگی برنامه روزانه"),reorderInline:true}),
+                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:openForm.chartAnswers||{},onChange:v=>setOpenForm(f=>({...f,chartAnswers:v,chartReadinessPct:nmReadinessScore(chartPlans[0],v)})),onPlanChange:p=>persistChartPlans([p]),label:numLabel(7,"ارزیابی چارت"),reorderInline:true}),
                 React.createElement(Field, { label: numLabel(8, appLanguage === "en" ? "Fractal" : "فراکتال") },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         React.createElement("button", { type: "button", onClick: () => setFractalEditMode(m => !m), style: { position: "absolute", top: -6, left: -6, zIndex: 1, background: fractalEditMode ? "#F8717122" : "var(--bg-card2)", border: `1px solid ${fractalEditMode ? "#F8717155" : "var(--border-2)"}`, borderRadius: 8, padding: 4 }, "aria-label": "\u062D\u0630\u0641 \u06AF\u0632\u06CC\u0646\u0647\u200C\u0647\u0627" },
@@ -10099,7 +10097,7 @@ function App() {
                             React.createElement("input", { type: "text", inputMode: "decimal", value: newRiskText, onChange: e => setNewRiskText(e.target.value), onKeyDown: e => e.key === "Enter" && addRiskOptionInline(), placeholder: "\u062D\u0627\u0644\u062A \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addRiskOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))),
-                        React.createElement("input", { type: "number", inputMode: "decimal", value: openForm.riskDollar, onChange: e => { const v=e.target.value; setOpenForm({ ...openForm, riskDollar: v }); setNewRiskText(v); }, placeholder: "\u06CC\u0627 \u0645\u0642\u062F\u0627\u0631 \u062F\u0642\u06CC\u0642 \u0631\u0648 \u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633...", className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
+                    )),
                 openForm.riskDollar !== "" && !isNaN(parseFloat(openForm.riskDollar)) && derived.currentBalance > 0 && (React.createElement("p", { className: "text-[11px] mb-2", style: { color: "var(--text-muted)" } },
                     "= ",
                     React.createElement("b", { style: { color: "var(--accent-gold)" } },
@@ -10169,7 +10167,7 @@ function App() {
                                 React.createElement("span", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u0634\u0631\u0627\u06CC\u0637 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u062B\u0628\u062A\u200C\u0634\u062F\u0647")));
                         })())),
                 React.createElement("div", { className: "mb-2 mt-2" },
-                    tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ")}),
+                    tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ"),reorderInline:true}),
                 React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(33, appLanguage === "en" ? "Buy/Sell" : "خرید/فروش")),
                     React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "buy", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "buy") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { background: openForm.direction === "buy" ? "#34D39922" : "var(--bg-card2)", color: openForm.direction === "buy" ? "#34D399" : "var(--text-muted)" } },

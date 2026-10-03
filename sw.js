@@ -7,7 +7,7 @@
 // دفعات آفلاینِ بعدی کش می‌شه). فقط وقتی واقعاً آفلاینیم، از کش قدیمی استفاده می‌شه.
 // برای فایل‌های CDN (React, XLSX, Plotly, Tailwind, فونت‌ها) که نسخه‌شون پین‌شده و عوض نمی‌شه،
 // همچنان استراتژی "اول کش" (سریع‌تر و برای آفلاین قابل‌اعتمادتر) باقی مونده.
-// نام کش به نسخه‌ی برنامه گره خورده (Namello 1.22.31 / Version Code 64).
+// نام کش به نسخه‌ی برنامه گره خورده (Namello 1.22.31 / Version Code 64)؛ با هر آپدیت این را عوض کن.
 const CACHE_NAME = "namello-1.22.31-c64";
 
 const HTML_URLS = ["./", "./index.html"];
@@ -52,7 +52,7 @@ self.addEventListener("activate", (event) => {
       // Do not purge older Namello caches during an update. They may contain a
       // previously cached CDN dependency needed for offline/poor-network boot.
       // The current HTML remains network-first, so stale app shells are not preferred.
-      return Promise.all(keys.filter((k) => k.startsWith("namello-") && k !== CACHE_NAME).map((k) => caches.delete(k)));
+      return Promise.all(keys.filter((k) => !k.startsWith('namello-')).map((k) => caches.delete(k)));
     })
   );
   self.clients.claim();
@@ -95,14 +95,14 @@ self.addEventListener("fetch", (event) => {
           }
           return res;
         })
-        .catch(() => caches.open(CACHE_NAME).then((cache) => cache.match(req).then((cached) => cached || cache.match("./index.html"))))
+        .catch(() => caches.match(req).then((cached) => cached || caches.match("./index.html")))
     );
     return;
   }
 
   // بقیه (کتابخانه‌های CDN پین‌شده، آیکون‌ها، مانیفست): اول کش، سریع‌تر و برای آفلاین مطمئن‌تر.
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => cache.match(req)).then((cached) => {
+    caches.match(req).then((cached) => {
       if (cached) return cached;
 
       return fetch(req)
