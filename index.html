@@ -7303,27 +7303,35 @@ function App() {
         divergenceMain: [], divergenceEntry: [],
     });
     function openNewTradeForm() {
-        try {
-            const d = lastTradeDefaultsRef.current || {};
-            const safePairs = Array.isArray(pairs) ? pairs : [];
-            const safeSystems = Array.isArray(systems) ? systems : [];
-            const safeNow = now || {};
-            const nextLot = derived && derived.nextLot != null ? derived.nextLot : 0;
-            setOpenForm({
-                date: todayStr || new Date().toISOString().slice(0, 10), time: `${pad2(Number(safeNow.hh) || 0)}:${pad2(Number(safeNow.mi) || 0)}`,
-                pair: d.pair || safePairs[0] || "XAUUSD", direction: d.direction || "", tradeDirectionRel: d.tradeDirectionRel || "",
-                system: (Array.isArray(d.systems) && d.systems[0]) || safeSystems[0] || "", systems: Array.isArray(d.systems) ? d.systems : [], entryTimeSystems: Array.isArray(d.entryTimeSystems) ? d.entryTimeSystems : [], mainGuideLevels: [], entryGuideLevels: [], customFields: {}, fractal: d.fractal || "M15-M5",
-                dailyCandleDirection: d.dailyCandleDirection || "", dailyTrendDirection: d.dailyTrendDirection || "", mainTrendDirection: d.mainTrendDirection || "bullish", entry: "", lot: String(nextLot), rrReward: "", riskDollar: "",
-                marketBias: d.marketBias || "bullish", marketCondition: d.marketCondition || "trend", wave: d.wave || "", trigs: Array.isArray(d.trigs) ? d.trigs : [], targets: Array.isArray(d.targets) ? d.targets : [], stops: Array.isArray(d.stops) ? d.stops : [],
-                reversalPatterns: Array.isArray(d.reversalPatterns) ? d.reversalPatterns : [], divergenceMain: Array.isArray(d.divergenceMain) ? d.divergenceMain : [], divergenceEntry: Array.isArray(d.divergenceEntry) ? d.divergenceEntry : [],
-                successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: {}, chartAnswers: {}, dayPlanAnswers: {}, setupReadinessPct: null, chartReadinessPct: null, dayPlanReadinessPct: null,
-                chartImageMain: "", chartImageEntryStart: "", voiceNoteBefore: "",
-            });
-            setShowOpenForm(true);
-        } catch (e) {
-            try { setToast(appLanguage === "en" ? "Could not open entry form." : "فرم ثبت ورود باز نشد؛ دوباره تلاش کنید."); } catch (_) {}
-        }
+        // Keep the entry button independent from optional dashboard/derived data.
+        // The form must always open even when a saved configuration is incomplete.
+        const d = (lastTradeDefaultsRef.current && typeof lastTradeDefaultsRef.current === "object") ? lastTradeDefaultsRef.current : {};
+        const safePairs = Array.isArray(pairs) ? pairs : [];
+        const safeSystems = Array.isArray(systems) ? systems : [];
+        const safeNow = (now && typeof now === "object") ? now : {};
+        const nextLotValue = derived && Number.isFinite(Number(derived.nextLot)) ? Number(derived.nextLot) : 0;
+        const initialForm = {
+            date: todayStr || new Date().toISOString().slice(0, 10),
+            time: `${pad2(Number(safeNow.hh) || 0)}:${pad2(Number(safeNow.mi) || 0)}`,
+            pair: d.pair || safePairs[0] || "XAUUSD", direction: d.direction || "", tradeDirectionRel: d.tradeDirectionRel || "",
+            system: (Array.isArray(d.systems) && d.systems[0]) || safeSystems[0] || "",
+            systems: Array.isArray(d.systems) ? d.systems : [],
+            entryTimeSystems: Array.isArray(d.entryTimeSystems) ? d.entryTimeSystems : [],
+            mainGuideLevels: [], entryGuideLevels: [], customFields: {}, fractal: d.fractal || "M15-M5",
+            dailyCandleDirection: d.dailyCandleDirection || "", dailyTrendDirection: d.dailyTrendDirection || "",
+            mainTrendDirection: d.mainTrendDirection || "bullish", entry: "", lot: String(nextLotValue), rrReward: "", riskDollar: "",
+            marketBias: d.marketBias || "bullish", marketCondition: d.marketCondition || "trend", wave: d.wave || "",
+            trigs: Array.isArray(d.trigs) ? d.trigs : [], targets: Array.isArray(d.targets) ? d.targets : [], stops: Array.isArray(d.stops) ? d.stops : [],
+            reversalPatterns: Array.isArray(d.reversalPatterns) ? d.reversalPatterns : [],
+            divergenceMain: Array.isArray(d.divergenceMain) ? d.divergenceMain : [],
+            divergenceEntry: Array.isArray(d.divergenceEntry) ? d.divergenceEntry : [],
+            successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: {}, chartAnswers: {}, dayPlanAnswers: {},
+            setupReadinessPct: null, chartReadinessPct: null, dayPlanReadinessPct: null, chartImageMain: "", chartImageEntryStart: "", voiceNoteBefore: ""
+        };
+        setOpenForm(initialForm);
+        setShowOpenForm(true);
     }
+
     function saveOpenTrade() {
         if (!openForm.date || !openForm.time)
             return;
@@ -9012,7 +9020,7 @@ function App() {
                         t.time),
                     React.createElement("button", { onClick: () => openCloseForm(t), className: "w-full py-2 rounded-lg text-[12px] font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, tI18n("journal_close_trade")))))))),
             React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-4" },
-                React.createElement("button", { onClick: openNewTradeForm, type: "button", className: "flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
+                React.createElement("button", { type: "button", onPointerDown: (e) => { e.preventDefault(); e.stopPropagation(); openNewTradeForm(); }, onClick: (e) => { e.preventDefault(); e.stopPropagation(); }, className: "flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)", touchAction: "manipulation", cursor: "pointer", pointerEvents: "auto" } },
                     React.createElement(Plus, { size: 16 }),
                     " ", t("journal_new_entry")),
                 React.createElement("button", { onClick: () => setShowExportPicker(true), className: "flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
