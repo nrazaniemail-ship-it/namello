@@ -348,6 +348,16 @@
 </script>
 <script>
 const { useState, useEffect, useCallback, useMemo, useRef } = React;
+// Dashboard account-summary helper is intentionally global so every Dashboard layer
+// (including Statistical Analysis and Advanced Evaluation) can resolve it reliably.
+window.nmDashboardAccountSummary = function(list, allList){
+ const xs=Array.isArray(list)?list:[], all=Array.isArray(allList)?allList:[];
+ if(!xs.length)return "حساب مبنا: بدون حساب انتخاب‌شده";
+ if(all.length>0&&xs.length===all.length)return "حساب مبنا: کل حساب‌ها";
+ if(xs.length===1)return `حساب مبنا: ${xs[0]}`;
+ return `حساب‌های مبنا: ${xs.join("، ")}`;
+};
+
 function makeIcon(emoji) {
   return function Icon({ size = 16, color, className, style = {} }) {
     return /* @__PURE__ */ React.createElement("span", { className, style: { fontSize: size, color, lineHeight: 1, display: "inline-flex", ...style } }, emoji);
@@ -4919,13 +4929,6 @@ class NmDashboardErrorBoundary extends React.Component {
   }
 }
 
-function nmDashboardAccountSummary(list,allList){
- const xs=Array.isArray(list)?list:[], all=Array.isArray(allList)?allList:[];
- if(!xs.length)return "حساب مبنا: بدون حساب انتخاب‌شده";
- if(all.length>0&&xs.length===all.length)return "حساب مبنا: کل حساب‌ها";
- if(xs.length===1)return `حساب مبنا: ${xs[0]}`;
- return `حساب‌های مبنا: ${xs.join("، ")}`;
-}
 function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,chartPlans,setPlans,setDayPlans,setChartPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades}){
  const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")} }catch(e){return{range:"all",session:"all",setup:"all",direction:"all"}}});
  const [showAdvanced,setShowAdvanced]=React.useState(true);
@@ -5005,7 +5008,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        React.createElement("div",{className:"flex items-center gap-2"},React.createElement("span",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")),
        showAdvanced?React.createElement(ChevronUp,{size:15,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:15,color:"var(--text-muted)"})),
      showAdvanced&&React.createElement("div",{className:"pt-2"},
-       React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
+       React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},window.nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
        
        baseAccountPanel,
        filterPanel,
@@ -8432,7 +8435,7 @@ function App() {
             React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
             showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-2" },
-            React.createElement("div", { className: "text-[9px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, nmDashboardAccountSummary(selectedStatsAccounts, accounts)),
+            React.createElement("div", { className: "text-[9px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, window.nmDashboardAccountSummary(selectedStatsAccounts, accounts)),
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
                 React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تحلیل آماری"),
                 React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "مشخص کنید تحلیل آماری بر اساس معاملات ژورنال انجام شود یا معاملات استیتمنت؛ انتخاب اینجا روی نمودارها، پارامترها و خروجی‌های تحلیل آماری اعمال می‌شود."),
