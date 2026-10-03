@@ -324,12 +324,20 @@
 ;
 </script>
 <script>document.getElementById('boot-status').textContent = 'Loading libraries…';</script>
-<script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" onerror="showBootError('Failed to load React', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" onerror="showBootError('Failed to load ReactDOM', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" onerror="showBootError('Failed to load XLSX', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.32.0/plotly.min.js" onerror="showBootError('Failed to load Plotly', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" onerror="showBootError('Failed to load Tailwind', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
+<script>
+  // If a required CDN library hangs instead of firing onerror, never leave a blank screen.
+  window.__namelloBootWatchdog = setTimeout(function () {
+    if (!window.__namelloMounted && typeof React === 'undefined') {
+      showBootError('Namello هنوز اجرا نشده', 'کتابخانه اصلی React از شبکه/کش بارگذاری نشده است. یک بار تلاش مجدد را بزنید؛ در صورت تکرار، کش سایت را پاک و دوباره وارد شوید.');
+    }
+  }, 12000);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js" onerror="showBootError('Failed to load React', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js" onerror="showBootError('Failed to load ReactDOM', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
+<script async src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" onerror="showBootError('Failed to load XLSX', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
+<script async src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.32.0/plotly.min.js" onerror="showBootError('Failed to load Plotly', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
+<script async src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" onerror="showBootError('Failed to load Tailwind', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   document.getElementById('boot-status').textContent = 'Starting app…';
@@ -2547,12 +2555,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.26";
-const NM_VERSION_CODE = 59;
+const NM_VERSION_NAME = "1.22.27";
+const NM_VERSION_CODE = 60;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۳ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.22.26: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
+    "نسخه 1.22.27: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
     "نسخه 1.22.25: پایداری لایه تنظیمات و مدیریت ترتیب لایه‌ها اصلاح شد؛ مقدار ترتیب ذخیره‌شده اعتبارسنجی می‌شود و خرابی یک آیتم ترتیب نمی‌تواند کل لایه تنظیمات را از رندر خارج کند.",
     "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
     "نسخه 1.22.23: مدیریت Chart/Trade/Day Plan از داشبورد حذف شد و تحلیل مستقیم هر سه چک‌لیست (Chart، Trade و Day Plan) در ارزیابی پیشرفته قرار گرفت؛ در ثبت ورود ژورنال «آمادگی برنامه روزانه» قبل از آمادگی ستاپ اضافه شد، چک‌لیست‌های سه‌گانه از همان‌جا قابل ویرایش/حذف/افزودن/جابجایی شدند، امتیاز آمادگی برنامه روزانه وارد تحلیل آماری و وزن‌دهی احتمال موفقیت محاسباتی شد، شماره‌گذاری ثبت ورود اصلاح شد، پروفایل/تمپلیت ظاهر مستقل گرفتند، خط زرد کنار لایه فعال حذف و «ترتیب لایه‌ها» به تنظیمات اضافه شد.",
@@ -10491,6 +10499,7 @@ try {
   root.render(React.createElement(App));
   var bs = document.getElementById("boot-status");
   if (bs) bs.style.display = "none";
+  if (window.__namelloBootWatchdog) { clearTimeout(window.__namelloBootWatchdog); window.__namelloBootWatchdog = null; }
   // چند فریم صبر می‌کنیم تا مطمئن بشیم React واقعاً چیزی تو #root رندر کرده (نه فقط render() صدا
   // زده شده باشه)، قبل از اینکه خطاهای بعدی رو «غیرکشنده» در نظر بگیریم.
   requestAnimationFrame(() => {

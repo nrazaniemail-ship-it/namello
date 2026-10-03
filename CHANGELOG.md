@@ -1,3 +1,10 @@
+# Namello 1.22.27 — Boot/CDN cache hardening
+
+- Fixed React/ReactDOM URL mismatch between `index.html` and the Service Worker cache. The app now requests the same `@18` URLs that are pre-cached.
+- Non-critical XLSX/Tesseract/Plotly/Tailwind CDN scripts no longer block the initial React boot.
+- Added a 12-second boot watchdog so a hanging CDN cannot leave a completely blank screen.
+- Service Worker updates no longer purge previous Namello caches, preserving previously cached runtime libraries during upgrades and poor-network conditions.
+
 # Changelog
 
 ## 1.22.25
