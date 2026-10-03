@@ -2557,12 +2557,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.29";
+const NM_VERSION_NAME = "1.22.30";
 const NM_VERSION_CODE = 62;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۳ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.22.29: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
+    "نسخه 1.22.30: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
     "نسخه 1.22.27: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
     "نسخه 1.22.25: پایداری لایه تنظیمات و مدیریت ترتیب لایه‌ها اصلاح شد؛ مقدار ترتیب ذخیره‌شده اعتبارسنجی می‌شود و خرابی یک آیتم ترتیب نمی‌تواند کل لایه تنظیمات را از رندر خارج کند.",
     "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
@@ -8152,46 +8152,49 @@ function App() {
         exportAoaAsPdf("مدیریت مالی", ["پارامتر", "مقدار"], aoa.slice(1));
     }
     /* ---------------- statistical analysis ---------------- */
-    const byLot = useMemo(() => groupProfitability(closedTrades, t => t.lot), [trades]);
-    const byWeekday = useMemo(() => groupProfitability(closedTrades, t => weekdayFromDateStr(t.date)), [trades]);
-    const bySystem = useMemo(() => groupProfitability(closedTrades, t => t.system), [trades]);
-    const bySession = useMemo(() => groupProfitability(closedTrades, sessionLabelOf), [trades]);
-    const byTrend = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.trend.get), [trades]);
-    const byRR = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.rr.get), [trades]);
-    const byBias = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.bias.get), [trades]);
-    const byFractal = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.fractal.get), [trades]);
-    const byMainTrend = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.mainTrend.get), [trades]);
-    const byDailyTrend = useMemo(() => groupProfitability(closedTrades, t => t.dailyTrendDirection === "bullish" ? "صعودی" : t.dailyTrendDirection === "bearish" ? "نزولی" : t.dailyTrendDirection === "neutral" ? "خنثی" : undefined), [trades]);
-    const byDailyCandle = useMemo(() => groupProfitability(closedTrades, t => t.dailyCandleDirection === "bullish" ? "صعودی" : t.dailyCandleDirection === "bearish" ? "نزولی" : t.dailyCandleDirection === "neutral" ? "خنثی" : undefined), [trades]);
-    const bySystemsMulti = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.systems || []), [trades]);
-    const byEntryTimeSystemsMulti = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.entryTimeSystems || []), [trades]);
-    const byMainGuideLevelsMulti = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.mainGuideLevels || []), [trades]);
-    const byEntryGuideLevelsMulti = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.entryGuideLevels || []), [trades]);
-    const byCondition = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.condition.get), [trades]);
-    const byWave = useMemo(() => groupProfitability(closedTrades, t => t.wave || undefined), [trades]);
-    const byTrig = useMemo(() => groupProfitabilityMulti(closedTrades, t => (t.trigs && t.trigs.length) ? t.trigs : (t.trig ? [t.trig] : [])), [trades]);
-    const byTarget = useMemo(() => groupProfitabilityMulti(closedTrades, t => (t.targets && t.targets.length) ? t.targets : (t.target ? [t.target] : [])), [trades]);
-    const byStop = useMemo(() => groupProfitabilityMulti(closedTrades, t => (t.stops && t.stops.length) ? t.stops : (t.stop ? [t.stop] : [])), [trades]);
-    const byNews = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.news.get), [trades]);
-    const bySystemWeekday = useMemo(() => groupProfitability(closedTrades, t => `${t.system || "-"} | ${weekdayFromDateStr(t.date)}`).slice(0, 8), [trades]);
-    const bySessionLot = useMemo(() => groupProfitability(closedTrades, t => `${sessionLabelOf(t)} | لات ${t.lot}`).slice(0, 8), [trades]);
-    const byReversalPattern = useMemo(() => groupProfitabilityMulti(closedTrades, t => (t.reversalPatterns && t.reversalPatterns.length) ? t.reversalPatterns : (t.reversalPattern ? [t.reversalPattern] : [])), [trades]);
-    const bySuccessProb = useMemo(() => groupProfitability(closedTrades, t => (t.successProb !== null && t.successProb !== undefined && t.successProb !== "") ? `${t.successProb}%` : undefined), [trades]);
-    const byPsychology = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.psychology || []), [trades]);
-    const byDuration = useMemo(() => groupProfitability(closedTrades, t => durationBucketFa(t.durationMinutes)), [trades]);
-    const bySetupReadiness = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.setupReadiness.get), [trades]);
-    const byChartReadiness = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.chartReadiness.get), [trades]);
-    const byDayPlanReadiness = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.dayPlanReadiness.get), [trades]);
-    const byRiskDollar = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.riskDollar.get), [trades]);
-    const bySubjectiveSuccessProb = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.successProb.get), [trades]);
-    const byCalculatedSuccessProb = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.calcSuccessProb.get), [trades]);
-    const byDirection = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.direction.get), [trades]);
-    const byPair = useMemo(() => groupProfitability(closedTrades, PARAM_DEFS.pair.get), [trades]);
-    const byDivergenceMain = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.divergenceMain || []), [trades]);
-    const byDivergenceEntry = useMemo(() => groupProfitabilityMulti(closedTrades, t => t.divergenceEntry || []), [trades]);
+    // Statistical Analysis follows the same source selected at Dashboard level.
+    // This keeps every statistical chart/export aligned with Journal vs Statement selection.
+    const statisticalClosedTrades = useMemo(() => (dashboardSelectedTrades || []).filter(t => t.status === "closed"), [dashboardSelectedTrades]);
+    const byLot = useMemo(() => groupProfitability(statisticalClosedTrades, t => t.lot), [trades]);
+    const byWeekday = useMemo(() => groupProfitability(statisticalClosedTrades, t => weekdayFromDateStr(t.date)), [trades]);
+    const bySystem = useMemo(() => groupProfitability(statisticalClosedTrades, t => t.system), [trades]);
+    const bySession = useMemo(() => groupProfitability(statisticalClosedTrades, sessionLabelOf), [trades]);
+    const byTrend = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.trend.get), [trades]);
+    const byRR = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.rr.get), [trades]);
+    const byBias = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.bias.get), [trades]);
+    const byFractal = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.fractal.get), [trades]);
+    const byMainTrend = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.mainTrend.get), [trades]);
+    const byDailyTrend = useMemo(() => groupProfitability(statisticalClosedTrades, t => t.dailyTrendDirection === "bullish" ? "صعودی" : t.dailyTrendDirection === "bearish" ? "نزولی" : t.dailyTrendDirection === "neutral" ? "خنثی" : undefined), [trades]);
+    const byDailyCandle = useMemo(() => groupProfitability(statisticalClosedTrades, t => t.dailyCandleDirection === "bullish" ? "صعودی" : t.dailyCandleDirection === "bearish" ? "نزولی" : t.dailyCandleDirection === "neutral" ? "خنثی" : undefined), [trades]);
+    const bySystemsMulti = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => t.systems || []), [trades]);
+    const byEntryTimeSystemsMulti = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => t.entryTimeSystems || []), [trades]);
+    const byMainGuideLevelsMulti = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => t.mainGuideLevels || []), [trades]);
+    const byEntryGuideLevelsMulti = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => t.entryGuideLevels || []), [trades]);
+    const byCondition = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.condition.get), [trades]);
+    const byWave = useMemo(() => groupProfitability(statisticalClosedTrades, t => t.wave || undefined), [trades]);
+    const byTrig = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => (t.trigs && t.trigs.length) ? t.trigs : (t.trig ? [t.trig] : [])), [trades]);
+    const byTarget = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => (t.targets && t.targets.length) ? t.targets : (t.target ? [t.target] : [])), [trades]);
+    const byStop = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => (t.stops && t.stops.length) ? t.stops : (t.stop ? [t.stop] : [])), [trades]);
+    const byNews = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.news.get), [trades]);
+    const bySystemWeekday = useMemo(() => groupProfitability(statisticalClosedTrades, t => `${t.system || "-"} | ${weekdayFromDateStr(t.date)}`).slice(0, 8), [trades]);
+    const bySessionLot = useMemo(() => groupProfitability(statisticalClosedTrades, t => `${sessionLabelOf(t)} | لات ${t.lot}`).slice(0, 8), [trades]);
+    const byReversalPattern = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => (t.reversalPatterns && t.reversalPatterns.length) ? t.reversalPatterns : (t.reversalPattern ? [t.reversalPattern] : [])), [trades]);
+    const bySuccessProb = useMemo(() => groupProfitability(statisticalClosedTrades, t => (t.successProb !== null && t.successProb !== undefined && t.successProb !== "") ? `${t.successProb}%` : undefined), [trades]);
+    const byPsychology = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => t.psychology || []), [trades]);
+    const byDuration = useMemo(() => groupProfitability(statisticalClosedTrades, t => durationBucketFa(t.durationMinutes)), [trades]);
+    const bySetupReadiness = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.setupReadiness.get), [trades]);
+    const byChartReadiness = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.chartReadiness.get), [trades]);
+    const byDayPlanReadiness = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.dayPlanReadiness.get), [trades]);
+    const byRiskDollar = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.riskDollar.get), [trades]);
+    const bySubjectiveSuccessProb = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.successProb.get), [trades]);
+    const byCalculatedSuccessProb = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.calcSuccessProb.get), [trades]);
+    const byDirection = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.direction.get), [trades]);
+    const byPair = useMemo(() => groupProfitability(statisticalClosedTrades, PARAM_DEFS.pair.get), [trades]);
+    const byDivergenceMain = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => t.divergenceMain || []), [trades]);
+    const byDivergenceEntry = useMemo(() => groupProfitabilityMulti(statisticalClosedTrades, t => t.divergenceEntry || []), [trades]);
     const [param3dX, setParam3dX] = useState("system");
     const [param3dY, setParam3dY] = useState("weekday");
-    const rows3d = useMemo(() => get3DRows(closedTrades, param3dX, param3dY), [trades, param3dX, param3dY]);
+    const rows3d = useMemo(() => get3DRows(statisticalClosedTrades, param3dX, param3dY), [trades, param3dX, param3dY]);
     function exportMultiTablesAsPdf(title, sections) {
         const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const NM_PDF_PALETTE = [
@@ -8419,15 +8422,18 @@ function App() {
             React.createElement("span", { className: "text-[14px] font-bold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
             showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-4" },
+            React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
+                React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تحلیل آماری"),
+                React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "مشخص کنید تحلیل آماری بر اساس معاملات ژورنال انجام شود یا معاملات استیتمنت؛ انتخاب اینجا روی نمودارها، پارامترها و خروجی‌های تحلیل آماری اعمال می‌شود."),
+                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
+                    [["journal", "معاملات ژورنال"], ["statement", "ارزیابی استیتمنت"]].map(([mode, label]) => React.createElement("button", { key: mode, type: "button", onClick: () => { setDashboardDataSource(mode); setAnalysisSource(mode); }, className: "py-2 rounded-lg text-[10px] font-semibold", style: { background: dashboardDataSource === mode ? "var(--accent-gold)" : "var(--bg-page)", color: dashboardDataSource === mode ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid " + (dashboardDataSource === mode ? "var(--accent-gold)" : "var(--border-2)") } }, label)))
+            ),
             RE(NmPriceExtremesAnalysis, null),
             RE(NmDrawdownChart, { trades: dashboardSelectedTrades, startingBalance: accSettings.startingBalance }),
             RE(NmRMultipleCard, { trades: dashboardSelectedTrades }),
             RE(NmEntryVsExtremesCard, { trades: dashboardSelectedTrades }),
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u062A\u062D\u0644\u06CC\u0644 \u0622\u0645\u0627\u0631\u06CC \u2014 \u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0647\u0627"),
-            React.createElement("div", { className: "flex gap-2 mb-4" },
-                React.createElement("button", { onClick: () => { setAnalysisSource("journal"); setDashboardDataSource("journal"); }, className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: analysisSource === "journal" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: analysisSource === "journal" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "معاملات ژورنال"),
-                React.createElement("button", { onClick: () => { setAnalysisSource("statement"); setDashboardDataSource("statement"); }, className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: analysisSource === "statement" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: analysisSource === "statement" ? "var(--accent-gold)" : "var(--text-secondary)" } }, "معاملات استیتمنت")),
-            analysisSource === "statement" ? (React.createElement(StatementAnalysisView, { statementTrades: statementTrades })) : (
+            dashboardDataSource === "statement" ? (React.createElement(StatementAnalysisView, { statementTrades: statementTrades })) : (
             dashboardSelectedTrades.filter(t => t.status === "closed").length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644\u060C \u062D\u062F\u0627\u0642\u0644 \u0686\u0646\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u0644\u0627\u0632\u0645 \u0627\u0633\u062A.")) : (React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("button", { type: "button", onClick: () => setShowBestConditionsList(v => !v), className: "w-full flex items-center justify-between" },
@@ -10157,7 +10163,8 @@ function App() {
                                 React.createElement("span", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u0634\u0631\u0627\u06CC\u0637 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u062B\u0628\u062A\u200C\u0634\u062F\u0647")));
                         })())),
                 React.createElement("div", { className: "mb-2 mt-2" },
-                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(32, appLanguage === "en" ? "Buy/Sell" : "خرید/فروش")),
+                    tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ")}),
+                React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(33, appLanguage === "en" ? "Buy/Sell" : "خرید/فروش")),
                     React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "buy", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "buy") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { background: openForm.direction === "buy" ? "#34D39922" : "var(--bg-card2)", color: openForm.direction === "buy" ? "#34D399" : "var(--text-muted)" } },
                             React.createElement(TrendingUp, { size: 14 }),
@@ -10167,12 +10174,11 @@ function App() {
                             React.createElement(TrendingDown, { size: 14 }),
                             " ",
                             React.createElement("b", { className: "font-extrabold" }, "\u0641\u0631\u0648\u0634")))),
-                React.createElement(Field, { label: numLabel(33, hlLabel(appLanguage === "en" ? "Trade Alignment with Main Trend" : "هم راستایی معامله با روند اصلی")) },
+                React.createElement(Field, { label: numLabel(34, hlLabel(appLanguage === "en" ? "Trade Alignment with Main Trend" : "هم راستایی معامله با روند اصلی")) },
                     React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "with" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "with" ? "#60A5FA22" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "with" ? "#60A5FA" : "var(--text-muted)" } }, "\u0647\u0645 \u062C\u0647\u062A \u0628\u0627 \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC"),
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "against" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "against" ? "#FBBF2422" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "against" ? "#FBBF24" : "var(--text-muted)" } }, "\u062E\u0644\u0627\u0641 \u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC")),
                     React.createElement("p", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u00AB\u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC\u00BB \u0648 \u00AB\u062E\u0631\u06CC\u062F/\u0641\u0631\u0648\u0634\u00BB \u062E\u0648\u062F\u06A9\u0627\u0631 \u0627\u0646\u062A\u062E\u0627\u0628 \u0645\u06CC\u200C\u0634\u0647\u061B \u0627\u06AF\u0647 \u0644\u0627\u0632\u0645 \u0628\u0648\u062F \u062F\u0633\u062A\u06CC \u0647\u0645 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0639\u0648\u0636\u0634 \u06A9\u0646\u06CC.")),
-                tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:numLabel(34,"آمادگی ستاپ")}),
                 React.createElement(Field, { label: numLabel(35, appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله") },
                     React.createElement(ChartImageField, { label: "چارت تایم اصلی", value: openForm.chartImageMain || "", onChange: v => setOpenForm({ ...openForm, chartImageMain: v }) }),
                     React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }), onPriceExtract: r => {
