@@ -2302,6 +2302,50 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
                     ? React.createElement("p", { className: "text-[11px]", style: { color: "var(--text-muted)" } }, "داده‌ی کافی برای این بخش هنوز جمع نشده.")
                     : q.items.map((txt, i) => React.createElement("p", { key: i, className: "text-[11px] leading-6 mb-1.5", style: { color: "var(--text-secondary)" } }, "• ", txt)))))))));
 }
+
+function nmBuildDashboardStatisticalData(sourceTrades,param3dX,param3dY){
+ const statisticalClosedTrades=(sourceTrades||[]).filter(t=>t.status==="closed");
+ const byLot=groupProfitability(statisticalClosedTrades,t=>t.lot);
+ const byWeekday=groupProfitability(statisticalClosedTrades,t=>weekdayFromDateStr(t.date));
+ const bySystem=groupProfitability(statisticalClosedTrades,t=>t.system);
+ const bySession=groupProfitability(statisticalClosedTrades,sessionLabelOf);
+ const byTrend=groupProfitability(statisticalClosedTrades,PARAM_DEFS.trend.get);
+ const byRR=groupProfitability(statisticalClosedTrades,PARAM_DEFS.rr.get);
+ const byBias=groupProfitability(statisticalClosedTrades,PARAM_DEFS.bias.get);
+ const byFractal=groupProfitability(statisticalClosedTrades,PARAM_DEFS.fractal.get);
+ const byMainTrend=groupProfitability(statisticalClosedTrades,PARAM_DEFS.mainTrend.get);
+ const byDailyTrend=groupProfitability(statisticalClosedTrades,t=>t.dailyTrendDirection==="bullish"?"صعودی":t.dailyTrendDirection==="bearish"?"نزولی":t.dailyTrendDirection==="neutral"?"خنثی":undefined);
+ const byDailyCandle=groupProfitability(statisticalClosedTrades,t=>t.dailyCandleDirection==="bullish"?"صعودی":t.dailyCandleDirection==="bearish"?"نزولی":t.dailyCandleDirection==="neutral"?"خنثی":undefined);
+ const bySystemsMulti=groupProfitabilityMulti(statisticalClosedTrades,t=>t.systems||[]);
+ const byEntryTimeSystemsMulti=groupProfitabilityMulti(statisticalClosedTrades,t=>t.entryTimeSystems||[]);
+ const byMainGuideLevelsMulti=groupProfitabilityMulti(statisticalClosedTrades,t=>t.mainGuideLevels||[]);
+ const byEntryGuideLevelsMulti=groupProfitabilityMulti(statisticalClosedTrades,t=>t.entryGuideLevels||[]);
+ const byCondition=groupProfitability(statisticalClosedTrades,PARAM_DEFS.condition.get);
+ const byWave=groupProfitability(statisticalClosedTrades,t=>t.wave||undefined);
+ const byTrig=groupProfitabilityMulti(statisticalClosedTrades,t=>(t.trigs&&t.trigs.length)?t.trigs:(t.trig?[t.trig]:[]));
+ const byTarget=groupProfitabilityMulti(statisticalClosedTrades,t=>(t.targets&&t.targets.length)?t.targets:(t.target?[t.target]:[]));
+ const byStop=groupProfitabilityMulti(statisticalClosedTrades,t=>(t.stops&&t.stops.length)?t.stops:(t.stop?[t.stop]:[]));
+ const byNews=groupProfitability(statisticalClosedTrades,PARAM_DEFS.news.get);
+ const bySystemWeekday=groupProfitability(statisticalClosedTrades,t=>`${t.system||"-"} | ${weekdayFromDateStr(t.date)}`).slice(0,8);
+ const bySessionLot=groupProfitability(statisticalClosedTrades,t=>`${sessionLabelOf(t)} | لات ${t.lot}`).slice(0,8);
+ const byReversalPattern=groupProfitabilityMulti(statisticalClosedTrades,t=>(t.reversalPatterns&&t.reversalPatterns.length)?t.reversalPatterns:(t.reversalPattern?[t.reversalPattern]:[]));
+ const bySuccessProb=groupProfitability(statisticalClosedTrades,t=>(t.successProb!==null&&t.successProb!==undefined&&t.successProb!=="")?`${t.successProb}%`:undefined);
+ const byPsychology=groupProfitabilityMulti(statisticalClosedTrades,t=>t.psychology||[]);
+ const byDuration=groupProfitability(statisticalClosedTrades,t=>durationBucketFa(t.durationMinutes));
+ const bySetupReadiness=groupProfitability(statisticalClosedTrades,PARAM_DEFS.setupReadiness.get);
+ const byChartReadiness=groupProfitability(statisticalClosedTrades,PARAM_DEFS.chartReadiness.get);
+ const byDayPlanReadiness=groupProfitability(statisticalClosedTrades,PARAM_DEFS.dayPlanReadiness.get);
+ const byRiskDollar=groupProfitability(statisticalClosedTrades,PARAM_DEFS.riskDollar.get);
+ const bySubjectiveSuccessProb=groupProfitability(statisticalClosedTrades,PARAM_DEFS.successProb.get);
+ const byCalculatedSuccessProb=groupProfitability(statisticalClosedTrades,PARAM_DEFS.calcSuccessProb.get);
+ const byDirection=groupProfitability(statisticalClosedTrades,PARAM_DEFS.direction.get);
+ const byPair=groupProfitability(statisticalClosedTrades,PARAM_DEFS.pair.get);
+ const byDivergenceMain=groupProfitabilityMulti(statisticalClosedTrades,t=>t.divergenceMain||[]);
+ const byDivergenceEntry=groupProfitabilityMulti(statisticalClosedTrades,t=>t.divergenceEntry||[]);
+ const rows3d=get3DRows(statisticalClosedTrades,param3dX,param3dY);
+ return {statisticalClosedTrades,byLot,byWeekday,bySystem,bySession,byTrend,byRR,byBias,byFractal,byMainTrend,byDailyTrend,byDailyCandle,bySystemsMulti,byEntryTimeSystemsMulti,byMainGuideLevelsMulti,byEntryGuideLevelsMulti,byCondition,byWave,byTrig,byTarget,byStop,byNews,bySystemWeekday,bySessionLot,byReversalPattern,bySuccessProb,byPsychology,byDuration,bySetupReadiness,byChartReadiness,byDayPlanReadiness,byRiskDollar,bySubjectiveSuccessProb,byCalculatedSuccessProb,byDirection,byPair,byDivergenceMain,byDivergenceEntry,rows3d};
+}
+
 function StatementAnalysisView({ statementTrades }) {
     const stats = useMemo(() => computeFinancialMetrics(statementTrades, 0), [statementTrades]);
     const bySymbol = useMemo(() => groupProfitability(statementTrades, t => t.pair), [statementTrades]);
@@ -4964,8 +5008,8 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  };
  const baseAccountPanel=React.createElement("div",{className:"rounded-2xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
    React.createElement("div",{className:"rounded-xl p-2.5 mb-2",style:{background:"color-mix(in srgb, #F59E0B 7%, var(--bg-card2))",border:"1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))"}},
-     React.createElement("div",{className:"text-[11px] font-semibold mb-1.5",style:{color:"var(--text-primary)"}},"منبع ارزیابی این Dashboard"),
-     React.createElement("div",{className:"text-[9px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"با انتخاب استیتمنت، تمام تحلیل آماری و ارزیابی پیشرفته بر اساس معاملات واردشده از استیتمنت همین حساب‌های مبنا محاسبه می‌شود."),
+     React.createElement("div",{className:"text-[11px] font-semibold mb-1.5",style:{color:"var(--text-primary)"}},"منبع ارزیابی پیشرفته"),
+     React.createElement("div",{className:"text-[9px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"این منبع فقط برای ارزیابی پیشرفته و ویجت‌های داشبورد فعال است؛ «تحلیل آماری» منبع مستقل خودش را دارد."),
      React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},[["journal","معاملات ژورنال"],["statement","ارزیابی استیتمنت"]].map(([mode,label])=>React.createElement("button",{key:mode,type:"button",onClick:()=>{onDashboardDataSourceChange(mode);},className:"py-2 rounded-lg text-[10px] font-semibold",style:{background:dashboardDataSource===mode?"var(--accent-gold)":"var(--bg-page)",color:dashboardDataSource===mode?"var(--bg-page)":"var(--text-secondary)",border:"1px solid "+(dashboardDataSource===mode?"var(--accent-gold)":"var(--border-2)")}},label))),
      dashboardDataSource==="statement" && React.createElement("div",{className:"mt-2"},
        React.createElement("div",{className:"text-[9px] mb-1.5",style:{color:"var(--text-muted)"}},activeAccount?`حساب مقصد ایمپورت: ${activeAccount}`:"ابتدا یک حساب را فعال کن"),
@@ -5355,6 +5399,7 @@ function App() {
     const [statementImporting, setStatementImporting] = useState(false);
     const [statementImportError, setStatementImportError] = useState("");
     const [dashboardDataSource, setDashboardDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_dashboard_data_source_v1") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
+    const [dashboardStatisticalDataSource, setDashboardStatisticalDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_dashboard_statistical_data_source_v1") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
     const [dashboardStatementCache, setDashboardStatementCache] = useState({});
     const [analysisSource, setAnalysisSource] = useState("journal");
     const [showStatisticalAnalysis, setShowStatisticalAnalysis] = useState(false);
@@ -6841,7 +6886,8 @@ function App() {
             setDashboardStatementCache(prev => ({ ...prev, ...updates }));
         })();
     }, [selectedStatsAccounts.join(","), activeAccount]);
-    useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_data_source_v1", dashboardDataSource); } catch (e) {} setAnalysisSource(dashboardDataSource); }, [dashboardDataSource]);
+    useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_data_source_v1", dashboardDataSource); } catch (e) {} }, [dashboardDataSource]);
+    useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_statistical_data_source_v1", dashboardStatisticalDataSource); } catch (e) {} }, [dashboardStatisticalDataSource]);
     const statsClosedTrades = useMemo(() => {
         const all = [];
         selectedStatsAccounts.forEach(code => {
@@ -6869,6 +6915,7 @@ function App() {
         return all;
     }, [dashboardSelectedAccounts.join(","), statementTrades, dashboardStatementCache, activeAccount]);
     const dashboardSelectedTrades = dashboardDataSource === "statement" ? dashboardStatementTrades : dashboardJournalTrades;
+    const dashboardStatisticalSelectedTrades = dashboardStatisticalDataSource === "statement" ? dashboardStatementTrades : dashboardJournalTrades;
     const dashboardStartingBalance = accSettings.startingBalance;
     const conditionStats = useMemo(() => computeConditionStats(statsClosedTrades, calcProbParams), [statsClosedTrades, calcProbParams]);
     function toggleStatsAccount(code) {
@@ -8318,7 +8365,7 @@ function App() {
         ]);
     }
     function dashboardStatExportData() {
-        const src = (dashboardSelectedTrades || []).filter(t => t.status === "closed");
+        const src = (dashboardStatisticalSelectedTrades || []).filter(t => t.status === "closed");
         const multi = fn => groupProfitabilityMulti(src, fn);
         return {byLot:groupProfitability(src,t=>t.lot),byRiskDollar:groupProfitability(src,PARAM_DEFS.riskDollar.get),bySubjectiveSuccessProb:groupProfitability(src,PARAM_DEFS.successProb.get),byCalculatedSuccessProb:groupProfitability(src,PARAM_DEFS.calcSuccessProb.get),byDirection:groupProfitability(src,PARAM_DEFS.direction.get),byPair:groupProfitability(src,PARAM_DEFS.pair.get),byDivergenceMain:multi(t=>t.divergenceMain||[]),byDivergenceEntry:multi(t=>t.divergenceEntry||[]),byWeekday:groupProfitability(src,t=>weekdayFromDateStr(t.date)),bySystem:groupProfitability(src,t=>t.system),bySession:groupProfitability(src,sessionLabelOf),byTrend:groupProfitability(src,PARAM_DEFS.trend.get),byRR:groupProfitability(src,PARAM_DEFS.rr.get),byBias:groupProfitability(src,PARAM_DEFS.bias.get),byFractal:groupProfitability(src,PARAM_DEFS.fractal.get),byMainTrend:groupProfitability(src,PARAM_DEFS.mainTrend.get),byCondition:groupProfitability(src,PARAM_DEFS.condition.get),byTrig:multi(t=>(t.trigs&&t.trigs.length)?t.trigs:(t.trig?[t.trig]:[])),byTarget:multi(t=>(t.targets&&t.targets.length)?t.targets:(t.target?[t.target]:[])),byStop:multi(t=>(t.stops&&t.stops.length)?t.stops:(t.stop?[t.stop]:[])),byNews:groupProfitability(src,PARAM_DEFS.news.get),byDuration:groupProfitability(src,t=>durationBucketFa(t.durationMinutes)),bySetupReadiness:groupProfitability(src,PARAM_DEFS.setupReadiness.get),byChartReadiness:groupProfitability(src,PARAM_DEFS.chartReadiness.get),byDayPlanReadiness:groupProfitability(src,PARAM_DEFS.dayPlanReadiness.get),bySystemWeekday:groupProfitability(src,t=>`${t.system||"-"} | ${weekdayFromDateStr(t.date)}`).slice(0,8),bySessionLot:groupProfitability(src,t=>`${sessionLabelOf(t)} | لات ${t.lot}`).slice(0,8),source:src};
     }
@@ -8430,7 +8477,9 @@ function App() {
             { name: "روانشناسی", header: ["دسته", "توضیح"], rows: psychRows },
         ]);
     }
-    const nmStatisticalAnalysisSection = React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
+    const nmStatisticalAnalysisSection = (() => {
+        const { byLot, byWeekday, bySystem, bySession, byTrend, byRR, byBias, byFractal, byMainTrend, byDailyTrend, byDailyCandle, bySystemsMulti, byEntryTimeSystemsMulti, byMainGuideLevelsMulti, byEntryGuideLevelsMulti, byCondition, byWave, byTrig, byTarget, byStop, byNews, bySystemWeekday, bySessionLot, byReversalPattern, bySuccessProb, byPsychology, byDuration, bySetupReadiness, byChartReadiness, byDayPlanReadiness, byRiskDollar, bySubjectiveSuccessProb, byCalculatedSuccessProb, byDirection, byPair, byDivergenceMain, byDivergenceEntry, rows3d } = nmBuildDashboardStatisticalData(dashboardStatisticalSelectedTrades, param3dX, param3dY);
+        return React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
         React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #3B82F6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))" }, "aria-expanded": showStatisticalAnalysis },
             React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
             showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
@@ -8438,17 +8487,22 @@ function App() {
             React.createElement("div", { className: "text-[9px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, window.nmDashboardAccountSummary(selectedStatsAccounts, accounts)),
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
                 React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تحلیل آماری"),
-                React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "مشخص کنید تحلیل آماری بر اساس معاملات ژورنال انجام شود یا معاملات استیتمنت؛ انتخاب اینجا روی نمودارها، پارامترها و خروجی‌های تحلیل آماری اعمال می‌شود."),
+                React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "منبع این بخش مستقل از ارزیابی پیشرفته است. انتخاب ژورنال یا استیتمنت فقط نمودارها، پارامترها و خروجی‌های همین تحلیل آماری را تغییر می‌دهد."),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                    [["journal", "معاملات ژورنال"], ["statement", "ارزیابی استیتمنت"]].map(([mode, label]) => React.createElement("button", { key: mode, type: "button", onClick: () => { setDashboardDataSource(mode); setAnalysisSource(mode); }, className: "py-2 rounded-lg text-[10px] font-semibold", style: { background: dashboardDataSource === mode ? "var(--accent-gold)" : "var(--bg-page)", color: dashboardDataSource === mode ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid " + (dashboardDataSource === mode ? "var(--accent-gold)" : "var(--border-2)") } }, label)))
-            ),
-            RE(NmPriceExtremesAnalysis, null),
-            RE(NmDrawdownChart, { trades: dashboardSelectedTrades, startingBalance: accSettings.startingBalance }),
-            RE(NmRMultipleCard, { trades: dashboardSelectedTrades }),
-            RE(NmEntryVsExtremesCard, { trades: dashboardSelectedTrades }),
+                    [["journal", "معاملات ژورنال"], ["statement", "ارزیابی استیتمنت"]].map(([mode, label]) => React.createElement("button", { key: mode, type: "button", onClick: () => setDashboardStatisticalDataSource(mode), className: "py-2 rounded-lg text-[10px] font-semibold", style: { background: dashboardStatisticalDataSource === mode ? "var(--accent-gold)" : "var(--bg-page)", color: dashboardStatisticalDataSource === mode ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid " + (dashboardStatisticalDataSource === mode ? "var(--accent-gold)" : "var(--border-2)") } }, label))),
+                dashboardStatisticalDataSource === "statement" && React.createElement("div", { className: "mt-2" },
+                    React.createElement("div", { className: "text-[9px] mb-1.5", style: { color: "var(--text-muted)" } }, activeAccount ? `حساب مقصد ایمپورت: ${activeAccount}` : "ابتدا یک حساب را فعال کن"),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
+                        React.createElement("label", { className: "py-2 rounded-lg text-[10px] text-center cursor-pointer", style: { background: "#F59E0B", color: "#17130b" } }, statementImporting ? "در حال پردازش…" : "ایمپورت استیتمنت", React.createElement("input", { type: "file", accept: ".csv,.xlsx,.xls,.htm,.html", multiple: true, className: "hidden", disabled: statementImporting || !activeAccount, onChange: e => { if (e.target.files?.length) onImportDashboardStatementFiles(e.target.files); e.target.value = ""; } })),
+                        React.createElement("button", { type: "button", disabled: !statementTrades.length, onClick: onClearDashboardStatement, className: "py-2 rounded-lg text-[10px]", style: { background: "var(--bg-page)", color: statementTrades.length ? "#F87171" : "var(--text-muted)", border: "1px solid var(--border-2)" } }, "پاک‌کردن استیتمنت")),
+                    statementImportError && React.createElement("div", { className: "text-[9px] mt-1.5", style: { color: "#F87171" } }, statementImportError))
+            ),            RE(NmPriceExtremesAnalysis, null),
+            RE(NmDrawdownChart, { trades: dashboardStatisticalSelectedTrades, startingBalance: accSettings.startingBalance }),
+            RE(NmRMultipleCard, { trades: dashboardStatisticalSelectedTrades }),
+            RE(NmEntryVsExtremesCard, { trades: dashboardStatisticalSelectedTrades }),
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u062A\u062D\u0644\u06CC\u0644 \u0622\u0645\u0627\u0631\u06CC \u2014 \u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0647\u0627"),
-            dashboardDataSource === "statement" ? (React.createElement(StatementAnalysisView, { statementTrades: statementTrades })) : (
-            dashboardSelectedTrades.filter(t => t.status === "closed").length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644\u060C \u062D\u062F\u0627\u0642\u0644 \u0686\u0646\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u0644\u0627\u0632\u0645 \u0627\u0633\u062A.")) : (React.createElement(React.Fragment, null,
+            dashboardStatisticalDataSource === "statement" ? (React.createElement(StatementAnalysisView, { statementTrades: dashboardStatisticalSelectedTrades })) : (
+            dashboardStatisticalSelectedTrades.filter(t => t.status === "closed").length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644\u060C \u062D\u062F\u0627\u0642\u0644 \u0686\u0646\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u0644\u0627\u0632\u0645 \u0627\u0633\u062A.")) : (React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("button", { type: "button", onClick: () => setShowBestConditionsList(v => !v), className: "w-full flex items-center justify-between" },
                         React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--accent-gold)" } }, "\u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u0634\u0631\u0627\u06CC\u0637 \u0645\u0639\u0627\u0645\u0644\u0647"),
@@ -8607,7 +8661,7 @@ function App() {
                         React.createElement("button", { onClick: exportDashboardStatisticalExcel, className: "flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-semibold", style: { background: "#3B82F6", color: "#fff" } }, React.createElement(Download, { size: 15 }), "Excel تحلیل آماری"),
                         React.createElement("button", { onClick: exportDashboardStatisticalPdf, className: "flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-semibold", style: { background: "var(--bg-card2)", color: "#60A5FA", border: "1px solid #3B82F6" } }, React.createElement(Download, { size: 15 }), "PDF تحلیل آماری")))))))
     );
-    return (React.createElement("div", { dir: "rtl", lang: "fa", className: "min-h-screen w-full pb-24", style: { background: "var(--bg-page)", fontFamily: "Vazirmatn, sans-serif" } },
+    })();    return (React.createElement("div", { dir: "rtl", lang: "fa", className: "min-h-screen w-full pb-24", style: { background: "var(--bg-page)", fontFamily: "Vazirmatn, sans-serif" } },
         React.createElement("style", null, `
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Estedad:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
         * { box-sizing: border-box; }
