@@ -7319,7 +7319,15 @@ function App() {
         });
         setShowOpenForm(true);
     }
+    const saveOpenTradeTapRef = useRef(0);
+    function handleSaveOpenTradeTap() {
+        const nowTap = Date.now();
+        if (nowTap - saveOpenTradeTapRef.current < 700) return;
+        saveOpenTradeTapRef.current = nowTap;
+        saveOpenTrade();
+    }
     function saveOpenTrade() {
+        try {
         if (!openForm.date || !openForm.time)
             return;
         const [hh, mi] = openForm.time.split(":").map(Number);
@@ -7387,6 +7395,10 @@ function App() {
         persistTrades([trade, ...trades]);
         setShowOpenForm(false);
         setOpenForm(null);
+        } catch (err) {
+            console.error("Namello saveOpenTrade failed", err);
+            try { showToast("ثبت ورود انجام نشد؛ خطای داخلی ثبت معامله رخ داد."); } catch (_) {}
+        }
     }
     function openCloseForm(trade) {
         setClosingTrade(trade);
@@ -10306,7 +10318,7 @@ function App() {
                 React.createElement(Field, { label: numLabel(36, appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله") },
                     React.createElement(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت", value: openForm.voiceNoteBefore || "", onChange: v => setOpenForm({ ...openForm, voiceNoteBefore: v }) })),
                 RE(NmCustomFieldsFormSection, { values: openForm.customFields, onChange: v => setOpenForm({ ...openForm, customFields: v }) }),
-                React.createElement("button", { onClick: saveOpenTrade, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
+                React.createElement("button", { type: "button", onPointerUp: handleSaveOpenTradeTap, onClick: handleSaveOpenTradeTap, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2", style: { background: "var(--accent-gold)", color: "var(--bg-page)", touchAction: "manipulation", pointerEvents: "auto", position: "relative", zIndex: 100 } },
                     React.createElement(Check, { size: 16 }),
                     " ", appLanguage === "en" ? "Log Entry" : "\u062B\u0628\u062A \u0648\u0631\u0648\u062F")))),
         closingTrade && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setClosingTrade(null) },
