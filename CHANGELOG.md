@@ -1,3 +1,8 @@
+# Namello 1.22.28
+
+- Fix Settings-only crash caused by missing `NM_DEVICE_KEY` and `NM_SYNC_STATE_KEY` declarations in the sync helper layer.
+- Version Code: 61.
+
 # Namello 1.22.27 — Boot/CDN cache hardening
 
 - Fixed React/ReactDOM URL mismatch between `index.html` and the Service Worker cache. The app now requests the same `@18` URLs that are pre-cached.

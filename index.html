@@ -2555,11 +2555,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.27";
-const NM_VERSION_CODE = 60;
+const NM_VERSION_NAME = "1.22.28";
+const NM_VERSION_CODE = 61;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۳ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.28: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
     "نسخه 1.22.27: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
     "نسخه 1.22.25: پایداری لایه تنظیمات و مدیریت ترتیب لایه‌ها اصلاح شد؛ مقدار ترتیب ذخیره‌شده اعتبارسنجی می‌شود و خرابی یک آیتم ترتیب نمی‌تواند کل لایه تنظیمات را از رندر خارج کند.",
     "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
@@ -5109,6 +5110,10 @@ function NmPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checkli
    ))))
  );
 }
+
+// Sync persistence keys (must be declared before any Settings render can call the sync helpers).
+const NM_DEVICE_KEY = "namello_device_id_v1";
+const NM_SYNC_STATE_KEY = "namello_sync_state_v1";
 
 function nmDeviceId(){ let id=localStorage.getItem(NM_DEVICE_KEY); if(!id){ id=(crypto.randomUUID?crypto.randomUUID():"nm-"+Date.now()+"-"+Math.random().toString(16).slice(2)); try{localStorage.setItem(NM_DEVICE_KEY,id)}catch(e){} } return id; }
 function nmSyncState(){ return nmSecRead(NM_SYNC_STATE_KEY,{revision:0,updatedAt:null,lastRemoteAt:null,lastStatus:"local-only",conflictCount:0}); }
