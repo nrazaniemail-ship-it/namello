@@ -1136,6 +1136,15 @@ function calcPips(pair, direction, entry, exit) {
     const signed = direction === "sell" ? -diff : diff;
     return Math.round(signed * 10) / 10;
 }
+function nmRiskDollarFromPrices(pair, entry, stop, lot) {
+    const p=(pair||"").toUpperCase(), e=Number(entry), sl=Number(stop), l=Number(lot);
+    if(!Number.isFinite(e)||!Number.isFinite(sl)||!Number.isFinite(l)||l<=0) return null;
+    const diff=Math.abs(e-sl);
+    if(p.includes("XAU")) return diff*100*l; // standard XAUUSD contract: 100 oz/lot
+    if(p.endsWith("USD")) return diff*100000*l; // USD-quoted FX pairs in a USD account
+    if(p==="USDJPY") return diff*100000/e*l;
+    return diff/pipSize(pair)*pipValuePerLot(pair)*l; // fallback for cross pairs
+}
 function pipValuePerLot(pair) {
     const p = (pair || "").toUpperCase();
     if (p.includes("XAU"))
@@ -1544,33 +1553,14 @@ function buildCalcProbParams(config, dst, customDefs) {
 }
 const CALC_PROB_PARAM_KEYS = [...CALC_PROB_STATIC_PARAMS.map(p => p.key), "session"];
 const DEFAULT_CALC_PROB_WEIGHTS = {
-    setupReadiness: 5,
-    chartReadiness: 5,
-    dayPlanReadiness: 5, // آمادگی برنامه روزانه — قابل تنظیم توسط کاربر
-    fractal: 3, // فراکتال — کم
-    mainTrend: 10, // جهت روند اصلی HTF — بسیار زیاد
-    dailyTrend: 8, // جهت روند روزانه — زیاد
-    dailyCandle: 3, // جهت کندل روزانه — کم
-    bias: 8, // جهت روند تایم‌فریم ورود — زیاد
-    condition: 5, // بازار تایم ورود / وضعیت بازار — متوسط
-    wave: 6, // موج/مومنتوم تایم ورود — متوسط
-    trend: 0, // جهت ترید (با/خلاف روند اصلی) — در جدول وزن‌دهی نبود
-    trig: 12, // نقطه ورود — بسیار زیاد
-    target: 5, // حد سود (TP) — متوسط
-    stop: 8, // حد ضرر (SL) — زیاد
-    rr: 8, // R-Multiple / Risk:Reward — زیاد
-    lot: 0, // حجم (لات) — قابل تنظیم توسط کاربر
-    riskDollar: 0, // ریسک دلاری — قابل تنظیم توسط کاربر
-    successProb: 0, // احتمال موفقیت ذهنی — قابل تنظیم توسط کاربر
-    systems: 4, // سیستم معاملاتی تایم اصلی — متوسط
-    entryTimeSystems: 5, // سیستم معاملاتی تایم ورود — متوسط
-    mainGuideLevels: 4, // سطوح راهنمای تایم اصلی — متوسط
-    entryGuideLevels: 4, // سطوح راهنمای تایم ورود — متوسط
-    reversalPatterns: 4, // الگوی کندل برگشتی تایم ورود — متوسط
-    psychology: 4, // روانشناسی — متوسط
-    session: 7, // سشن / رویداد معاملاتی — زیاد
-    direction: 0, pair: 0, weekday: 0, news: 0, // پارامترهای جدید: پیش‌فرض بدون تأثیر روی احتمال؛ از «وزن‌ها» قابل تنظیم
-    divergenceMain: 3, divergenceEntry: 3,
+    // این وزن‌ها baseline مهندسی‌شده‌اند، نه احتمال آماری تضمین‌شده؛ اعتبارسنجی نهایی باید با داده‌ی خود کاربر انجام شود.
+    dayPlanReadiness: 6, setupReadiness: 7, chartReadiness: 7,
+    fractal: 3, mainTrend: 11, dailyTrend: 8, dailyCandle: 3,
+    bias: 9, condition: 5, wave: 5, trend: 0, trig: 13,
+    target: 5, stop: 10, rr: 9, lot: 0, riskDollar: 0, successProb: 0,
+    systems: 5, entryTimeSystems: 6, mainGuideLevels: 5, entryGuideLevels: 5,
+    reversalPatterns: 4, psychology: 4, session: 8,
+    direction: 0, pair: 0, weekday: 0, news: 0, divergenceMain: 4, divergenceEntry: 4,
 };
 function normalizeProfitScores(groups) {
     if (!groups.length)
@@ -1935,66 +1925,13 @@ function nmNumToken(v) {
     if (!t || !/^-?\d+(?:\.\d+)?$/.test(t)) return null;
     const n = Number(t); return Number.isFinite(n) ? n : null;
 }
-async function nmExtractChartPrices(image, direction) {
-    const T = await nmLoadTesseract();
-    const result = await T.recognize(image, 'eng', { logger: () => {} });
-    const words = result?.data?.words || [];
-    const nums = words.map(w => ({ n: nmNumToken(w.text), text: String(w.text || '').toUpperCase(), x: Number(w.bbox?.x0 || 0), y: Number(w.bbox?.y0 || 0), x2: Number(w.bbox?.x1 || 0), y2: Number(w.bbox?.y1 || 0) })).filter(x => x.n !== null);
-    if (!nums.length) throw new Error('هیچ عدد قیمتی از تصویر خوانده نشد.');
-    const width = Math.max(...words.map(w => Number(w.bbox?.x1 || 0)), 1);
-    const right = nums.filter(x => x.x > width * 0.55 && x.n > 0);
-    const candidates = (right.length >= 3 ? right : nums).filter(x => x.n > 0);
-    const uniq = []; const seen = new Set();
-    candidates.sort((a,b)=>a.y-b.y).forEach(x=>{ const k=x.n.toFixed(6); if(!seen.has(k)){seen.add(k);uniq.push(x);} });
-    const labelFind = (rx) => nums.filter(x => rx.test(x.text)).sort((a,b)=>a.x-b.x);
-    const nearest = (word, pool) => pool.slice().sort((a,b)=>Math.abs(a.y-word.y)-Math.abs(b.y-word.y))[0];
-    const tpLabel = labelFind(/\b(TP|TARGET)\b/)[0];
-    const slLabel = labelFind(/\b(SL|STOP)\b/)[0];
-    const entryLabel = labelFind(/\b(ENTRY|ENT)\b/)[0];
-    let entry = entryLabel ? nearest(entryLabel, nums) : null;
-    let target = tpLabel ? nearest(tpLabel, nums) : null;
-    let stop = slLabel ? nearest(slLabel, nums) : null;
-    const pool = uniq.slice(0, 12);
-    if (!entry || !target || !stop) {
-        const three = pool.length >= 3 ? [pool[0], pool[Math.floor((pool.length-1)/2)], pool[pool.length-1]] : pool;
-        if (three.length >= 3) {
-            if (String(direction).toLowerCase() === 'sell') { stop = stop || three[0]; entry = entry || three[1]; target = target || three[2]; }
-            else { target = target || three[0]; entry = entry || three[1]; stop = stop || three[2]; }
-        }
-    }
-    return { entry: entry?.n ?? null, target: target?.n ?? null, stop: stop?.n ?? null, candidates: uniq.slice(0, 8).map(x=>x.n) };
+function nmOcrCanvasVariant(image, mode) {
+ return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>{ try { const scale=mode==='precise'?2.5:1.8,w=Math.min(3200,Math.max(900,Math.round(img.naturalWidth*scale))),h=Math.min(2200,Math.max(650,Math.round(img.naturalHeight*scale))); const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);if(mode==='precise'){const im=ctx.getImageData(0,0,w,h),d=im.data;for(let i=0;i<d.length;i+=4){const g=.299*d[i]+.587*d[i+1]+.114*d[i+2],v=g>178?255:g<82?0:g;d[i]=d[i+1]=d[i+2]=v;}ctx.putImageData(im,0,0);}resolve(c.toDataURL('image/png'));}catch(e){reject(e);}};img.onerror=reject;img.src=image;});
 }
-function ChartImageField({ label, value, onChange, onPriceExtract, direction }) {
-    const inputRef = useRef(null);
-    const [ocrBusy, setOcrBusy] = useState(false);
-    function handleFile(e) {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => onChange(reader.result);
-        reader.readAsDataURL(file);
-        e.target.value = '';
-    }
-    async function runOcr() {
-        if (!value || !onPriceExtract) return;
-        setOcrBusy(true);
-        try { const r = await nmExtractChartPrices(value, direction); onPriceExtract(r); }
-        catch (e) { onPriceExtract({ error: e?.message || 'استخراج قیمت ناموفق بود.' }); }
-        finally { setOcrBusy(false); }
-    }
-    const preview = value ? React.createElement('div',{className:'relative rounded-lg overflow-hidden',style:{border:'1px solid var(--border-2)'}},
-        React.createElement('img',{src:value,alt:label,className:'w-full object-cover',style:{maxHeight:160}}),
-        React.createElement('div',{className:'absolute top-1.5 left-1.5 flex gap-1.5'},
-            React.createElement('button',{type:'button',onClick:()=>inputRef.current&&inputRef.current.click(),className:'p-1.5 rounded-lg',style:{background:'#0B0E11CC'}},React.createElement(Edit3,{size:13,color:'var(--text-primary)'})),
-            React.createElement('button',{type:'button',onClick:()=>onChange(''),className:'p-1.5 rounded-lg',style:{background:'#0B0E11CC'}},React.createElement(Trash2,{size:13,color:'#F87171'}))),
-        onPriceExtract ? React.createElement('button',{type:'button',onClick:runOcr,disabled:ocrBusy,className:'w-full py-2 text-[11px] font-semibold',style:{background:'color-mix(in srgb, #60A5FA 12%, var(--bg-card2))',color:'#60A5FA',borderTop:'1px solid color-mix(in srgb, #60A5FA 28%, var(--border-2))'}},ocrBusy?'در حال پردازش تصویر…':'استخراج Entry / TP / SL از چارت') : null
-    ) : null;
-    return React.createElement('div',{className:'mb-2'},
-        React.createElement('label',{className:'text-[11px] block mb-1',style:{color:'var(--text-muted)'}},label),
-        React.createElement('input',{ref:inputRef,type:'file',accept:'image/*',onChange:handleFile,style:{display:'none'}}),
-        preview || React.createElement('button',{type:'button',onClick:()=>inputRef.current&&inputRef.current.click(),className:'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-[12px]',style:{background:'var(--bg-card2)',color:'var(--text-secondary)',border:'1px dashed var(--border-2)'}},React.createElement(ImagePlus,{size:15}),' آپلود عکس')
-    );
-}
+function nmNumToken(v){const t=String(v||'').replace(/,/g,'').replace(/[Oo]/g,'0').replace(/[Il]/g,'1').replace(/[S]/g,'5').replace(/[^0-9.\-]/g,'');if(!t||!/^-?\d+(?:\.\d+)?$/.test(t))return null;const n=Number(t);return Number.isFinite(n)?n:null;}
+function nmCollectOcrNumbers(result){const words=result?.data?.words||[];return words.map(w=>({n:nmNumToken(w.text),text:String(w.text||'').toUpperCase(),x:Number(w.bbox?.x0||0),y:Number(w.bbox?.y0||0),x2:Number(w.bbox?.x1||0),y2:Number(w.bbox?.y1||0),confidence:Number(w.confidence||0)})).filter(x=>x.n!==null&&x.n>0);}
+async function nmExtractChartPrices(image,direction,mode='fast'){const T=await nmLoadTesseract(),variants=mode==='precise'?['precise','fast']:['fast'],all=[];for(const v of variants){const src=await nmOcrCanvasVariant(image,v),result=await T.recognize(src,'eng',{logger:()=>{},preserve_interword_spaces:true}),words=result?.data?.words||[],width=Math.max(...words.map(w=>Number(w.bbox?.x1||0)),1),nums=nmCollectOcrNumbers(result);nums.forEach(x=>all.push({...x,score:x.confidence+(x.x/width)*35,variant:v,width}));const labels=words.map(w=>({text:String(w.text||'').toUpperCase(),x:Number(w.bbox?.x0||0),y:Number(w.bbox?.y0||0)}));const near=rx=>{const lab=labels.filter(l=>rx.test(l.text)).sort((a,b)=>b.x-a.x)[0];if(!lab)return null;return nums.filter(n=>Math.abs(n.y-lab.y)<Math.max(40,(n.y2-n.y)*2)).sort((a,b)=>Math.abs(a.x-lab.x)-Math.abs(b.x-lab.x))[0]||null;};const e=near(/ENTRY|ENT/),tp=near(/TP|TARGET/),sl=near(/SL|STOP/);if(e)all.push({...e,role:'entry',score:e.score+100});if(tp)all.push({...tp,role:'target',score:tp.score+100});if(sl)all.push({...sl,role:'stop',score:sl.score+100});}if(!all.length)throw new Error('هیچ عدد قیمتی از تصویر خوانده نشد.');const pick=r=>all.filter(x=>x.role===r).sort((a,b)=>b.score-a.score)[0]?.n??null;let entry=pick('entry'),target=pick('target'),stop=pick('stop');const nums=all.filter(x=>!x.role).sort((a,b)=>b.score-a.score),u=[],seen=new Set();nums.forEach(x=>{const k=x.n.toFixed(6);if(!seen.has(k)){seen.add(k);u.push(x);}});const right=u.filter(x=>x.x>x.width*.62).sort((a,b)=>a.y-b.y),pool=(right.length>=3?right:u).slice(0,14).sort((a,b)=>a.y-b.y);if(!entry||!target||!stop){if(pool.length>=3){const mid=Math.floor((pool.length-1)/2);if(String(direction).toLowerCase()==='sell'){stop=stop??pool[0].n;entry=entry??pool[mid].n;target=target??pool[pool.length-1].n;}else{target=target??pool[0].n;entry=entry??pool[mid].n;stop=stop??pool[pool.length-1].n;}}}return {entry,target,stop,candidates:u.slice(0,10).map(x=>x.n),mode};}
+function ChartImageField({label,value,onChange,onPriceExtract,direction}){const inputRef=useRef(null),[ocrBusy,setOcrBusy]=useState(false),[ocrMode,setOcrMode]=useState('precise');function handleFile(e){const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>onChange(r.result);r.readAsDataURL(file);e.target.value='';}async function runOcr(){if(!value||!onPriceExtract)return;setOcrBusy(true);try{onPriceExtract(await nmExtractChartPrices(value,direction,ocrMode));}catch(e){onPriceExtract({error:e?.message||'استخراج قیمت ناموفق بود.'});}finally{setOcrBusy(false);}}const preview=value?React.createElement('div',{className:'relative rounded-lg overflow-hidden',style:{border:'1px solid var(--border-2)'}},React.createElement('img',{src:value,alt:label,className:'w-full object-cover',style:{maxHeight:180}}),React.createElement('div',{className:'absolute top-1.5 left-1.5 flex gap-1.5'},React.createElement('button',{type:'button',onClick:()=>inputRef.current&&inputRef.current.click(),className:'p-1.5 rounded-lg',style:{background:'#0B0E11CC'}},React.createElement(Edit3,{size:13,color:'var(--text-primary)'})),React.createElement('button',{type:'button',onClick:()=>onChange(''),className:'p-1.5 rounded-lg',style:{background:'#0B0E11CC'}},React.createElement(Trash2,{size:13,color:'#F87171'}))),onPriceExtract&&React.createElement(React.Fragment,null,React.createElement('div',{className:'grid grid-cols-2 gap-1.5 p-2',style:{borderTop:'1px solid var(--border-2)',background:'var(--bg-card2)'}},React.createElement('button',{type:'button',onClick:()=>setOcrMode('fast'),className:'py-2 rounded-lg text-[10px] font-semibold',style:{background:ocrMode==='fast'?'var(--accent-gold)':'var(--bg-page)',color:ocrMode==='fast'?'var(--bg-page)':'var(--text-secondary)',border:'1px solid var(--border-2)'}},'پردازش سریع OCR'),React.createElement('button',{type:'button',onClick:()=>setOcrMode('precise'),className:'py-2 rounded-lg text-[10px] font-semibold',style:{background:ocrMode==='precise'?'#60A5FA':'var(--bg-page)',color:ocrMode==='precise'?'#06111f':'var(--text-secondary)',border:'1px solid var(--border-2)'}},'پردازش دقیق چارت')),React.createElement('button',{type:'button',onClick:runOcr,disabled:ocrBusy,className:'w-full py-2 text-[11px] font-semibold',style:{background:'color-mix(in srgb, #60A5FA 12%, var(--bg-card2))',color:'#60A5FA',borderTop:'1px solid color-mix(in srgb, #60A5FA 28%, var(--border-2))'}},ocrBusy?(ocrMode==='precise'?'در حال پردازش دقیق چارت…':'در حال پردازش تصویر…'):(ocrMode==='precise'?'پردازش دقیق و استخراج Entry / TP / SL':'استخراج سریع Entry / TP / SL')))):null;return React.createElement('div',{className:'mb-2'},React.createElement('label',{className:'text-[11px] block mb-1',style:{color:'var(--text-muted)'}},label),React.createElement('input',{ref:inputRef,type:'file',accept:'image/*',onChange:handleFile,style:{display:'none'}}),preview||React.createElement('button',{type:'button',onClick:()=>inputRef.current&&inputRef.current.click(),className:'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-[12px]',style:{background:'var(--bg-card2)',color:'var(--text-secondary)',border:'1px dashed var(--border-2)'}},React.createElement(ImagePlus,{size:15}),' آپلود عکس'));}
 /* ضبط ارزیابی صوتی با MediaRecorder، و ذخیره‌ی خروجی هم به‌صورت data URL (base64) — دوباره بدون
    نیاز به سرور. روی اکثر مرورگرهای اندروید فرمت خروجی audio/webm است. */
 function VoiceNoteField({ label, value, onChange }) {
@@ -2557,12 +2494,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.30";
+const NM_VERSION_NAME = "1.22.31";
 const NM_VERSION_CODE = 62;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۳ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.22.30: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
+    "نسخه 1.22.31: منبع ارزیابی زیر عنوان‌های تحلیل آماری و ارزیابی پیشرفته تفکیک شد، اشاره به حساب مبنا از زیر عنوان داشبورد عملکرد حذف شد، جابه‌جایی حالت‌های چک‌لیست برای آمادگی برنامه روزانه/ارزیابی چارت/آمادگی ستاپ سریع‌تر شد، فیلد متنی تکراری ریسک دلاری حذف شد، پردازش چندمرحله‌ای تصویر چارت برای استخراج Entry/SL/TP و محاسبه R-multiple/ریسک دلاری اضافه شد و وزن‌های احتمال موفقیت محاسباتی بازتنظیم شدند.",
     "نسخه 1.22.27: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
     "نسخه 1.22.25: پایداری لایه تنظیمات و مدیریت ترتیب لایه‌ها اصلاح شد؛ مقدار ترتیب ذخیره‌شده اعتبارسنجی می‌شود و خرابی یک آیتم ترتیب نمی‌تواند کل لایه تنظیمات را از رندر خارج کند.",
     "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
@@ -4951,6 +4888,9 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
   dayplan:React.createElement(NmDashWidget,{id:"dayplan",title:"Today · Day Plan",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmDayPlanToday,{plans:dayPlans,todayStr})),
   trades:React.createElement(NmDashWidget,{id:"trades",title:"Trade Drill-down",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"space-y-1"},filtered.slice().reverse().slice(0,12).map(t=>React.createElement("button",{key:t.id,onClick:()=>setSelected(t),className:"w-full text-right rounded-lg px-2 py-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"flex justify-between text-[10px]"},React.createElement("span",null,`${t.date||""} · ${t.pair||""} · ${t.direction||""}`),React.createElement("b",{style:{color:Number(t.pnl)>=0?"#34D399":"#F87171"}},nmDashPnl(t.pnl))),React.createElement("div",{className:"text-[8px] mt-1",style:{color:"var(--text-muted)"}},`MFE ${t.mfe==null?"—":nmDashNum(t.mfe,2)} · MAE ${t.mae==null?"—":nmDashNum(t.mae,2)} · Best ${t.bestExit?.price==null?"—":nmDashNum(t.bestExit.price,2)}`)))))
  };
+ const dashboardScopeLabel = selectedBaseAccounts.length===0 ? "بدون حساب انتخاب‌شده" : (selectedBaseAccounts.length===baseAccounts.length && baseAccounts.length>0 ? "کل حساب‌ها" : selectedBaseAccounts.length===1 ? `یک حساب مشخص (${selectedBaseAccounts[0]})` : `${selectedBaseAccounts.length} حساب مشخص`);
+ const dashboardSourceLabel = dashboardDataSource==="statement" ? "ارزیابی استیتمنت" : "معاملات ژورنال";
+ const dashboardSourceHint = `منبع ارزیابی: ${dashboardSourceLabel} · محدوده حساب: ${dashboardScopeLabel}`;
  const baseAccountPanel=React.createElement("div",{className:"rounded-2xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
    React.createElement("div",{className:"rounded-xl p-2.5 mb-2",style:{background:"color-mix(in srgb, #F59E0B 7%, var(--bg-card2))",border:"1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))"}},
      React.createElement("div",{className:"text-[11px] font-semibold mb-1.5",style:{color:"var(--text-primary)"}},"منبع ارزیابی این Dashboard"),
@@ -4990,11 +4930,11 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      React.createElement("button",{onClick:()=>{setSelected(null);onEditTrade&&onEditTrade(selected)},className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ویرایش معامله"))));
  const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc}); const replayModal=replay&&React.createElement(NmReplayModal,{trade:replay,onClose:()=>setReplay(null)});
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
-   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${activeAccount?`حساب ${activeAccount}`:"بدون حساب"} · ${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
+   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
    statisticalAnalysisSection,
    React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
      React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
-       React.createElement("div",{className:"flex items-center gap-2"},React.createElement("span",{className:"text-[14px] font-bold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")),
+       React.createElement("div",{className:"flex-1 text-right"},React.createElement("div",{className:"text-[14px] font-extrabold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},dashboardSourceHint)),
        showAdvanced?React.createElement(ChevronUp,{size:15,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:15,color:"var(--text-muted)"})),
      showAdvanced&&React.createElement("div",{className:"pt-3"},
        baseAccountPanel,
@@ -5007,7 +4947,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
            React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته"))),
        )),
 React.createElement("section",{className:"rounded-2xl p-3 mt-3 mb-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))"}},
-         React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"گزارش کامل از شاخص‌ها، تحلیل آماری، ارزیابی پیشرفته و داده‌های داشبورد")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
+         React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[14px] font-extrabold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"گزارش کامل از شاخص‌ها، تحلیل آماری، ارزیابی پیشرفته و داده‌های داشبورد")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
            React.createElement("button",{onClick:onExportComprehensiveExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#10B981",color:"#06150f"}},"Excel جامع داشبورد"),
            React.createElement("button",{onClick:onExportComprehensivePdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#34D399",border:"1px solid #10B981"}},"PDF جامع داشبورد"))),
@@ -5089,8 +5029,11 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
    RE('div',{className:'flex gap-1.5 mt-1'},
      RE('button',{type:'button',onClick:add,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--bg-page)',color:'var(--accent-gold)'}},'+ افزودن حالت/شرط'),
      RE('button',{type:'button',onClick:save,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره چک‌لیست')));
- const viewer=RE('div',{className:'space-y-1.5'},(plan?.conditions||[]).map(c=>RE('div',{key:c.id,className:'rounded-lg px-2.5 py-2',style:{background:'var(--bg-card2)'}},
-   RE('div',{className:'flex items-center justify-between gap-2'},
+ const viewer=RE('div',{className:'space-y-1.5'},(plan?.conditions||[]).map((c,i)=>RE('div',{key:c.id,className:'rounded-lg px-2.5 py-2',style:{background:'var(--bg-card2)'}},
+   RE('div',{className:'flex items-center gap-1.5'},
+     RE('div',{className:'flex flex-col gap-0.5'},
+       RE('button',{type:'button',disabled:i===0,onClick:()=>{const cs=[...(plan?.conditions||[])];[cs[i-1],cs[i]]=[cs[i],cs[i-1]];onPlanChange?.({...plan,conditions:cs});},className:'p-0.5 rounded',style:{opacity:i===0?.25:1}},RE(ChevronUp,{size:11})),
+       RE('button',{type:'button',disabled:i===((plan?.conditions||[]).length-1),onClick:()=>{const cs=[...(plan?.conditions||[])];[cs[i+1],cs[i]]=[cs[i],cs[i+1]];onPlanChange?.({...plan,conditions:cs});},className:'p-0.5 rounded',style:{opacity:i===((plan?.conditions||[]).length-1)?.25:1}},RE(ChevronDown,{size:11}))),
      RE('span',{className:'text-[10px]',style:{color:'var(--text-secondary)',flex:1,minWidth:0,whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:1.75}},c.label),
      c.type==='checkbox' ? RE('div',{className:'flex gap-1'},[[true,'✓'],[false,'✕'],[null,'—']].map(([v,l])=>RE('button',{key:String(v),type:'button',onClick:()=>onChange({...answers,[c.id]:v}),className:'px-2 py-1 rounded',style:{background:answers[c.id]===v?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers[c.id]===v?'var(--accent-gold)':'var(--text-muted)'}},l))) :
        RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}})
@@ -5640,9 +5583,9 @@ function App() {
             }
             catch (e) { }
             try {
-                const r = await window.storage.get("namello_calc_prob_weights_v2");
-                if (r)
-                    setCalcProbWeights({ ...DEFAULT_CALC_PROB_WEIGHTS, ...JSON.parse(r.value) });
+                const r = await window.storage.get("namello_calc_prob_weights_v3");
+                if (r) setCalcProbWeights({ ...DEFAULT_CALC_PROB_WEIGHTS, ...JSON.parse(r.value) });
+                else { setCalcProbWeights(DEFAULT_CALC_PROB_WEIGHTS); try { await window.storage.set("namello_calc_prob_weights_v3", JSON.stringify(DEFAULT_CALC_PROB_WEIGHTS)); } catch(e) {} }
             }
             catch (e) { }
             try {
@@ -5967,7 +5910,7 @@ function App() {
     }
     catch (e) { } }, []);
     const persistCalcProbWeights = useCallback(async (next) => { setCalcProbWeights(next); try {
-        await window.storage.set("namello_calc_prob_weights_v2", JSON.stringify(next));
+        await window.storage.set("namello_calc_prob_weights_v3", JSON.stringify(next));
     }
     catch (e) { } }, []);
     const persistCloseTypeOptions = useCallback(async (next) => { setCloseTypeOptions(next); try {
@@ -8419,7 +8362,7 @@ function App() {
     }
     const nmStatisticalAnalysisSection = React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
         React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #3B82F6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))" }, "aria-expanded": showStatisticalAnalysis },
-            React.createElement("span", { className: "text-[14px] font-bold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
+            React.createElement("div",{className:"flex-1 text-right"},React.createElement("div", { className: "text-[14px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},dashboardSourceHint)),
             showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
@@ -10093,7 +10036,7 @@ function App() {
                             React.createElement("input", { type: "text", inputMode: "decimal", value: newRiskText, onChange: e => setNewRiskText(e.target.value), onKeyDown: e => e.key === "Enter" && addRiskOptionInline(), placeholder: "\u062D\u0627\u0644\u062A \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addRiskOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))),
-                        React.createElement("input", { type: "number", inputMode: "decimal", value: openForm.riskDollar, onChange: e => { const v=e.target.value; setOpenForm({ ...openForm, riskDollar: v }); setNewRiskText(v); }, placeholder: "\u06CC\u0627 \u0645\u0642\u062F\u0627\u0631 \u062F\u0642\u06CC\u0642 \u0631\u0648 \u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633...", className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
+                        React.createElement("input", { type: "hidden", value: openForm.riskDollar, readOnly: true }))),
                 openForm.riskDollar !== "" && !isNaN(parseFloat(openForm.riskDollar)) && derived.currentBalance > 0 && (React.createElement("p", { className: "text-[11px] mb-2", style: { color: "var(--text-muted)" } },
                     "= ",
                     React.createElement("b", { style: { color: "var(--accent-gold)" } },
@@ -10196,7 +10139,7 @@ function App() {
    let risk=f.riskDollar;
    const lot=Number(f.lot);
    if(Number.isFinite(e)&&Number.isFinite(sl)&&Number.isFinite(lot)&&lot>0){
-     const riskVal=Math.abs(e-sl)/pipSize(f.pair)*pipValuePerLot(f.pair)*lot;
+     const riskVal=nmRiskDollarFromPrices(f.pair,e,sl,lot);
      if(Number.isFinite(riskVal)&&riskVal>0) risk=String(Math.round(riskVal*100)/100);
    }
    return {...f,entry,plannedStopPrice:stop,plannedTargetPrice:target,rrReward:rr,riskDollar:risk};
@@ -10206,7 +10149,7 @@ function App() {
    const rrVal=openForm.direction==='sell' ? ((e-tp)/(sl-e)) : ((tp-e)/(e-sl));
    if(Number.isFinite(rrVal)&&rrVal>0){ const rrText=String(Math.round(rrVal*100)/100); if(!rrOptions.includes(rrText)) persistRrOptions([...rrOptions,rrText]); setNewRrText(rrText); }
    const mirrorEntry=Number(r.entry!=null?r.entry:openForm.entry), mirrorStop=Number(r.stop!=null?r.stop:openForm.plannedStopPrice), mirrorLot=Number(openForm.lot);
-   if(Number.isFinite(mirrorEntry)&&Number.isFinite(mirrorStop)&&Number.isFinite(mirrorLot)&&mirrorLot>0){ const mirrorRisk=Math.abs(mirrorEntry-mirrorStop)/pipSize(openForm.pair)*pipValuePerLot(openForm.pair)*mirrorLot; if(Number.isFinite(mirrorRisk)&&mirrorRisk>0) setNewRiskText(String(Math.round(mirrorRisk*100)/100)); }
+   if(Number.isFinite(mirrorEntry)&&Number.isFinite(mirrorStop)&&Number.isFinite(mirrorLot)&&mirrorLot>0){ const mirrorRisk=nmRiskDollarFromPrices(openForm.pair,mirrorEntry,mirrorStop,mirrorLot); if(Number.isFinite(mirrorRisk)&&mirrorRisk>0) setNewRiskText(String(Math.round(mirrorRisk*100)/100)); }
  }
  const msgs=[]; if(r.entry!=null) msgs.push('Entry'); if(r.target!=null) msgs.push('TP'); if(r.stop!=null) msgs.push('SL');
  msgs.push('R-multiple'); if(Number.isFinite(Number(openForm.lot))&&Number(openForm.lot)>0) msgs.push('ریسک $');
