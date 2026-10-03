@@ -2280,7 +2280,7 @@ function computePsychologyInsights(trades, psychOptions) {
         threats.push(`طولانی‌ترین زنجیره‌ی باخت پشت‌سرهم تا الان ${overall.maxLossStreak} معامله بوده — برای این حالت از پیش یک قانون توقف (مثل استراحت بعد از N باخت) داشته باش.`);
     return { strengths, weaknesses, threats, opportunities, insufficient: false, overall };
 }
-function PsychologyLayer({ journalTrades, statementTrades, source, setSource, psychOptions }) {
+function PsychologyLayer({ journalTrades, statementTrades, source, setSource, psychOptions, activeAccount, statementImporting, statementImportError, onImportDashboardStatementFiles, onClearDashboardStatement, dashboardStatementTrades }) {
     const trades = source === "statement" ? statementTrades : journalTrades;
     const insights = useMemo(() => computePsychologyInsights(trades, psychOptions), [trades, psychOptions]);
     const quads = [
@@ -2289,21 +2289,45 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
         { key: "threats", title: "تهدیدها", color: "#FBBF24", items: insights.threats },
         { key: "opportunities", title: "فرصت‌ها", color: "#60A5FA", items: insights.opportunities },
     ];
-    return (React.createElement("div", { className: "px-4 mt-4" },
-        React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "روانشناسی ترید"),
-        React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-            React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی روانشناسی"),
-            React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "منبع داده‌ای را انتخاب کن که تحلیل روانشناسی بر اساس آن انجام شود."),
-            React.createElement("div", { className: "grid grid-cols-2 gap-1.5" }, [["journal", "معاملات ژورنال"], ["statement", "معاملات استیتمنت"]].map(([mode, label]) => React.createElement("button", { key: mode, type: "button", onClick: () => setSource(mode), className: "py-2 rounded-lg text-[10px] font-semibold", style: { background: source === mode ? "var(--accent-gold)" : "var(--bg-page)", color: source === mode ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid " + (source === mode ? "var(--accent-gold)" : "var(--border-2)"), cursor: "pointer", opacity: 1 } }, label)))),
-        insights.insufficient ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "برای این تحلیل حداقل ۵ معامله‌ی بسته‌شده لازمه.")) : (React.createElement(React.Fragment, null,
-            source === "statement" && (React.createElement("div", { className: "rounded-xl p-3 mb-3 text-[11px] leading-6", style: { background: "color-mix(in srgb, var(--accent-gold) 7%, transparent)", border: "1px solid color-mix(in srgb, var(--accent-gold) 20%, transparent)", color: "var(--text-secondary)" } }, "چون استیتمنت برچسب‌های احساسی رو نداره، این تحلیل فقط از الگوهای زمانی و آماری خام قابل استخراجه؛ برای تحلیل عمیق‌تر روانشناسی، از ژورنال استفاده کن.")),
-            quads.map(q => (React.createElement("div", { key: q.key, className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: `1px solid ${q.color}33` } },
+    const sourcePanel = React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "color-mix(in srgb, #14B8A6 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #14B8A6 25%, var(--border-2))" } },
+        React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی روانشناسی"),
+        React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "منبع داده‌ای را انتخاب کن که تحلیل روانشناسی بر اساس آن انجام شود. در حالت استیتمنت، فایل‌های معاملات را از همین بخش وارد کن."),
+        React.createElement("div", { className: "grid grid-cols-2 gap-1.5" }, [["journal", "معاملات ژورنال"], ["statement", "ارزیابی استیتمنت"]].map(([mode, label]) => React.createElement("button", { key: mode, type: "button", onClick: () => setSource(mode), className: "py-2 rounded-lg text-[10px] font-semibold", style: { background: source === mode ? "var(--accent-gold)" : "var(--bg-page)", color: source === mode ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid " + (source === mode ? "var(--accent-gold)" : "var(--border-2)"), cursor: "pointer" } }, label))),
+        source === "statement" ? React.createElement("div", { className: "mt-2" },
+            React.createElement("div", { className: "text-[9px] mb-1.5", style: { color: "var(--text-muted)" } }, activeAccount ? `حساب مقصد ایمپورت: ${activeAccount}` : "ابتدا یک حساب را فعال کن"),
+            React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
+                React.createElement("label", { className: "py-2 rounded-lg text-[10px] text-center cursor-pointer", style: { background: "#14B8A6", color: "#061514" } }, statementImporting ? "در حال پردازش…" : "ایمپورت استیتمنت", React.createElement("input", { type: "file", accept: ".csv,.xlsx,.xls,.htm,.html", multiple: true, className: "hidden", disabled: statementImporting || !activeAccount, onChange: e => { if (e.target.files?.length) onImportDashboardStatementFiles(e.target.files); e.target.value = ""; } })),
+                React.createElement("button", { type: "button", disabled: !dashboardStatementTrades.length, onClick: onClearDashboardStatement, className: "py-2 rounded-lg text-[10px]", style: { background: "var(--bg-page)", color: dashboardStatementTrades.length ? "#F87171" : "var(--text-muted)", border: "1px solid var(--border-2)" } }, "پاک‌کردن استیتمنت")
+            ),
+            statementImportError ? React.createElement("div", { className: "text-[9px] mt-1.5", style: { color: "#F87171" } }, statementImportError) : null,
+            React.createElement("div", { className: "text-[9px] mt-1.5", style: { color: "var(--text-muted)" } }, `${dashboardStatementTrades.filter(t => t.status === "closed").length} معامله بسته‌شده از استیتمنت در حساب‌های مبنا`)
+        ) : null
+    );
+    const results = insights.insufficient
+        ? React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "برای این تحلیل حداقل ۵ معامله‌ی بسته‌شده لازمه.")
+        : React.createElement(React.Fragment, null,
+            source === "statement" ? React.createElement("div", { className: "rounded-xl p-3 mb-3 text-[11px] leading-6", style: { background: "color-mix(in srgb, var(--accent-gold) 7%, transparent)", border: "1px solid color-mix(in srgb, var(--accent-gold) 20%, transparent)", color: "var(--text-secondary)" } }, "چون استیتمنت برچسب‌های احساسی رو نداره، این تحلیل فقط از الگوهای زمانی و آماری خام قابل استخراجه؛ برای تحلیل عمیق‌تر روانشناسی، از ژورنال استفاده کن.") : null,
+            quads.map(q => React.createElement("div", { key: q.key, className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: `1px solid ${q.color}33` } },
                 React.createElement("h3", { className: "text-[12px] font-semibold mb-2", style: { color: q.color } }, q.title),
                 q.items.length === 0
                     ? React.createElement("p", { className: "text-[11px]", style: { color: "var(--text-muted)" } }, "داده‌ی کافی برای این بخش هنوز جمع نشده.")
-                    : q.items.map((txt, i) => React.createElement("p", { key: i, className: "text-[11px] leading-6 mb-1.5", style: { color: "var(--text-secondary)" } }, "• ", txt)))))))));
+                    : q.items.map((txt, i) => React.createElement("p", { key: i, className: "text-[11px] leading-6 mb-1.5", style: { color: "var(--text-secondary)" } }, "• ", txt))
+            ))
+        );
+    return React.createElement("section", { className: "rounded-2xl mb-3", style: { background: "color-mix(in srgb, #14B8A6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #14B8A6 28%, var(--border-1))", overflow: "hidden" } },
+        React.createElement("div", { className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #14B8A6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #14B8A6 28%, var(--border-1))" } },
+            React.createElement("div", { className: "flex items-center gap-2" },
+                React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "روانشناسی ترید"),
+                React.createElement("span", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, "منبع ارزیابی، الگوهای رفتاری، نقاط قوت، ضعف، تهدیدها و فرصت‌ها")
+            )
+        ),
+        React.createElement("div", { className: "p-3" },
+            React.createElement("div", { className: "text-[9px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "منبع داده‌ای روانشناسی: ", source === "statement" ? "ارزیابی استیتمنت" : "معاملات ژورنال"),
+            sourcePanel,
+            results
+        )
+    );
 }
-
 function nmBuildDashboardStatisticalData(sourceTrades,param3dX,param3dY){
  const statisticalClosedTrades=(sourceTrades||[]).filter(t=>t.status==="closed");
  const byLot=groupProfitability(statisticalClosedTrades,t=>t.lot);
@@ -5065,7 +5089,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
            React.createElement("button",{onClick:onExportAdvancedExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#8B5CF6",color:"#fff"}},"Excel ارزیابی پیشرفته"),
            React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته"))),
        )),
-       React.createElement(PsychologyLayer,{journalTrades:closed,statementTrades:statementTrades,source:psychologyDataSource,setSource:setPsychologyDataSource,psychOptions:psychOptions}),
+       React.createElement(PsychologyLayer,{journalTrades:closed,statementTrades:statementTrades,source:psychologyDataSource,setSource:setPsychologyDataSource,psychOptions:psychOptions,activeAccount:activeAccount,statementImporting:statementImporting,statementImportError:statementImportError,onImportDashboardStatementFiles:onImportDashboardStatementFiles,onClearDashboardStatement:onClearDashboardStatement,dashboardStatementTrades:dashboardStatementTrades}),
 React.createElement("section",{className:"rounded-2xl p-3 mt-3 mb-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))"}},
          React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"گزارش کامل از شاخص‌ها، تحلیل آماری، ارزیابی پیشرفته و داده‌های داشبورد")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
