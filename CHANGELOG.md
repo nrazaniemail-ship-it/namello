@@ -1,3 +1,13 @@
+# Namello 1.22.29
+
+- Journal Entry: fixed checklist headers rendering as `[object Object]`.
+- Journal Entry: reordered and continuously renumbered the entry checklist/parameters; Setup Readiness now follows Calculated Success Probability, and Buy/Sell + Trend Alignment are before the pre-trade chart image.
+- Journal Result: continuously numbered result fields and removed Trade Plan / Checklist from the result form.
+- Dashboard Advanced Evaluation: Chart Plan and Day Plan compliance analysis are now explicit alongside Trade Plan analysis.
+- Advanced/Comprehensive exports include Chart Plans and Day Plan readiness.
+- Active layer keeps the pale yellow background without the side/outline yellow line.
+- Settings Profile/Template expanded areas use full-width dedicated cards.
+
 # Namello 1.22.28
 
 - Fix Settings-only crash caused by missing `NM_DEVICE_KEY` and `NM_SYNC_STATE_KEY` declarations in the sync helper layer.
