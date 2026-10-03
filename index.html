@@ -5443,6 +5443,7 @@ function App() {
     const [dashboardStatisticalDataSource, setDashboardStatisticalDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_dashboard_statistical_data_source_v1") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
     const [dashboardStatementCache, setDashboardStatementCache] = useState({});
     const [analysisSource, setAnalysisSource] = useState("journal");
+    const [financeDataSource, setFinanceDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_finance_data_source_v1") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
     const [psychologyDataSource, setPsychologyDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_psychology_data_source_v1") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
     const [showStatisticalAnalysis, setShowStatisticalAnalysis] = useState(false);
     const [namelloReturnSettings, setNamelloReturnSettings] = useState(DEFAULT_NAMELLO_RETURN_SETTINGS);
@@ -6946,6 +6947,7 @@ function App() {
         })();
     }, [selectedStatsAccounts.join(","), activeAccount]);
     useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_data_source_v1", dashboardDataSource); } catch (e) {} }, [dashboardDataSource]);
+    useEffect(() => { try { localStorage.setItem("ns_namello_finance_data_source_v1", financeDataSource); } catch (e) {} }, [financeDataSource]);
     useEffect(() => { try { localStorage.setItem("ns_namello_psychology_data_source_v1", psychologyDataSource); } catch (e) {} }, [psychologyDataSource]);
     useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_statistical_data_source_v1", dashboardStatisticalDataSource); } catch (e) {} }, [dashboardStatisticalDataSource]);
     const statsClosedTrades = useMemo(() => {
@@ -7978,7 +7980,9 @@ function App() {
     const periodStartStr = getPeriodStartStr(financePeriod);
     const periodBase = periodStartStr ? accSettings.startingBalance + closedTrades.filter(t => t.date < periodStartStr).reduce((s, t) => s + (t.pnl || 0), 0) : accSettings.startingBalance;
     const periodTrades = rangeFilterTrades(closedTrades, financePeriod, todayStr, now);
-    const finMetrics = useMemo(() => computeFinancialMetrics(periodTrades, periodBase), [trades, financePeriod, accSettings.startingBalance, activeAccount]);
+    const financeSourceTrades = financeDataSource === "statement" ? statementTrades.filter(t => t.status === "closed") : periodTrades;
+    const financeSourceBase = financeDataSource === "statement" ? 0 : periodBase;
+    const finMetrics = useMemo(() => computeFinancialMetrics(financeSourceTrades, financeSourceBase), [financeSourceTrades, financeSourceBase, financeDataSource, financePeriod, accSettings.startingBalance, activeAccount]);
     async function runAIAnalysis() {
         setAiLoading(true);
         setAiError("");
@@ -9198,6 +9202,18 @@ function App() {
         }))),
         tab === "finance" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, (appLanguage === "en" ? "Financial Management" : "مدیریت مالی")),
+            React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
+                React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی مالی"),
+                React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "منبع این بخش مستقل است؛ انتخاب ژورنال یا استیتمنت فقط محاسبات و خروجی‌های مدیریت مالی را تغییر می‌دهد."),
+                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" }, [["journal", "معاملات ژورنال"], ["statement", "ارزیابی استیتمنت"]].map(([mode, label]) => React.createElement("button", { key: mode, type: "button", onClick: () => setFinanceDataSource(mode), className: "py-2 rounded-lg text-[10px] font-semibold", style: { background: financeDataSource === mode ? "var(--accent-gold)" : "var(--bg-page)", color: financeDataSource === mode ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid " + (financeDataSource === mode ? "var(--accent-gold)" : "var(--border-2)") } }, label))),
+                financeDataSource === "journal" && React.createElement("div", { className: "text-[9px] mt-2", style: { color: "var(--text-muted)" } }, activeAccount ? `حساب مبنا: ${activeAccount}` : "ابتدا یک حساب را فعال کن"),
+                financeDataSource === "statement" && React.createElement("div", { className: "mt-2" },
+                    React.createElement("div", { className: "text-[9px] mb-1.5", style: { color: "var(--text-muted)" } }, activeAccount ? `حساب مقصد ایمپورت: ${activeAccount}` : "ابتدا یک حساب را فعال کن"),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
+                        React.createElement("label", { className: "py-2 rounded-lg text-[10px] text-center cursor-pointer", style: { background: "#F59E0B", color: "#17130b" } }, statementImporting ? "در حال پردازش…" : "ایمپورت استیتمنت", React.createElement("input", { type: "file", accept: ".csv,.xlsx,.xls,.htm,.html", multiple: true, className: "hidden", disabled: statementImporting || !activeAccount, onChange: e => { if (e.target.files?.length) importStatementFiles(e.target.files); e.target.value = ""; } })),
+                        React.createElement("button", { type: "button", disabled: !statementTrades.length, onClick: clearStatementTrades, className: "py-2 rounded-lg text-[10px]", style: { background: "var(--bg-page)", color: statementTrades.length ? "#F87171" : "var(--text-muted)", border: "1px solid var(--border-2)" } }, "پاک‌کردن استیتمنت")),
+                    statementImportError && React.createElement("div", { className: "text-[9px] mt-1.5", style: { color: "#F87171" } }, statementImportError),
+                    React.createElement("div", { className: "text-[9px] mt-1.5", style: { color: "var(--text-muted)" } }, `${financeSourceTrades.length} معامله بسته‌شده از استیتمنت`))),
             !activeAccount ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, appLanguage === "en" ? "First create an account from the Profile tab." : "\u0627\u0648\u0644 \u0627\u0632 \u062A\u0628 \u0698\u0648\u0631\u0646\u0627\u0644 \u06CC\u06A9 \u062D\u0633\u0627\u0628 \u0627\u06CC\u062C\u0627\u062F \u06A9\u0646.")) : (React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "flex gap-1.5 overflow-x-auto mb-4 pb-1" }, ["daily", "weekly", "monthly", "quarterly", "yearly", "all"].map(r => (React.createElement("button", { key: r, onClick: () => setFinancePeriod(r), className: "px-3 py-1.5 rounded-full text-[12px] shrink-0", style: { background: financePeriod === r ? "var(--accent-gold)" : "var(--bg-card)", color: financePeriod === r ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid var(--border-1)" } }, rl(r, appLanguage))))),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
