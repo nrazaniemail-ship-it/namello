@@ -7,8 +7,8 @@
 // دفعات آفلاینِ بعدی کش می‌شه). فقط وقتی واقعاً آفلاینیم، از کش قدیمی استفاده می‌شه.
 // برای فایل‌های CDN (React, XLSX, Plotly, Tailwind, فونت‌ها) که نسخه‌شون پین‌شده و عوض نمی‌شه،
 // همچنان استراتژی "اول کش" (سریع‌تر و برای آفلاین قابل‌اعتمادتر) باقی مونده.
-// نام کش به نسخه‌ی برنامه گره خورده (Namello 1.22.30 / Version Code 63)؛ با هر آپدیت این را عوض کن.
-const CACHE_NAME = "namello-1.22.30-c63";
+// نام کش به نسخه‌ی برنامه گره خورده (Namello 1.22.31 / Version Code 64)؛ با هر آپدیت این را عوض کن.
+const CACHE_NAME = "namello-1.22.31-c64";
 
 const HTML_URLS = ["./", "./index.html"];
 const WIDGET_URL = "./widget.html";
@@ -18,8 +18,8 @@ const APP_SHELL = ["./manifest.json", "./icon-192.png", "./icon-512.png", "./ico
 const OPTIONAL_LOCAL = ["./version.json", "./icon-midnight-192.png", "./icon-emerald-192.png", "./icon-royal-192.png", "./icon-graphite-192.png", "./icon-sunset-192.png", "./icon-ruby-192.png"];
 
 const RUNTIME_DEPS = [
-  "https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js",
-  "https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js",
+  "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
+  "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js",
   "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
   "https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.32.0/plotly.min.js",
   "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4",
