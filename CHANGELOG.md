@@ -1,3 +1,10 @@
+# Namello 1.22.23
+
+- Dashboard Advanced Evaluation now directly analyzes Chart, Trade, and Day Plan checklists; management UI removed from Dashboard.
+- Journal Entry adds Daily Plan Readiness before Setup Readiness, with percentage scoring and inline checklist editing/add/remove/reorder.
+- Daily Plan Readiness is included in statistical profitability analysis and Calculated Success Probability weights.
+- Fixed Journal Entry numbering, Settings Profile/Template cards, active-layer yellow side line, and added custom layer ordering in Settings.
+
 ## 1.22.22
 - همسان‌سازی نسخه اصلی PWA با نسخه Android Native: Version Name `1.22.22` و Version Code `55`.
 - حفظ `.nojekyll` و `/.well-known/assetlinks.json` برای Digital Asset Links.
