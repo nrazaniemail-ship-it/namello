@@ -5040,6 +5040,9 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      React.createElement("div",{className:"text-[9px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"این منبع واحد و مشترک مبنای ارزیابی پیشرفته و تحلیل آماری / سودآورترین شرایط معامله است. هر دو بخش داشبورد از همین منبع و همین حساب‌های مبنا استفاده می‌کنند."),
      React.createElement("div",{className:"text-[9px] mb-2",style:{color:"var(--accent-gold)"}},dashboardDataSource==="journal"?`منبع فعال: معاملات ژورنال · ${dashboardJournalTrades.length} معامله`:`منبع فعال: ارزیابی استیتمنت · ${dashboardStatementTrades.length} معامله`),
      React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},[["journal","معاملات ژورنال"],["statement","ارزیابی استیتمنت"]].map(([mode,label])=>React.createElement("button",{key:mode,type:"button",onClick:()=>onDashboardDataSourceChange(mode),"aria-pressed":dashboardDataSource===mode,className:"py-2 rounded-lg text-[10px] font-semibold",style:{background:dashboardDataSource===mode?"var(--accent-gold)":"var(--bg-page)",color:dashboardDataSource===mode?"var(--bg-page)":"var(--text-secondary)",border:"1px solid "+(dashboardDataSource===mode?"var(--accent-gold)":"var(--border-2)")}},label))),
+     dashboardDataSource==="journal"&&React.createElement("div",{className:"mt-2"},
+       React.createElement("div",{className:"text-[9px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"حساب‌های مبنا برای معاملات ژورنال را انتخاب کنید؛ تحلیل آماری و ارزیابی پیشرفته هر دو از همین انتخاب استفاده می‌کنند."),
+       baseAccountPanel),
      dashboardDataSource==="statement"&&React.createElement("div",{className:"mt-2"},
        React.createElement("div",{className:"text-[9px] mb-1.5",style:{color:"var(--text-muted)"}},activeAccount?`حساب مقصد ایمپورت: ${activeAccount}`:"ابتدا یک حساب را فعال کن"),
        React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},
@@ -5055,7 +5058,6 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      showAdvanced&&React.createElement("div",{className:"pt-2"},
        React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},window.nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
        
-       baseAccountPanel,
        filterPanel,
        React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
        React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #8B5CF6 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 35%, var(--border-1))"}},
