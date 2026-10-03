@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Namello1.40.1",
-  "short_name": "Namello1.40.1",
+  "name": "Namello1.40.2",
+  "short_name": "Namello1.40.2",
   "description": "ژورنال معاملاتی Namello با Dashboard، تحلیل آماری، ارزیابی پیشرفته، ایمپورت استیتمنت MT4/MT5 و مدیریت معاملات",
   "start_url": "./index.html?v=1218",
   "scope": "./",
