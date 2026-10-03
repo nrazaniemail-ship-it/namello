@@ -2290,7 +2290,7 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
         { key: "opportunities", title: "فرصت‌ها", color: "#60A5FA", items: insights.opportunities },
     ];
     return (React.createElement("div", { className: "px-4 mt-4" },
-        React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "روانشناسی معامله‌گری"),
+        React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "روانشناسی ترید"),
         React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
             React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی روانشناسی"),
             React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "منبع داده‌ای را انتخاب کن که تحلیل روانشناسی بر اساس آن انجام شود."),
@@ -3966,8 +3966,8 @@ function NmStatementSyncCard({ statementTrades, journalTrades, persistTrades, ac
 }
 
 /* ---------------- چیدمان نمایش منوی لایه‌ها (افقی/عمودی) ---------------- */
-const NM_DEFAULT_NAV_ORDER = ["dashboard","live","news","journal","marketeval","calendar","finance","systems","strategy","goals","lifegoals","gratitude","psychology","exportall","library","settings","about"];
-const NM_NAV_LABELS = {dashboard:"داشبورد",live:"نشست‌ها",news:"اخبار",journal:"ژورنال",marketeval:"ارزیابی بازار",calendar:"تقویم",finance:"مالی",systems:"سیستم‌ها",strategy:"استراتژی",goals:"اهداف معامله‌گری",lifegoals:"اهداف زندگی",gratitude:"شکرگزاری",psychology:"روانشناسی",exportall:"خروجی جامع",library:"کتابخانه",settings:"تنظیمات",about:"درباره برنامه"};
+const NM_DEFAULT_NAV_ORDER = ["dashboard","live","news","journal","marketeval","calendar","finance","systems","strategy","goals","lifegoals","gratitude" ,"exportall","library","settings","about"];
+const NM_NAV_LABELS = {dashboard:"داشبورد",live:"نشست‌ها",news:"اخبار",journal:"ژورنال",marketeval:"ارزیابی بازار",calendar:"تقویم",finance:"مالی",systems:"سیستم‌ها",strategy:"استراتژی",goals:"اهداف معامله‌گری",lifegoals:"اهداف زندگی",gratitude:"شکرگزاری",exportall:"خروجی جامع",library:"کتابخانه",settings:"تنظیمات",about:"درباره برنامه"};
 function nmNormalizeNavOrder(value){
  const raw=Array.isArray(value)?value:[];
  const known=new Set(NM_DEFAULT_NAV_ORDER);
@@ -4975,7 +4975,7 @@ class NmDashboardErrorBoundary extends React.Component {
   }
 }
 
-function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,chartPlans,setPlans,setDayPlans,setChartPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades}){
+function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,chartPlans,setPlans,setDayPlans,setChartPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades,psychologyDataSource,setPsychologyDataSource,psychOptions}){
  const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")} }catch(e){return{range:"all",session:"all",setup:"all",direction:"all"}}});
  const [showAdvanced,setShowAdvanced]=React.useState(true);
  const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");return Array.isArray(x)&&x.length?x:NM_DASH_DEFAULT_LAYOUT}catch(e){return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);const [replay,setReplay]=React.useState(null);const [coach,setCoach]=React.useState(false);
@@ -5065,6 +5065,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
            React.createElement("button",{onClick:onExportAdvancedExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#8B5CF6",color:"#fff"}},"Excel ارزیابی پیشرفته"),
            React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته"))),
        )),
+       React.createElement(PsychologyLayer,{journalTrades:closed,statementTrades:statementTrades,source:psychologyDataSource,setSource:setPsychologyDataSource,psychOptions:psychOptions}),
 React.createElement("section",{className:"rounded-2xl p-3 mt-3 mb-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))"}},
          React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"گزارش کامل از شاخص‌ها، تحلیل آماری، ارزیابی پیشرفته و داده‌های داشبورد")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
@@ -8763,7 +8764,7 @@ function App() {
                 " ",
                 jy)),
         RE(NmGlobalPlayer, { tab }),
-        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, chartPlans: chartPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, setChartPlans: persistChartPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades }))),
+        tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, chartPlans: chartPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, setChartPlans: persistChartPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades, psychologyDataSource: psychologyDataSource, setPsychologyDataSource: setPsychologyDataSource, psychOptions: psychOptions }))),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
@@ -9591,14 +9592,6 @@ function App() {
                     React.createElement("button", { onClick: exportAllPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } },
                         React.createElement(Download, { size: 16 }),
                         " PDF"))))))),
-        tab === "psychology" && (!activeAccount ? (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0627\u0648\u0644 \u0627\u0632 \u062A\u0628 \u0698\u0648\u0631\u0646\u0627\u0644 \u06CC\u06A9 \u062D\u0633\u0627\u0628 \u0627\u06CC\u062C\u0627\u062F \u06A9\u0646."))) : (React.createElement(PsychologyLayer, {
-            journalTrades: closedTrades,
-            statementTrades: statementTrades,
-            source: psychologyDataSource,
-            setSource: setPsychologyDataSource,
-            psychOptions: psychOptions,
-        }))),
         tab === "exportall" && (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u062E\u0631\u0648\u062C\u06CC \u06A9\u0627\u0645\u0644 Excel"),
             React.createElement("p", { className: "text-[12px] leading-6 mb-4", style: { color: "var(--text-secondary)" } }, "\u0628\u0627 \u0632\u062F\u0646 \u062F\u06A9\u0645\u0647\u200C\u06CC \u0632\u06CC\u0631\u060C \u06CC\u06A9 \u0641\u0627\u06CC\u0644 Excel \u0633\u0627\u062E\u062A\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u06A9\u0647 \u062A\u0645\u0627\u0645 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627 (\u0698\u0648\u0631\u0646\u0627\u0644\u060C \u0645\u062F\u06CC\u0631\u06CC\u062A \u0645\u0627\u0644\u06CC\u060C \u0633\u06CC\u0633\u062A\u0645\u200C\u0647\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u060C \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u060C \u0627\u0647\u062F\u0627\u0641\u060C \u062A\u062D\u0644\u06CC\u0644 \u0622\u0645\u0627\u0631\u06CC) \u0647\u0631\u06A9\u062F\u0627\u0645 \u062F\u0631 \u06CC\u06A9 \u0634\u06CC\u062A \u062C\u062F\u0627\u06AF\u0627\u0646\u0647 \u0642\u0631\u0627\u0631 \u0645\u06CC\u200C\u06AF\u06CC\u0631\u0646\u062F."),
