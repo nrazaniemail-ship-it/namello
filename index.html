@@ -5007,17 +5007,6 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
   trades:React.createElement(NmDashWidget,{id:"trades",title:"Trade Drill-down",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"space-y-1"},filtered.slice().reverse().slice(0,12).map(t=>React.createElement("button",{key:t.id,onClick:()=>setSelected(t),className:"w-full text-right rounded-lg px-2 py-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"flex justify-between text-[10px]"},React.createElement("span",null,`${t.date||""} · ${t.pair||""} · ${t.direction||""}`),React.createElement("b",{style:{color:Number(t.pnl)>=0?"#34D399":"#F87171"}},nmDashPnl(t.pnl))),React.createElement("div",{className:"text-[8px] mt-1",style:{color:"var(--text-muted)"}},`MFE ${t.mfe==null?"—":nmDashNum(t.mfe,2)} · MAE ${t.mae==null?"—":nmDashNum(t.mae,2)} · Best ${t.bestExit?.price==null?"—":nmDashNum(t.bestExit.price,2)}`)))))
  };
  const baseAccountPanel=React.createElement("div",{className:"rounded-2xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
-   React.createElement("div",{className:"rounded-xl p-2.5 mb-2",style:{background:"color-mix(in srgb, #F59E0B 7%, var(--bg-card2))",border:"1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))"}},
-     React.createElement("div",{className:"text-[11px] font-semibold mb-1.5",style:{color:"var(--text-primary)"}},"منبع ارزیابی پیشرفته"),
-     React.createElement("div",{className:"text-[9px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"این منبع فقط برای ارزیابی پیشرفته و ویجت‌های داشبورد فعال است؛ «تحلیل آماری» منبع مستقل خودش را دارد."),
-     React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},[["journal","معاملات ژورنال"],["statement","ارزیابی استیتمنت"]].map(([mode,label])=>React.createElement("button",{key:mode,type:"button",onClick:()=>{onDashboardDataSourceChange(mode);},className:"py-2 rounded-lg text-[10px] font-semibold",style:{background:dashboardDataSource===mode?"var(--accent-gold)":"var(--bg-page)",color:dashboardDataSource===mode?"var(--bg-page)":"var(--text-secondary)",border:"1px solid "+(dashboardDataSource===mode?"var(--accent-gold)":"var(--border-2)")}},label))),
-     dashboardDataSource==="statement" && React.createElement("div",{className:"mt-2"},
-       React.createElement("div",{className:"text-[9px] mb-1.5",style:{color:"var(--text-muted)"}},activeAccount?`حساب مقصد ایمپورت: ${activeAccount}`:"ابتدا یک حساب را فعال کن"),
-       React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},
-         React.createElement("label",{className:"py-2 rounded-lg text-[10px] text-center cursor-pointer",style:{background:"#F59E0B",color:"#17130b"}},statementImporting?"در حال پردازش…":"ایمپورت استیتمنت",React.createElement("input",{type:"file",accept:".csv,.xlsx,.xls,.htm,.html",multiple:true,className:"hidden",disabled:statementImporting||!activeAccount,onChange:e=>{if(e.target.files?.length)onImportDashboardStatementFiles(e.target.files);e.target.value="";}})),
-         React.createElement("button",{type:"button",disabled:!statementTrades.length,onClick:onClearDashboardStatement,className:"py-2 rounded-lg text-[10px]",style:{background:"var(--bg-page)",color:statementTrades.length?"#F87171":"var(--text-muted)",border:"1px solid var(--border-2)"}},"پاک‌کردن استیتمنت")),
-       statementImportError&&React.createElement("div",{className:"text-[9px] mt-1.5",style:{color:"#F87171"}},statementImportError),
-       React.createElement("div",{className:"text-[9px] mt-1.5",style:{color:"var(--text-muted)"}},`${dashboardStatementTrades.filter(t=>t.status==="closed").length} معامله بسته‌شده از استیتمنت در حساب‌های مبنا`))),
    React.createElement("button",{type:"button",onClick:onOpenBasePicker,className:"w-full flex items-center justify-between rounded-lg px-3 py-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
      React.createElement("span",{className:"text-[12px]",style:{color:"var(--text-primary)"}},"حساب‌های مبنا: ",selectedBaseAccounts.length===baseAccounts.length&&baseAccounts.length>1?"همه حساب‌ها":selectedBaseAccounts.length>0&&selectedBaseAccounts.every(c=>accountTypeOf(c)==="real")&&baseAccounts.some(c=>accountTypeOf(c)==="demo")?"فقط واقعی":selectedBaseAccounts.length>0&&selectedBaseAccounts.every(c=>accountTypeOf(c)==="demo")&&baseAccounts.some(c=>accountTypeOf(c)==="real")?"فقط آزمایشی":`${selectedBaseAccounts.length} حساب`),
      showBasePicker?React.createElement(ChevronUp,{size:14,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:14,color:"var(--text-muted)"})),
@@ -5046,6 +5035,18 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc}); const replayModal=replay&&React.createElement(NmReplayModal,{trade:replay,onClose:()=>setReplay(null)});
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
    React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
+   React.createElement("div",{className:"rounded-xl p-2.5 mb-3",style:{background:"color-mix(in srgb, #F59E0B 7%, var(--bg-card2))",border:"1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))"}},
+     React.createElement("div",{className:"text-[11px] font-semibold mb-1.5",style:{color:"var(--text-primary)"}},"منبع ارزیابی داشبورد"),
+     React.createElement("div",{className:"text-[9px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"این منبع واحد و مشترک مبنای ارزیابی پیشرفته و تحلیل آماری / سودآورترین شرایط معامله است. هر دو بخش داشبورد از همین منبع و همین حساب‌های مبنا استفاده می‌کنند."),
+     React.createElement("div",{className:"text-[9px] mb-2",style:{color:"var(--accent-gold)"}},dashboardDataSource==="journal"?`منبع فعال: معاملات ژورنال · ${dashboardJournalTrades.length} معامله`:`منبع فعال: ارزیابی استیتمنت · ${dashboardStatementTrades.length} معامله`),
+     React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},[["journal","معاملات ژورنال"],["statement","ارزیابی استیتمنت"]].map(([mode,label])=>React.createElement("button",{key:mode,type:"button",onClick:()=>onDashboardDataSourceChange(mode),"aria-pressed":dashboardDataSource===mode,className:"py-2 rounded-lg text-[10px] font-semibold",style:{background:dashboardDataSource===mode?"var(--accent-gold)":"var(--bg-page)",color:dashboardDataSource===mode?"var(--bg-page)":"var(--text-secondary)",border:"1px solid "+(dashboardDataSource===mode?"var(--accent-gold)":"var(--border-2)")}},label))),
+     dashboardDataSource==="statement"&&React.createElement("div",{className:"mt-2"},
+       React.createElement("div",{className:"text-[9px] mb-1.5",style:{color:"var(--text-muted)"}},activeAccount?`حساب مقصد ایمپورت: ${activeAccount}`:"ابتدا یک حساب را فعال کن"),
+       React.createElement("div",{className:"grid grid-cols-2 gap-1.5"},
+         React.createElement("label",{className:"py-2 rounded-lg text-[10px] text-center cursor-pointer",style:{background:"#F59E0B",color:"#17130b"}},statementImporting?"در حال پردازش…":"ایمپورت استیتمنت",React.createElement("input",{type:"file",accept:".csv,.xlsx,.xls,.htm,.html",multiple:true,className:"hidden",disabled:statementImporting||!activeAccount,onChange:e=>{if(e.target.files?.length)onImportDashboardStatementFiles(e.target.files);e.target.value="";}})),
+         React.createElement("button",{type:"button",disabled:!statementTrades.length,onClick:onClearDashboardStatement,className:"py-2 rounded-lg text-[10px]",style:{background:"var(--bg-page)",color:statementTrades.length?"#F87171":"var(--text-muted)",border:"1px solid var(--border-2)"}},"پاک‌کردن استیتمنت")),
+       statementImportError&&React.createElement("div",{className:"text-[9px] mt-1.5",style:{color:"#F87171"}},statementImportError),
+       React.createElement("div",{className:"text-[9px] mt-1.5",style:{color:"var(--text-muted)"}},`${dashboardStatementTrades.filter(t=>t.status==="closed").length} معامله بسته‌شده از استیتمنت در حساب‌های مبنا`))),
    statisticalAnalysisSection,
    React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
      React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
@@ -5399,15 +5400,6 @@ function App() {
     const [statementImporting, setStatementImporting] = useState(false);
     const [statementImportError, setStatementImportError] = useState("");
     const [dashboardDataSource, setDashboardDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_dashboard_data_source_v1") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
-    const [dashboardStatisticalDataSource, setDashboardStatisticalDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_dashboard_statistical_data_source_v2") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
-    const [dashboardStatisticalSourceRefresh, setDashboardStatisticalSourceRefresh] = useState(0);
-    const switchDashboardStatisticalSource = (mode) => {
-        const next = mode === "statement" ? "statement" : "journal";
-        setDashboardStatisticalDataSource(next);
-        setDashboardStatisticalSourceRefresh(v => v + 1);
-        if (next === "journal") setStatementImportError("");
-        try { localStorage.setItem("ns_namello_dashboard_statistical_data_source_v2", next); } catch (e) {}
-    };
     const [dashboardStatementCache, setDashboardStatementCache] = useState({});
     const [analysisSource, setAnalysisSource] = useState("journal");
     const [showStatisticalAnalysis, setShowStatisticalAnalysis] = useState(false);
@@ -6895,7 +6887,7 @@ function App() {
         })();
     }, [selectedStatsAccounts.join(","), activeAccount]);
     useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_data_source_v1", dashboardDataSource); } catch (e) {} }, [dashboardDataSource]);
-    useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_statistical_data_source_v2", dashboardStatisticalDataSource); } catch (e) {} }, [dashboardStatisticalDataSource]);
+    useEffect(() => { try { localStorage.setItem("ns_namello_dashboard_statistical_data_source_v2", dashboardDataSource); } catch (e) {} }, [dashboardDataSource]);
     const statsClosedTrades = useMemo(() => {
         const all = [];
         selectedStatsAccounts.forEach(code => {
@@ -6940,7 +6932,8 @@ function App() {
         });
         return all;
     }, [dashboardSelectedAccounts.join(","), statementTrades, dashboardStatementCache, activeAccount]);
-    const dashboardStatisticalSelectedTrades = dashboardStatisticalDataSource === "statement" ? dashboardStatisticalStatementTrades : dashboardStatisticalJournalTrades;
+    // One authoritative dashboard source is shared by Advanced Evaluation and Statistical Analysis.
+    const dashboardStatisticalSelectedTrades = dashboardSelectedTrades;
     const dashboardStatisticalSelectedClosedTrades = useMemo(() => (dashboardStatisticalSelectedTrades || []).filter(t => t.status === "closed"), [dashboardStatisticalSelectedTrades]);
     const dashboardStartingBalance = accSettings.startingBalance;
     // Entry-form probability remains tied to the normal journal/account analysis.
@@ -8509,30 +8502,18 @@ function App() {
     }
     const nmStatisticalAnalysisSection = (() => {
         const { byLot, byWeekday, bySystem, bySession, byTrend, byRR, byBias, byFractal, byMainTrend, byDailyTrend, byDailyCandle, bySystemsMulti, byEntryTimeSystemsMulti, byMainGuideLevelsMulti, byEntryGuideLevelsMulti, byCondition, byWave, byTrig, byTarget, byStop, byNews, bySystemWeekday, bySessionLot, byReversalPattern, bySuccessProb, byPsychology, byDuration, bySetupReadiness, byChartReadiness, byDayPlanReadiness, byRiskDollar, bySubjectiveSuccessProb, byCalculatedSuccessProb, byDirection, byPair, byDivergenceMain, byDivergenceEntry, rows3d } = nmBuildDashboardStatisticalData(dashboardStatisticalSelectedTrades, param3dX, param3dY);
-        return React.createElement("section", { key: "statistical-analysis-root-" + dashboardStatisticalDataSource, className: "nm-statistical-analysis mb-3 rounded-2xl", "data-statistical-source": dashboardStatisticalDataSource, style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
+        return React.createElement("section", { key: "statistical-analysis-root-" + dashboardDataSource, className: "nm-statistical-analysis mb-3 rounded-2xl", "data-statistical-source": dashboardDataSource, style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
         React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #3B82F6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))" }, "aria-expanded": showStatisticalAnalysis },
             React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
             showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-2" },
             React.createElement("div", { className: "text-[9px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, window.nmDashboardAccountSummary(selectedStatsAccounts, accounts)),
-            React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
-                React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تحلیل آماری و سودآورترین شرایط معامله"),
-                React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "این منبع کاملاً مستقل از ارزیابی پیشرفته است و مستقیماً مبنای «سودآورترین شرایط معامله»، نمودارها، پارامترها و خروجی‌های تحلیل آماری همین بخش است."),
-                React.createElement("div", { className: "text-[9px] mb-2", style: { color: "var(--accent-gold)" } }, dashboardStatisticalDataSource === "journal" ? `منبع فعال: معاملات ژورنال · ${dashboardStatisticalJournalTrades.length} معامله` : `منبع فعال: ارزیابی استیتمنت · ${dashboardStatisticalStatementTrades.length} معامله`),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                    [["journal", "معاملات ژورنال"], ["statement", "ارزیابی استیتمنت"]].map(([mode, label]) => React.createElement("button", { key: mode, type: "button", onPointerDown: (e) => { e.preventDefault(); e.stopPropagation(); switchDashboardStatisticalSource(mode); }, "aria-pressed": dashboardStatisticalDataSource === mode, className: "py-2 rounded-lg text-[10px] font-semibold", style: { background: dashboardStatisticalDataSource === mode ? "var(--accent-gold)" : "var(--bg-page)", color: dashboardStatisticalDataSource === mode ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid " + (dashboardStatisticalDataSource === mode ? "var(--accent-gold)" : "var(--border-2)") } }, label))),
-                dashboardStatisticalDataSource === "statement" && React.createElement("div", { className: "mt-2" },
-                    React.createElement("div", { className: "text-[9px] mb-1.5", style: { color: "var(--text-muted)" } }, activeAccount ? `حساب مقصد ایمپورت: ${activeAccount}` : "ابتدا یک حساب را فعال کن"),
-                    React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                        React.createElement("label", { className: "py-2 rounded-lg text-[10px] text-center cursor-pointer", style: { background: "#F59E0B", color: "#17130b" } }, statementImporting ? "در حال پردازش…" : "ایمپورت استیتمنت", React.createElement("input", { type: "file", accept: ".csv,.xlsx,.xls,.htm,.html", multiple: true, className: "hidden", disabled: statementImporting || !activeAccount, onChange: e => { if (e.target.files?.length) importStatementFiles(e.target.files); e.target.value = ""; } })),
-                        React.createElement("button", { type: "button", disabled: !statementTrades.length, onClick: clearStatementTrades, className: "py-2 rounded-lg text-[10px]", style: { background: "var(--bg-page)", color: statementTrades.length ? "#F87171" : "var(--text-muted)", border: "1px solid var(--border-2)" } }, "پاک‌کردن استیتمنت")),
-                    statementImportError && React.createElement("div", { className: "text-[9px] mt-1.5", style: { color: "#F87171" } }, statementImportError))
-            ),            RE(NmPriceExtremesAnalysis, null),
+            RE(NmPriceExtremesAnalysis, null),
             RE(NmDrawdownChart, { trades: dashboardStatisticalSelectedTrades, startingBalance: accSettings.startingBalance }),
             RE(NmRMultipleCard, { trades: dashboardStatisticalSelectedTrades }),
             RE(NmEntryVsExtremesCard, { trades: dashboardStatisticalSelectedTrades }),
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u062A\u062D\u0644\u06CC\u0644 \u0622\u0645\u0627\u0631\u06CC \u2014 \u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0647\u0627"),
-            dashboardStatisticalDataSource === "statement" ? (React.createElement(StatementAnalysisView, { statementTrades: dashboardStatisticalSelectedTrades })) : (
+            dashboardDataSource === "statement" ? (React.createElement(StatementAnalysisView, { statementTrades: dashboardStatisticalSelectedTrades })) : (
             dashboardStatisticalSelectedTrades.filter(t => t.status === "closed").length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644\u060C \u062D\u062F\u0627\u0642\u0644 \u0686\u0646\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u0644\u0627\u0632\u0645 \u0627\u0633\u062A.")) : (React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("button", { type: "button", onClick: () => setShowBestConditionsList(v => !v), className: "w-full flex items-center justify-between" },
