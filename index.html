@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello1.40.4</title>
+<title>Namello1.40.3</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -79,7 +79,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello1.40.4…</div>
+<div id="boot-status">Loading Namello1.40.3…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -2306,7 +2306,7 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
         source === "journal" ? React.createElement("div", { className: "mt-2" },
             React.createElement("button", { type: "button", onClick: () => setShowPsychBasePicker(v => !v), className: "w-full flex items-center justify-between rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                 React.createElement("span", { className: "text-[11px]", style: { color: "var(--text-primary)" } }, "حساب‌های مبنای روانشناسی: ", selectedBaseAccounts.length === baseAccounts.length && baseAccounts.length > 1 ? "همه حساب‌ها" : `${selectedBaseAccounts.length} حساب`),
-                React.createElement(NmCollapseIndicator, { open: showPsychBasePicker, color: "var(--text-muted)" })),
+                showPsychBasePicker ? React.createElement(ChevronUp, { size: 14, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" })),
             showPsychBasePicker ? React.createElement("div", { className: "rounded-lg p-2 mt-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                 baseAccounts.length > 1 && React.createElement("label", { className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mb-1", style: { color: "var(--accent-gold)", borderBottom: "1px solid var(--border-2)" } }, React.createElement("input", { type: "checkbox", checked: selectedBaseAccounts.length === baseAccounts.length, onChange: onToggleAllBaseAccounts }), "همه حساب‌ها"),
                 React.createElement("div", { className: "flex gap-1.5 px-1 pb-2 mb-1", style: { borderBottom: "1px solid var(--border-2)" } }, [["real", "فقط واقعی‌ها"], ["demo", "فقط آزمایشی‌ها"]].map(([ty, lb]) => React.createElement("button", { key: ty, type: "button", onClick: () => onSelectBaseType(ty), className: "flex-1 py-1.5 rounded-lg text-[11px]", style: { background: nmTint(12), color: "var(--accent-gold)", border: "1px solid " + nmTint(35) } }, lb))),
@@ -2340,7 +2340,7 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
                 React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "روانشناسی ترید"),
                 React.createElement("span", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, "منبع ارزیابی، الگوهای رفتاری، نقاط قوت، ضعف، تهدیدها و فرصت‌ها")
             ),
-            React.createElement(NmCollapseIndicator, { open: showPsychology, color: "var(--text-muted)" })
+            showPsychology ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })
         ),
         showPsychology && React.createElement("div", { className: "p-3" },
             React.createElement("div", { className: "text-[9px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "منبع داده‌ای روانشناسی: ", source === "statement" ? "ارزیابی استیتمنت" : "معاملات ژورنال"),
@@ -2658,12 +2658,12 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.40.4";
+const NM_VERSION_NAME = "1.40.3";
 const NM_VERSION_CODE = 67;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.40.4: امنیت، پشتیبان، ذخیره ابری و Namello Backend در یک سربرگ مشترک ادغام شدند و همه کنترل‌های جمع/باز شدن از استایل یکسان استفاده می‌کنند.",
+    "نسخه 1.40.3: جمع/باز شدن همه آیتم‌های تنظیمات با مثلث‌های یکسان اصلاح شد؛ امنیت، پشتیبان و ذخیره ابری، Namello Backend، فونت برنامه، MT5 و بروزرسانی برنامه نیز کنترل جمع/باز شدن استاندارد دارند.",
     "نسخه 1.22.31: عنوان داشبورد عملکرد دیگر حساب مبنا را نمایش نمی‌دهد؛ خلاصه حساب مبنا زیر تحلیل آماری و ارزیابی پیشرفته اضافه شد و تیترهای سه‌گانه Dashboard به‌صورت پررنگ‌تر نمایش داده می‌شوند.",
     "نسخه 1.22.30: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
     "نسخه 1.22.27: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
@@ -2766,11 +2766,6 @@ function nmApplyIconTheme(key) {
 }
 
 /* ---------------- اجزای مشترکِ رابط ---------------- */
-function NmCollapseIndicator({ open, color = "var(--accent-gold)" }) {
-    return RE("span", { className: "nm-settings-chevron shrink-0", "aria-hidden": true },
-        RE(NmCollapseIndicator, { open: open })
-    );
-}
 function NmCollapsible({ title, subtitle, badge, defaultOpen, children, icon }) {
     const [open, setOpen] = useState(!!defaultOpen);
     return RE("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
@@ -2781,7 +2776,8 @@ function NmCollapsible({ title, subtitle, badge, defaultOpen, children, icon }) 
                     RE("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, title),
                     badge && RE("span", { className: "text-[10px] px-2 py-0.5 rounded-full", style: { background: nmTint(15), color: "var(--accent-gold)" } }, badge)),
                 subtitle && RE("div", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, open ? "برای بستن لیست کلیک کنید" : subtitle)),
-            RE(NmCollapseIndicator, { open })),
+            RE("span", { className: "nm-settings-chevron shrink-0", "aria-hidden": true },
+                open ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
         open && RE("div", { className: "mt-3" }, children));
 }
 function NmSettingsAutoCollapse({ children }) {
@@ -2831,7 +2827,9 @@ function NmSettingsAutoCollapse({ children }) {
                 "aria-label": (isOpen ? "بستن " : "باز کردن ") + title
             },
                 RE("span", { className: "text-[13px] font-semibold flex-1" }, title),
-                RE(NmCollapseIndicator, { open: isOpen })
+                RE("span", { className: "nm-settings-chevron", "aria-hidden": true },
+                    isOpen ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })
+                )
             ),
             isOpen && RE("div", { className: "mt-3" }, child)
         );
@@ -4518,7 +4516,7 @@ function NmPodcastRow({ podcast, onChange, onRemove, onPlay, askDeleteConfirm })
                         ? RE("input", { type: "text", value: titleText, autoFocus: true, onClick: e => e.stopPropagation(), onChange: e => setTitleText(e.target.value), onKeyDown: e => e.key === "Enter" && saveTitle(), onBlur: saveTitle, className: "w-full bg-transparent outline-none text-[13px] font-semibold", style: { color: "var(--text-primary)", borderBottom: "1px solid var(--accent-gold)" } })
                         : RE("div", { className: "text-[13px] font-semibold truncate", style: { color: "var(--text-primary)" } }, podcast.title),
                     RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, episodes.length + " اپیزود")),
-                RE(NmCollapseIndicator, { open, color: "var(--text-muted)" })),
+                open ? RE(ChevronUp, { size: 14, color: "var(--text-muted)" }) : RE(ChevronDown, { size: 14, color: "var(--text-muted)" })),
             RE("button", { type: "button", onClick: () => { setEditingTitle(true); setTitleText(podcast.title); }, "aria-label": "تغییر نام" }, RE(Edit3, { size: 13, color: "var(--text-muted)" })),
             RE("button", { type: "button", onClick: () => nmLibConfirmThen(askDeleteConfirm, "پادکست «" + podcast.title + "» و همه‌ی اپیزودهایش حذف شود؟", onRemove), "aria-label": "حذف پادکست" }, RE(Trash2, { size: 13, color: "#F87171" }))),
         open && RE("div", { className: "px-3 pb-3", style: { borderTop: "1px solid var(--border-1)" } },
@@ -4573,7 +4571,7 @@ function NmLibrarySettingsCard({ open, onToggle }) {
     return RE("div", { className: "rounded-xl p-4 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
         RE("button", { type: "button", onClick: onToggle, className: "w-full flex items-center justify-between" },
             RE("span", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, "📚 کتابخانه"),
-            RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, RE(NmCollapseIndicator, { open: open }))
+            RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, open ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" }))
         ),
         open ? RE("div", { className: "mt-3" },
             RE("div", { className: "text-[11px] mb-1.5", style: { color: "var(--text-muted)" } }, "تأیید دوباره قبل از حذف فایل (کتاب، پادکست، اپیزود)"),
@@ -4628,7 +4626,7 @@ function NmCalendarAccountPicker({ accounts, activeAccount, selected, onToggle, 
     return RE("div", { className: "mb-3" },
         RE("button", { type: "button", onClick: () => setOpen(o => !o), className: "w-full flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-[12px]", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", color: "var(--text-secondary)" } },
             RE("span", null, "حساب‌های مبنای تقویم: ", RE("b", { style: { color: "var(--accent-gold)" } }, label)),
-            RE(NmCollapseIndicator, { open, color: "var(--text-muted)" })),
+            open ? RE(ChevronUp, { size: 14, color: "var(--text-muted)" }) : RE(ChevronDown, { size: 14, color: "var(--text-muted)" })),
         open && RE("div", { className: "rounded-lg p-2 mt-1", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
             RE("label", { className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mb-1", style: { color: "var(--accent-gold)", borderBottom: "1px solid var(--border-2)" } },
                 RE("input", { type: "checkbox", checked: selected.length === accounts.length, onChange: onToggleAll }), "همه‌ی حساب‌ها"),
@@ -5130,7 +5128,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        React.createElement("div",{className:"text-[9px] mt-1.5",style:{color:"var(--text-muted)"}},`${dashboardStatementTrades.filter(t=>t.status==="closed").length} معامله بسته‌شده از استیتمنت در حساب‌های مبنا`))),
    React.createElement("button",{type:"button",onClick:onOpenBasePicker,className:"w-full flex items-center justify-between rounded-lg px-3 py-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
      React.createElement("span",{className:"text-[12px]",style:{color:"var(--text-primary)"}},"حساب‌های مبنا: ",selectedBaseAccounts.length===baseAccounts.length&&baseAccounts.length>1?"همه حساب‌ها":selectedBaseAccounts.length>0&&selectedBaseAccounts.every(c=>accountTypeOf(c)==="real")&&baseAccounts.some(c=>accountTypeOf(c)==="demo")?"فقط واقعی":selectedBaseAccounts.length>0&&selectedBaseAccounts.every(c=>accountTypeOf(c)==="demo")&&baseAccounts.some(c=>accountTypeOf(c)==="real")?"فقط آزمایشی":`${selectedBaseAccounts.length} حساب`),
-     React.createElement(NmCollapseIndicator,{open:showBasePicker,color:"var(--text-muted)"})),
+     showBasePicker?React.createElement(ChevronUp,{size:14,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:14,color:"var(--text-muted)"})),
    showBasePicker&&React.createElement("div",{className:"rounded-lg p-2 mt-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
      baseAccounts.length>1&&React.createElement("label",{className:"flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mb-1",style:{color:"var(--accent-gold)",borderBottom:"1px solid var(--border-2)"}},React.createElement("input",{type:"checkbox",checked:selectedBaseAccounts.length===baseAccounts.length,onChange:onToggleAllBaseAccounts}),"همه حساب‌ها"),
      React.createElement("div",{className:"flex gap-1.5 px-1 pb-2 mb-1",style:{borderBottom:"1px solid var(--border-2)"}},[["real","فقط واقعی‌ها"],["demo","فقط آزمایشی‌ها"]].map(([ty,lb])=>React.createElement("button",{key:ty,type:"button",onClick:()=>onSelectBaseType(ty),className:"flex-1 py-1.5 rounded-lg text-[11px]",style:{background:nmTint(12),color:"var(--accent-gold)",border:"1px solid "+nmTint(35)}},lb))),
@@ -5160,7 +5158,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
    React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
      React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
        React.createElement("div",{className:"flex items-center gap-2"},React.createElement("span",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")),
-       React.createElement(NmCollapseIndicator,{open:showAdvanced,color:"var(--text-muted)"})),
+       showAdvanced?React.createElement(ChevronUp,{size:15,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:15,color:"var(--text-muted)"})),
      showAdvanced&&React.createElement("div",{className:"pt-2"},
        React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},window.nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
        
@@ -7753,7 +7751,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello1.40.4</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello1.40.3</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8468,7 +8466,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello1.40.4</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello1.40.3</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8657,7 +8655,7 @@ function App() {
         return React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
         React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #3B82F6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))" }, "aria-expanded": showStatisticalAnalysis },
             React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
-            React.createElement(NmCollapseIndicator, { open: showStatisticalAnalysis, color: "var(--text-muted)" })),
+            showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-2" },
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
                 React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تحلیل آماری"),
@@ -8676,7 +8674,7 @@ function App() {
                               React.createElement("span", { className: "text-[12px]", style: { color: "var(--text-primary)" } },
                                   "\u062D\u0633\u0627\u0628\u200C\u0647\u0627\u06CC \u0645\u0628\u0646\u0627: ",
                                   selectedStatsAccounts.length === accounts.length && accounts.length > 1 ? "همه‌ی حساب‌ها" : (selectedStatsAccounts.length > 0 && selectedStatsAccounts.every(c => accTypeOf(c) === "real") && accounts.some(c => accTypeOf(c) === "demo") ? "فقط واقعی" : (selectedStatsAccounts.length > 0 && selectedStatsAccounts.every(c => accTypeOf(c) === "demo") && accounts.some(c => accTypeOf(c) === "real") ? "فقط آزمایشی" : `${selectedStatsAccounts.length} حساب`))),
-                              React.createElement(NmCollapseIndicator, { open: showStatsAccountPicker, color: "var(--text-muted)" })),
+                              showStatsAccountPicker ? React.createElement(ChevronUp, { size: 14, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" })),
                           showStatsAccountPicker && (React.createElement("div", { className: "rounded-lg p-2 mb-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                               accounts.length > 1 && (React.createElement("label", { className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mb-1", style: { color: "var(--accent-gold)", borderBottom: "1px solid var(--border-2)" } },
                                   React.createElement("input", { type: "checkbox", checked: selectedStatsAccounts.length === accounts.length, onChange: toggleAllStatsAccounts }),
@@ -8701,7 +8699,7 @@ function App() {
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("button", { type: "button", onClick: () => setShowBestConditionsList(v => !v), className: "w-full flex items-center justify-between" },
                         React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--accent-gold)" } }, "\u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u0634\u0631\u0627\u06CC\u0637 \u0645\u0639\u0627\u0645\u0644\u0647"),
-                        React.createElement(NmCollapseIndicator, { open: showBestConditionsList })),
+                        showBestConditionsList ? React.createElement(ChevronUp, { size: 16, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 16, color: "var(--accent-gold)" })),
                     showBestConditionsList && (React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: "1px solid var(--border-1)" } },
                         React.createElement("p", { className: "text-[11px] mb-3 leading-5", style: { color: "var(--text-muted)" } }, "\u0628\u0647\u06CC\u0646\u0647\u200C\u062A\u0631\u06CC\u0646 \u062D\u0627\u0644\u062A \u0647\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u060C \u0628\u0631 \u0627\u0633\u0627\u0633 \u0645\u062C\u0645\u0648\u0639 \u0633\u0648\u062F/\u0632\u06CC\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0627\u062A \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647\u200C\u06CC \u062D\u0633\u0627\u0628(\u0647\u0627\u06CC) \u0627\u0646\u062A\u062E\u0627\u0628\u200C\u0634\u062F\u0647. \u0647\u0645\u06CC\u0646 \u0644\u06CC\u0633\u062A\u060C \u0645\u0628\u0646\u0627\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u200C\u06CC \u00AB\u0627\u062D\u062A\u0645\u0627\u0644 \u0645\u0648\u0641\u0642\u06CC\u062A \u0645\u062D\u0627\u0633\u0628\u0627\u062A\u06CC\u00BB \u062F\u0631 \u0641\u0631\u0645 \u062B\u0628\u062A \u0648\u0631\u0648\u062F \u0627\u0633\u062A."),
                         React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
@@ -8863,8 +8861,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello1.40.4", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello1.40.4"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello1.40.3", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello1.40.3"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -8928,7 +8926,7 @@ function App() {
                 React.createElement("span", { className: "flex items-center gap-2" },
                     React.createElement(Target, { size: 14 }),
                     " ", t("live_gold_priorities")),
-                React.createElement(NmCollapseIndicator, { open: showRef })),
+                showRef ? React.createElement(ChevronUp, { size: 16 }) : React.createElement(ChevronDown, { size: 16 })),
             showRef && (React.createElement("div", { className: "grid grid-cols-1 gap-2 mb-5" }, GOLD_PRIORITY.map(g => (React.createElement("div", { key: g.rank, className: "rounded-xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                     React.createElement("span", { className: "w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold", style: { background: "color-mix(in srgb, var(--accent-gold) 13%, transparent)", color: "var(--accent-gold)" } }, g.rank),
@@ -9295,7 +9293,7 @@ function App() {
                 financeDataSource === "journal" && React.createElement(React.Fragment, null,
                     React.createElement("button", { type: "button", onClick: () => setShowFinanceBasePicker(v => !v), className: "w-full flex items-center justify-between rounded-lg px-3 py-2 mt-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                         React.createElement("span", { className: "text-[10px]", style: { color: "var(--text-secondary)" } }, financeSelectedAccounts.length ? `حساب مبنا: ${financeSelectedAccounts.join("، ")}` : "انتخاب حساب مبنا"),
-                        React.createElement(NmCollapseIndicator, { open: showFinanceBasePicker, color: "var(--text-muted)" })),
+                        showFinanceBasePicker ? React.createElement(ChevronUp, { size: 14, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" })),
                     showFinanceBasePicker && React.createElement("div", { className: "rounded-lg p-2 mt-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                         React.createElement("div", { className: "text-[9px] mb-1.5", style: { color: "var(--text-muted)" } }, "حساب‌های مبنا را برای محاسبات مالی انتخاب کن"),
                         accounts.map(code => React.createElement("label", { key: code, className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } },
@@ -9453,7 +9451,7 @@ function App() {
                     React.createElement("p", { className: "text-[12px] leading-6 whitespace-pre-wrap", style: { color: "var(--text-primary)" } }, aiAnalysis))),
                 React.createElement("button", { onClick: () => setShowApiKeyBox(s => !s), className: "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[12px] mb-4", style: { background: "var(--bg-card)", color: apiKey ? "#34D399" : "var(--text-secondary)", border: "1px solid var(--border-1)" } },
                     React.createElement("span", null, apiKey ? (appLanguage === "en" ? "\u2713 Anthropic API key saved (for installed app)" : "✓ کلید API آنتروپیک ذخیره شده (برای اپ نصب‌شده)") : (appLanguage === "en" ? "\u2699\ufe0f Set Anthropic API Key (for installed app)" : "⚙️ تنظیم کلید API آنتروپیک (برای اپ نصب‌شده)")),
-                    React.createElement(NmCollapseIndicator, { open: showApiKeyBox, color: "var(--text-muted)" })),
+                    showApiKeyBox ? React.createElement(ChevronUp, { size: 14 }) : React.createElement(ChevronDown, { size: 14 })),
                 showApiKeyBox && (React.createElement("div", { className: "rounded-xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("p", { className: "text-[11px] leading-5 mb-2", style: { color: "var(--text-secondary)" } },
                         appLanguage === "en" ? "There's no need to enter a key inside the chat. But on the installed app, you'll need an API key from" : "\u062F\u0627\u062E\u0644 \u067E\u06CC\u0634\u200C\u0646\u0645\u0627\u06CC\u0634 \u0686\u062A \u0646\u06CC\u0627\u0632\u06CC \u0628\u0647 \u06A9\u0644\u06CC\u062F \u0646\u06CC\u0633\u062A. \u0627\u0645\u0627 \u062A\u0648 \u0627\u067E \u0646\u0635\u0628\u200C\u0634\u062F\u0647 \u0631\u0648\u06CC \u06AF\u0648\u0634\u06CC\u060C \u0628\u0631\u0627\u06CC \u0641\u0639\u0627\u0644\u200C\u0634\u062F\u0646 \u0627\u06CC\u0646 \u062F\u06A9\u0645\u0647 \u0628\u0627\u06CC\u062F \u06CC\u06A9 \u06A9\u0644\u06CC\u062F API \u0627\u0632",
@@ -9466,7 +9464,7 @@ function App() {
                 React.createElement("div", { className: "rounded-xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("button", { type: "button", onClick: () => setShowCapitalMgmt(v => !v), className: "w-full flex items-center justify-between" },
                         React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--accent-gold)" } }, (appLanguage === "en" ? "Capital Management" : "مدیریت سرمایه")),
-                        React.createElement(NmCollapseIndicator, { open: showCapitalMgmt })),
+                        showCapitalMgmt ? React.createElement(ChevronUp, { size: 16, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 16, color: "var(--accent-gold)" })),
                     showCapitalMgmt && (React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: "1px solid var(--border-1)" } },
                         React.createElement("p", { className: "text-[11px] mb-3 leading-5", style: { color: "var(--text-muted)" } }, (appLanguage === "en" ? "Calculate the final balance under different assumptions. Each time you calculate, a new row is added below the previous ones — earlier assumptions stay in the history." : "با فرضیات مختلف، موجودی نهایی رو محاسبه کن. هر بار که محاسبه کنی، یک سطر جدید زیر سطرهای قبلی اضافه می‌شه — سابقه‌ی فرضیات قبلی پاک نمی‌شه.")),
                         React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
@@ -9596,14 +9594,14 @@ function App() {
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("button", { type: "button", onClick: () => setShowBestConditionsList(v => !v), className: "w-full flex items-center justify-between" },
                         React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--accent-gold)" } }, "\u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u0634\u0631\u0627\u06CC\u0637 \u0645\u0639\u0627\u0645\u0644\u0647"),
-                        React.createElement(NmCollapseIndicator, { open: showBestConditionsList })),
+                        showBestConditionsList ? React.createElement(ChevronUp, { size: 16, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 16, color: "var(--accent-gold)" })),
                     showBestConditionsList && (React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: "1px solid var(--border-1)" } },
                         React.createElement("p", { className: "text-[11px] mb-3 leading-5", style: { color: "var(--text-muted)" } }, "\u0628\u0647\u06CC\u0646\u0647\u200C\u062A\u0631\u06CC\u0646 \u062D\u0627\u0644\u062A \u0647\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u060C \u0628\u0631 \u0627\u0633\u0627\u0633 \u0645\u062C\u0645\u0648\u0639 \u0633\u0648\u062F/\u0632\u06CC\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0627\u062A \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647\u200C\u06CC \u062D\u0633\u0627\u0628(\u0647\u0627\u06CC) \u0627\u0646\u062A\u062E\u0627\u0628\u200C\u0634\u062F\u0647. \u0647\u0645\u06CC\u0646 \u0644\u06CC\u0633\u062A\u060C \u0645\u0628\u0646\u0627\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u200C\u06CC \u00AB\u0627\u062D\u062A\u0645\u0627\u0644 \u0645\u0648\u0641\u0642\u06CC\u062A \u0645\u062D\u0627\u0633\u0628\u0627\u062A\u06CC\u00BB \u062F\u0631 \u0641\u0631\u0645 \u062B\u0628\u062A \u0648\u0631\u0648\u062F \u0627\u0633\u062A."),
                         React.createElement("button", { type: "button", onClick: () => setShowStatsAccountPicker(v => !v), className: "w-full flex items-center justify-between rounded-lg px-3 py-2 mb-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             React.createElement("span", { className: "text-[12px]", style: { color: "var(--text-primary)" } },
                                 "\u062D\u0633\u0627\u0628\u200C\u0647\u0627\u06CC \u0645\u0628\u0646\u0627: ",
                                 selectedStatsAccounts.length === accounts.length && accounts.length > 1 ? "همه‌ی حساب‌ها" : (selectedStatsAccounts.length > 0 && selectedStatsAccounts.every(c => accTypeOf(c) === "real") && accounts.some(c => accTypeOf(c) === "demo") ? "فقط واقعی" : (selectedStatsAccounts.length > 0 && selectedStatsAccounts.every(c => accTypeOf(c) === "demo") && accounts.some(c => accTypeOf(c) === "real") ? "فقط آزمایشی" : `${selectedStatsAccounts.length} حساب`))),
-                            React.createElement(NmCollapseIndicator, { open: showStatsAccountPicker, color: "var(--text-muted)" })),
+                            showStatsAccountPicker ? React.createElement(ChevronUp, { size: 14, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" })),
                         showStatsAccountPicker && (React.createElement("div", { className: "rounded-lg p-2 mb-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             accounts.length > 1 && (React.createElement("label", { className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mb-1", style: { color: "var(--accent-gold)", borderBottom: "1px solid var(--border-2)" } },
                                 React.createElement("input", { type: "checkbox", checked: selectedStatsAccounts.length === accounts.length, onChange: toggleAllStatsAccounts }),
@@ -9764,7 +9762,7 @@ function App() {
             RE(NmSettingsAutoCollapse, null,
             React.createElement("div", { className: "rounded-2xl p-3 mb-2 nm-profile-card", style: { background: "color-mix(in srgb, #3B82F6 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", width: "100%" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "profile" ? "" : "profile"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
-                    React.createElement("span", { className: "text-[13px] font-semibold" }, "پروفایل"), RE(NmCollapseIndicator, { open: settingsProfileSection === "profile" }))
+                    React.createElement("span", { className: "text-[13px] font-semibold" }, "پروفایل"), RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, settingsProfileSection === "profile" ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })))
             ),
             settingsProfileSection === "profile" && React.createElement("div", { className: "nm-profile-content rounded-2xl p-3 mb-3", style: { background: "color-mix(in srgb, #3B82F6 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 22%, var(--border-1))", width: "100%" } },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u067E\u0631\u0648\u0641\u0627\u06CC\u0644"),
@@ -9781,7 +9779,7 @@ function App() {
             ),
             React.createElement("div", { className: "rounded-2xl p-3 mb-3 nm-template-card", style: { background: "color-mix(in srgb, #8B5CF6 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))", width: "100%" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "template" ? "" : "template"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
-                    React.createElement("span", { className: "text-[13px] font-semibold" }, "تمپلت"), RE(NmCollapseIndicator, { open: settingsProfileSection === "template" }))
+                    React.createElement("span", { className: "text-[13px] font-semibold" }, "تمپلت"), RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, settingsProfileSection === "template" ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })))
             ),
             !activeUserId ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u06CC\u06A9 \u06A9\u0627\u0631\u0628\u0631 \u0631\u0648 \u0627\u0632 \u0628\u0627\u0644\u0627 \u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646 \u062A\u0627 \u062A\u0645\u067E\u0644\u06CC\u062A\u200C\u0647\u0627\u0634 \u0631\u0648 \u0628\u0628\u06CC\u0646\u06CC.")) : (settingsProfileSection === "template" && React.createElement("div", { className: "nm-template-content rounded-2xl p-3 mb-3", style: { background: "color-mix(in srgb, #8B5CF6 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, #8B5CF6 22%, var(--border-1))", width: "100%" } },
                 React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } },
@@ -9822,20 +9820,22 @@ function App() {
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("button", { onClick: () => toggleSettingsSection("language"), className: "w-full flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, t("settings_language")),
-                    React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, React.createElement(NmCollapseIndicator, { open: openSettingsSection.language }))),
+                    React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, openSettingsSection.language ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
                 React.createElement("div", { className: "flex gap-2" },
                     React.createElement("button", { onClick: () => persistAppLanguage("fa"), className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: appLanguage === "fa" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: appLanguage === "fa" ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${appLanguage === "fa" ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}` } }, "فارسی"),
                     React.createElement("button", { onClick: () => persistAppLanguage("en"), className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: appLanguage === "en" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: appLanguage === "en" ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${appLanguage === "en" ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}` } }, "English")),
                 openSettingsSection.language && React.createElement("p", { className: "text-[10px] leading-5 mt-2", style: { color: "var(--text-muted)" } }, appLanguage === "en"
                     ? "This switches the bottom navigation and settings labels to English immediately. Full translation of every screen's content is still in progress and will expand over time."
                     : "این گزینه نوار پایین و برچسب‌های تنظیمات رو فوراً به انگلیسی تغییر می‌ده. ترجمه‌ی کامل محتوای همه‌ی صفحات هنوز در حال تکمیله و به‌مرور گسترش پیدا می‌کنه.")),
-            RE(NmCollapsible, { title: "امنیت، پشتیبان و ذخیره ابری · Namello Backend · حساب و Sync واقعی", subtitle: "امنیت داده، پشتیبان‌گیری محلی و ابری و همگام‌سازی چنددستگاهی", icon: "🔐☁️", defaultOpen: true },
+            RE(NmCollapsible, { title: "امنیت، پشتیبان و ذخیره ابری", subtitle: "توضیحات امنیت و مسیرهای پشتیبان و ذخیره ابری", icon: "🔐", defaultOpen: true },
                 React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "color-mix(in srgb, #0EA5E9 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #0EA5E9 28%, var(--border-1))" } },
-                    React.createElement("div", { className: "text-[10px] leading-5", style: { color: "var(--text-muted)" } }, "پشتیبان فایل برای بازیابی دستی و خودکار است؛ Google Drive برای نگهداری ابری پشتیبان استفاده می‌شود و Backend Sync برای حساب Namello و همگام‌سازی چنددستگاهی است. این مسیرها جایگزین هم نیستند و داده قبل از Sync رمزگذاری می‌شود؛ سرور فقط ciphertext را نگه می‌دارد.")),
-                RE(NmBackendSyncCard, { showToast }),
-                RE(NmBackupCard, { showToast }),
-                RE(NmStorageCard, { showToast })
+                    React.createElement("div", { className: "text-[10px] leading-5", style: { color: "var(--text-muted)" } }, "پشتیبان فایل برای بازیابی دستی و خودکار است؛ Backend Sync برای حساب Namello و همگام‌سازی چنددستگاهی است. این دو مسیر جایگزین هم نیستند و داده قبل از Sync رمزگذاری می‌شود؛ سرور فقط ciphertext را نگه می‌دارد."))
             ),
+            RE(NmCollapsible, { title: "Namello Backend · حساب و Sync واقعی", subtitle: "ورود، حساب و همگام‌سازی چنددستگاهی", icon: "☁️", defaultOpen: true },
+                RE(NmBackendSyncCard, { showToast })
+            ),
+            RE(NmBackupCard, { showToast }),
+            RE(NmStorageCard, { showToast }),
             RE(NmCustomFieldsManager, null),
             RE(NmCollapsible, { title: "فونت برنامه", subtitle: "برای جمع/باز کردن این بخش کلیک کنید", icon: "🔤", defaultOpen: true },
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
@@ -9846,7 +9846,7 @@ function App() {
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("button", { onClick: () => toggleSettingsSection("quickLaunch"), className: "flex items-center gap-1.5" },
                         React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "\u062F\u06A9\u0645\u0647\u200C\u06CC \u0634\u0646\u0627\u0648\u0631 \u0627\u062C\u0631\u0627\u06CC \u0633\u0631\u06CC\u0639 MT5/\u062A\u0631\u06CC\u062F\u06CC\u0646\u06AF\u200C\u0648\u06CC\u0648"),
-                        React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, React.createElement(NmCollapseIndicator, { open: openSettingsSection.quickLaunch }))),),
+                        React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, openSettingsSection.quickLaunch ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),),
                 openSettingsSection.quickLaunch && React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "دو دکمه‌ی شناور جدا روی صفحه ظاهر می‌شن: یکی برای MT5 و یکی برای TradingView (بدون منوی واسط). با لمس و نگه‌داشتنِ هرکدوم می‌تونی جاش رو هر جای صفحه ببری؛ جایگاه هرکدوم جدا ذخیره می‌شه. با یک ضربه‌ی ساده (بدون کشیدن)، همون اپ باز می‌شه."),
                 React.createElement("div", { className: "rounded-lg p-2.5 mb-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                     React.createElement("div", { className: "flex items-center justify-between mb-1.5" },
@@ -9871,7 +9871,7 @@ function App() {
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("button", { onClick: () => toggleSettingsSection("namelloReturn"), className: "flex items-center gap-1.5" },
                         React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "نوتیفیکیشن بازگشت به Namello"),
-                        React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, React.createElement(NmCollapseIndicator, { open: openSettingsSection.namelloReturn }))),
+                        React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, openSettingsSection.namelloReturn ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
                     React.createElement("button", { onClick: () => { if (namelloReturnSettings.enabled) { if (window.NamelloNative && typeof window.NamelloNative.disableFloatingReturn === "function") window.NamelloNative.disableFloatingReturn(); persistNamelloReturnSettings({ ...namelloReturnSettings, enabled: false }); } else enableNamelloReturn(); }, className: "px-3 py-1 rounded-full text-[11px] font-medium", style: { background: namelloReturnSettings.enabled ? "#34D39922" : "var(--bg-card2)", color: namelloReturnSettings.enabled ? "#34D399" : "var(--text-muted)" } }, namelloReturnSettings.enabled ? "فعال" : "غیرفعال")),
                 openSettingsSection.namelloReturn && React.createElement("p", { className: "text-[11px] leading-6", style: { color: "var(--text-muted)" } },
                     "در نسخه PWA، مرورگر فقط نوتیفیکیشن بازگشت را می‌تواند نمایش دهد. اگر Namello را به‌صورت APK Native اجرا می‌کنی، همین گزینه با مجوز سیستمی «نمایش روی سایر برنامه‌ها» یک دکمه شناور واقعی روی MT5، TradingView و سایر برنامه‌ها ایجاد می‌کند؛ دکمه قابل جابه‌جایی است و با لمس آن Namello باز می‌شود.",
@@ -9898,7 +9898,7 @@ function App() {
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("button", { onClick: () => toggleSettingsSection("widget"), className: "w-full flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "\u0648\u06CC\u062C\u062A \u0633\u0627\u0639\u062A\u200C\u0634\u0645\u0627\u0631 \u0633\u0634\u0646\u200C\u0647\u0627"),
-                    React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, React.createElement(NmCollapseIndicator, { open: openSettingsSection.widget }))),
+                    React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, openSettingsSection.widget ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
                 openSettingsSection.widget && React.createElement("p", { className: "text-[11px] leading-6 mb-3", style: { color: "var(--text-muted)" } }, "نکته‌ی مهم: یک ویجتِ واقعیِ صفحه‌ی اصلیِ اندروید (Home screen widget) فقط با کدنویسیِ نیتیو (Kotlin/Java + AppWidgetProvider) ساخته می‌شه — چیزیه که فقط داخل یه اپلیکیشن نصب‌شده (APK) وجود داره، نه یک صفحه‌ی وب، و از دل یک PWA قابل‌ساخت نیست؛ Namello در حال حاضر یک وب‌اپ است، نه یک اپ نیتیوِ کامپایل‌شده. نزدیک‌ترین معادلِ واقعی که از دل وب قابل‌ساخته، همین widget.html است: حالا به‌شکل یک دایره‌ی چندلایه طراحی شده که هر نشست (سیدنی/توکیو/لندن/نیویورک) به‌صورت یک قطاعِ رنگی روی حلقه‌ی خودش نشون داده می‌شه — نشست‌های فعال پررنگ و نشست‌های غیرفعال کم‌رنگ‌ترن، و یک خط شعاعی هم موقعیت لحظه‌ای زمان نیویورک رو نشون می‌ده. می‌تونی این صفحه رو مستقیم باز کنی، با «افزودن به صفحه‌ی اصلی» میان‌برش رو روی هوم‌اسکرین بذاری، یا داخل اپ‌های «ویجت وب» (مثل KWGT) به آدرسش لینک بدی تا شبیه یک ویجت واقعی روی هوم‌اسکرین بشینه."),
                 React.createElement("label", { className: "text-[11px] block mb-1.5", style: { color: "var(--text-muted)" } }, "\u0633\u0627\u06CC\u0632 \u0646\u0645\u0627\u06CC\u0634 \u062F\u0631 widget.html"),
                 React.createElement("div", { className: "flex gap-2 mb-3" }, [[1, "کوچک"], [2, "متوسط"], [3, "بزرگ"]].map(([lvl, label]) => (React.createElement("button", { key: lvl, onClick: () => persistWidgetSettings({ ...widgetSettings, sizeLevel: lvl }), className: "flex-1 py-2 rounded-lg text-[12px]", style: { background: widgetSettings.sizeLevel === lvl ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: widgetSettings.sizeLevel === lvl ? "var(--accent-gold)" : "var(--text-muted)" } }, label)))),
