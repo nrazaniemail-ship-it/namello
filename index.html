@@ -7456,6 +7456,7 @@ function App() {
     }
     function deleteTrade(id) { persistTrades(trades.filter(t => t.id !== id)); }
     function openEditTrade(t) {
+        setEditDisciplineEditMode(false);
         setEditingTrade(t);
         setEditForm({
             date: t.date, time: t.time, pair: t.pair, direction: t.direction || "",
@@ -7511,6 +7512,7 @@ function App() {
         setEditForm(next);
     }
     function cancelEditTrade() {
+        setEditDisciplineEditMode(false);
         setEditingTrade(null);
         setEditForm(null);
     }
@@ -10397,6 +10399,19 @@ function App() {
                 dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:editForm.dayPlanAnswers||{},onChange:v=>onEditFieldChange("dayPlanAnswers",v),onPlanChange:p=>persistDayPlans([p]),label:numLabel(6,"آمادگی برنامه روزانه")}),
                 chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:editForm.chartAnswers||{},onChange:v=>onEditFieldChange("chartAnswers",v),onPlanChange:p=>persistChartPlans([p]),label:numLabel(7,"ارزیابی چارت")}),
                 tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:editForm.planAnswers||{},onChange:v=>onEditFieldChange("planAnswers",v),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ")}),
+React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات"), RE("button", { type: "button", onClick: () => setEditDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, editDisciplineEditMode ? "انصراف" : "ویرایش")) },
+                    React.createElement(React.Fragment, null,
+                        React.createElement("div", { className: "flex flex-wrap gap-1.5" }, disciplineOptions.map(([key,label], i) => editDisciplineEditMode ? React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+                            React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? .3 : 1, color: "var(--text-muted)" } }, "▲"),
+                            React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, 1), disabled: i === disciplineOptions.length - 1, style: { opacity: i === disciplineOptions.length - 1 ? .3 : 1, color: "var(--text-muted)" } }, "▼"),
+                            React.createElement("input", { value: label, onChange: e => renameDisciplineOption(i, e.target.value), className: "bg-transparent outline-none text-[11px]", style: { color: "var(--text-primary)", width: Math.max(5, label.length) + "ch" } }),
+                            React.createElement("button", { type: "button", onClick: () => removeDisciplineOption(key), className: "p-1" }, RE(X, { size: 10, color: "#F87171" }))) : React.createElement("button", { key, type: "button", onClick: () => {
+                                const cur = editForm.disciplineMistakes || [];
+                                onEditFieldChange("disciplineMistakes", cur.includes(key) ? cur.filter(x => x !== key) : [...cur, key]);
+                            }, className: "px-3 py-2 rounded-lg text-[11px]", style: { background: (editForm.disciplineMistakes || []).includes(key) ? "color-mix(in srgb, var(--accent-gold) 16%, transparent)" : "var(--bg-card2)", color: (editForm.disciplineMistakes || []).includes(key) ? "var(--accent-gold)" : "var(--text-secondary)", border: "1px solid " + ((editForm.disciplineMistakes || []).includes(key) ? "color-mix(in srgb, var(--accent-gold) 40%, transparent)" : "var(--border-1)") } }, label))),
+                        editDisciplineEditMode && React.createElement("div", { className: "flex gap-1.5 mt-1.5" },
+                            React.createElement("input", { type: "text", value: newDisciplineText, onChange: e => setNewDisciplineText(e.target.value), onKeyDown: e => e.key === "Enter" && addDisciplineOptionInline(), placeholder: appLanguage === "en" ? "New item..." : "حالت جدید...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
+                            React.createElement("button", { type: "button", onClick: addDisciplineOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } }, RE(Plus, { size: 12 }))))),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                     React.createElement(Field, { label: "\u062A\u0627\u0631\u06CC\u062E (\u0645\u06CC\u0644\u0627\u062F\u06CC)" },
                         React.createElement("input", { type: "date", value: editForm.date, onChange: e => onEditFieldChange("date", e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
@@ -10530,20 +10545,7 @@ function App() {
                     RE(ChartImageField, { label: "چارت تایم ورود - پایان (بعد از معامله)", value: editForm.chartImageAfter || "", onChange: v => onEditFieldChange("chartImageAfter", v) }),
                     RE(Field, { label: "ارزیابی صوتی چارت قبل از معامله" }, RE(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت", value: editForm.voiceNoteBefore || "", onChange: v => onEditFieldChange("voiceNoteBefore", v) })),
                     RE(Field, { label: "ارزیابی صوتی چارت بعد از معامله" }, RE(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت بعد از معامله", value: editForm.voiceNoteAfter || "", onChange: v => onEditFieldChange("voiceNoteAfter", v) }))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات"), RE("button", { type: "button", onClick: () => setEditDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, editDisciplineEditMode ? "انصراف" : "ویرایش")) },
-                    React.createElement(React.Fragment, null,
-                        React.createElement("div", { className: "flex flex-wrap gap-1.5" }, disciplineOptions.map(([key,label], i) => editDisciplineEditMode ? React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
-                            React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? .3 : 1, color: "var(--text-muted)" } }, "▲"),
-                            React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, 1), disabled: i === disciplineOptions.length - 1, style: { opacity: i === disciplineOptions.length - 1 ? .3 : 1, color: "var(--text-muted)" } }, "▼"),
-                            React.createElement("input", { value: label, onChange: e => renameDisciplineOption(i, e.target.value), className: "bg-transparent outline-none text-[11px]", style: { color: "var(--text-primary)", width: Math.max(5, label.length) + "ch" } }),
-                            React.createElement("button", { type: "button", onClick: () => removeDisciplineOption(key), className: "p-1" }, RE(X, { size: 10, color: "#F87171" }))) : React.createElement("button", { key, type: "button", onClick: () => {
-                                const cur = editForm.disciplineMistakes || [];
-                                onEditFieldChange("disciplineMistakes", cur.includes(key) ? cur.filter(x => x !== key) : [...cur, key]);
-                            }, className: "px-3 py-2 rounded-lg text-[11px]", style: { background: (closeForm.disciplineMistakes || []).includes(key) ? "color-mix(in srgb, var(--accent-gold) 16%, transparent)" : "var(--bg-card2)", color: (closeForm.disciplineMistakes || []).includes(key) ? "var(--accent-gold)" : "var(--text-secondary)", border: "1px solid " + ((closeForm.disciplineMistakes || []).includes(key) ? "color-mix(in srgb, var(--accent-gold) 40%, transparent)" : "var(--border-1)") } }, label))),
-                        editDisciplineEditMode && React.createElement("div", { className: "flex gap-1.5 mt-1.5" },
-                            React.createElement("input", { type: "text", value: newDisciplineText, onChange: e => setNewDisciplineText(e.target.value), onKeyDown: e => e.key === "Enter" && addDisciplineOptionInline(), placeholder: appLanguage === "en" ? "New item..." : "حالت جدید...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
-                            React.createElement("button", { type: "button", onClick: addDisciplineOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } }, RE(Plus, { size: 12 }))))),
-                RE(NmCustomFieldsFormSection, { values: editForm.customFields, onChange: v => onEditFieldChange("customFields", v) }),
+                                RE(NmCustomFieldsFormSection, { values: editForm.customFields, onChange: v => onEditFieldChange("customFields", v) }),
                 React.createElement(Field, { label: "\u06CC\u0627\u062F\u062F\u0627\u0634\u062A" },
                     React.createElement("textarea", { rows: 2, value: editForm.note, onChange: e => onEditFieldChange("note", e.target.value), className: "w-full bg-transparent outline-none text-sm resize-none", style: { color: "var(--text-primary)" } })),
                 React.createElement("button", { onClick: saveEditTrade, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
