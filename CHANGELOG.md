@@ -1,3 +1,8 @@
+## 1.22.30 — Version Code 63
+- Journal entry: checklist editors for Daily Plan, Chart Evaluation and Setup Readiness retain condition add/delete/reorder controls.
+- Setup Readiness moved before Buy/Sell in entry flow; entry numbering remains continuous.
+- Dashboard Statistical Analysis now asks for its evaluation source at the start (Journal vs Statement), matching the Advanced Evaluation source selector. Statistical charts and exports follow the selected dashboard source.
+
 # Namello 1.22.29
 
 - Journal Entry: fixed checklist headers rendering as `[object Object]`.
