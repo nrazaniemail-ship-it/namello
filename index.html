@@ -2547,11 +2547,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.24";
-const NM_VERSION_CODE = 57;
+const NM_VERSION_NAME = "1.22.25";
+const NM_VERSION_CODE = 58;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
+const NM_VERSION_DATE = "۱۳ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.25: پایداری لایه تنظیمات و مدیریت ترتیب لایه‌ها اصلاح شد؛ مقدار ترتیب ذخیره‌شده اعتبارسنجی می‌شود و خرابی یک آیتم ترتیب نمی‌تواند کل لایه تنظیمات را از رندر خارج کند.",
     "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
     "نسخه 1.22.23: مدیریت Chart/Trade/Day Plan از داشبورد حذف شد و تحلیل مستقیم هر سه چک‌لیست (Chart، Trade و Day Plan) در ارزیابی پیشرفته قرار گرفت؛ در ثبت ورود ژورنال «آمادگی برنامه روزانه» قبل از آمادگی ستاپ اضافه شد، چک‌لیست‌های سه‌گانه از همان‌جا قابل ویرایش/حذف/افزودن/جابجایی شدند، امتیاز آمادگی برنامه روزانه وارد تحلیل آماری و وزن‌دهی احتمال موفقیت محاسباتی شد، شماره‌گذاری ثبت ورود اصلاح شد، پروفایل/تمپلیت ظاهر مستقل گرفتند، خط زرد کنار لایه فعال حذف و «ترتیب لایه‌ها» به تنظیمات اضافه شد.",
     "نسخه 1.22.22: اصلاح آیکن/نسخه‌بندی PWA و همسان‌سازی شماره نسخه با Android Native؛ قابلیت‌های نسخه 1.22.20 شامل همگام‌سازی R-multiple و ریسک دلاری و پارامترهای تحلیل آماری حفظ شد.",
@@ -3897,20 +3898,38 @@ function NmStatementSyncCard({ statementTrades, journalTrades, persistTrades, ac
 
 /* ---------------- چیدمان نمایش منوی لایه‌ها (افقی/عمودی) ---------------- */
 const NM_DEFAULT_NAV_ORDER = ["dashboard","live","news","journal","marketeval","calendar","finance","systems","strategy","goals","lifegoals","gratitude","psychology","exportall","library","settings","about"];
+const NM_NAV_LABELS = {dashboard:"داشبورد",live:"نشست‌ها",news:"اخبار",journal:"ژورنال",marketeval:"ارزیابی بازار",calendar:"تقویم",finance:"مالی",systems:"سیستم‌ها",strategy:"استراتژی",goals:"اهداف معامله‌گری",lifegoals:"اهداف زندگی",gratitude:"شکرگزاری",psychology:"روانشناسی",exportall:"خروجی جامع",library:"کتابخانه",settings:"تنظیمات",about:"درباره برنامه"};
+function nmNormalizeNavOrder(value){
+ const raw=Array.isArray(value)?value:[];
+ const known=new Set(NM_DEFAULT_NAV_ORDER);
+ const out=[];
+ for(const k of raw){ if(typeof k==='string' && known.has(k) && !out.includes(k)) out.push(k); }
+ for(const k of NM_DEFAULT_NAV_ORDER){ if(!out.includes(k)) out.push(k); }
+ return out;
+}
 function NmNavOrderCard({value,onChange}){
- const defs={dashboard:"داشبورد",live:"نشست‌ها",news:"اخبار",journal:"ژورنال",marketeval:"ارزیابی بازار",calendar:"تقویم",finance:"مالی",systems:"سیستم‌ها",strategy:"استراتژی",goals:"اهداف معامله‌گری",lifegoals:"اهداف زندگی",gratitude:"شکرگزاری",psychology:"روانشناسی",exportall:"خروجی جامع",library:"کتابخانه",settings:"تنظیمات",about:"درباره برنامه"};
- const move=(i,d)=>{const j=i+d;if(j<0||j>=value.length)return;const n=[...value];[n[i],n[j]]=[n[j],n[i]];onChange(n)};
- return RE(NmCollapsible,{title:"ترتیب لایه‌ها",subtitle:"ترتیب نمایش لایه‌ها را به‌صورت سفارشی جابه‌جا کن.",icon:"↕️"},
+ const safe=nmNormalizeNavOrder(value);
+ const move=(i,d)=>{const j=i+d;if(j<0||j>=safe.length)return;const n=[...safe];[n[i],n[j]]=[n[j],n[i]];onChange?.(n)};
+ try {
+  return RE(NmCollapsible,{title:"ترتیب لایه‌ها",subtitle:"ترتیب نمایش لایه‌ها را به‌صورت سفارشی جابه‌جا کن.",icon:"↕️"},
    RE("div",{className:"space-y-1.5"},
-     value.map((k,i)=>RE("div",{key:k,className:"flex items-center gap-2 rounded-lg px-2.5 py-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
-       RE("span",{className:"w-6 text-center text-[10px] font-bold",style:{color:"var(--accent-gold)"}},i+1),
-       RE("span",{className:"flex-1 text-[11px]",style:{color:"var(--text-primary)"}},defs[k]||k),
-       RE("button",{type:"button",onClick:()=>move(i,-1),disabled:i===0,className:"p-1",style:{opacity:i===0 ? .3 : 1}},RE(ChevronUp,{size:13})),
-       RE("button",{type:"button",onClick:()=>move(i,1),disabled:i===value.length-1,className:"p-1",style:{opacity:i===value.length-1 ? .3 : 1}},RE(ChevronDown,{size:13}))
-     )),
-     RE("button",{type:"button",onClick:()=>onChange(NM_DEFAULT_NAV_ORDER),className:"w-full mt-2 py-2 rounded-lg text-[10px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"بازگشت به ترتیب پیش‌فرض")
+    safe.map((k,i)=>RE("div",{key:k,className:"flex items-center gap-2 rounded-lg px-2.5 py-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
+      RE("span",{className:"w-6 text-center text-[10px] font-bold",style:{color:"var(--accent-gold)"}},i+1),
+      RE("span",{className:"flex-1 text-[11px]",style:{color:"var(--text-primary)"}},NM_NAV_LABELS[k]||k),
+      RE("button",{type:"button",onClick:()=>move(i,-1),disabled:i===0,className:"p-1",style:{opacity:i===0?.3:1}},RE(ChevronUp,{size:13})),
+      RE("button",{type:"button",onClick:()=>move(i,1),disabled:i===safe.length-1,className:"p-1",style:{opacity:i===safe.length-1?.3:1}},RE(ChevronDown,{size:13}))
+    )),
+    RE("button",{type:"button",onClick:()=>onChange?.([...NM_DEFAULT_NAV_ORDER]),className:"w-full mt-2 py-2 rounded-lg text-[10px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"بازگشت به ترتیب پیش‌فرض")
    )
- );
+  );
+ } catch(e){
+  try{console.error("[Namello nav order render]",e)}catch(_){}
+  return RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+    RE("div",{className:"text-[12px] font-semibold",style:{color:"var(--text-primary)"}},"ترتیب لایه‌ها"),
+    RE("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},"ترتیب پیش‌فرض فعال است."),
+    RE("button",{type:"button",onClick:()=>onChange?.([...NM_DEFAULT_NAV_ORDER]),className:"w-full mt-2 py-2 rounded-lg text-[10px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"بازنشانی ترتیب")
+  );
+ }
 }
 
 function NmNavLayoutCard({ value, onChange }) {
@@ -5265,7 +5284,7 @@ function App() {
     const [appTheme, setAppTheme] = useState(() => { try { return localStorage.getItem("ns_namello_app_theme_v1") || "classic"; } catch (e) { return "classic"; } });
     const [iconTheme, setIconTheme] = useState(() => { try { return localStorage.getItem("ns_namello_icon_theme_v1") || "default"; } catch (e) { return "default"; } });
     const [navLayout, setNavLayout] = useState(() => { try { return localStorage.getItem("ns_namello_nav_layout_v1") || "horizontal"; } catch (e) { return "horizontal"; } });
-    const [navOrder, setNavOrder] = useState(() => { try { const v=JSON.parse(localStorage.getItem("ns_namello_nav_order_v1")||"null"); return Array.isArray(v)&&v.length===NM_DEFAULT_NAV_ORDER.length ? v : NM_DEFAULT_NAV_ORDER; } catch (e) { return NM_DEFAULT_NAV_ORDER; } });
+    const [navOrder, setNavOrder] = useState(() => { try { const v=JSON.parse(localStorage.getItem("ns_namello_nav_order_v1")||"null"); return nmNormalizeNavOrder(v); } catch (e) { return [...NM_DEFAULT_NAV_ORDER]; } });
     const [navMenuOpen, setNavMenuOpen] = useState(false);
     const [appLanguage, setAppLanguage] = useState("fa");
     const [storageMode, setStorageMode] = useState("local");
@@ -6095,7 +6114,7 @@ function App() {
         try { localStorage.setItem("ns_namello_nav_layout_v1", next); } catch (e2) { }
     }
     catch (e) { } }, []);
-    const persistNavOrder = useCallback(async (next) => { setNavOrder(next); try { await window.storage.set("namello_nav_order_v1", JSON.stringify(next)); } catch (e) {} try { localStorage.setItem("ns_namello_nav_order_v1", JSON.stringify(next)); } catch (e2) {} }, []);
+    const persistNavOrder = useCallback(async (next) => { const safe=nmNormalizeNavOrder(next); setNavOrder(safe); try { await window.storage.set("namello_nav_order_v1", JSON.stringify(safe)); } catch (e) {} try { localStorage.setItem("ns_namello_nav_order_v1", JSON.stringify(safe)); } catch (e2) {} }, []);
     const persistIconTheme = useCallback(async (next) => { setIconTheme(next); try {
         await window.storage.set("namello_icon_theme_v1", next);
     }
