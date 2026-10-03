@@ -133,7 +133,7 @@
     runtimeBannerTimer = setTimeout(function () { banner.style.display = 'none'; }, 8000);
   }
   window.addEventListener('error', function (e) {
-    var msg = e.message || (e.error && e.error.message) || 'Unknown error';
+    var msg = e.message || (e.error && (e.error.stack || e.error.message)) || 'Unknown error';
     var src = e.filename ? (' at ' + e.filename + ':' + e.lineno + ':' + e.colno) : '';
     showBootError('Script error', msg + src);
   }, true);
@@ -2547,11 +2547,12 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.25";
-const NM_VERSION_CODE = 58;
+const NM_VERSION_NAME = "1.22.26";
+const NM_VERSION_CODE = 59;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "۱۳ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
+    "نسخه 1.22.26: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
     "نسخه 1.22.25: پایداری لایه تنظیمات و مدیریت ترتیب لایه‌ها اصلاح شد؛ مقدار ترتیب ذخیره‌شده اعتبارسنجی می‌شود و خرابی یک آیتم ترتیب نمی‌تواند کل لایه تنظیمات را از رندر خارج کند.",
     "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
     "نسخه 1.22.23: مدیریت Chart/Trade/Day Plan از داشبورد حذف شد و تحلیل مستقیم هر سه چک‌لیست (Chart، Trade و Day Plan) در ارزیابی پیشرفته قرار گرفت؛ در ثبت ورود ژورنال «آمادگی برنامه روزانه» قبل از آمادگی ستاپ اضافه شد، چک‌لیست‌های سه‌گانه از همان‌جا قابل ویرایش/حذف/افزودن/جابجایی شدند، امتیاز آمادگی برنامه روزانه وارد تحلیل آماری و وزن‌دهی احتمال موفقیت محاسباتی شد، شماره‌گذاری ثبت ورود اصلاح شد، پروفایل/تمپلیت ظاهر مستقل گرفتند، خط زرد کنار لایه فعال حذف و «ترتیب لایه‌ها» به تنظیمات اضافه شد.",
@@ -5245,6 +5246,26 @@ function NmSecurityAccountCard({showToast}){ const [sec,setSec]=React.useState((
   RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},(()=>{const st=nmSyncState();return RE(React.Fragment,null,RE("div",{className:"text-[13px] font-semibold mb-1",style:{color:"var(--text-primary)"}},"مرکز Sync چنددستگاهی"),RE("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},"هر دستگاه شناسه مستقل دارد؛ داده قبل از ارسال رمزگذاری می‌شود و نسخه/زمان برای تشخیص Conflict نگه‌داری می‌شود."),RE("div",{className:"grid grid-cols-2 gap-2 text-[10px] mb-2"},RE("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},"Revision: ",RE("b",null,String(st.revision||0))),RE("div",{className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},"وضعیت: ",RE("b",null,String(st.lastStatus||"local-only")))),RE("div",{className:"text-[9px] leading-5",style:{color:"var(--text-muted)"}},"Device ID: ",RE("span",{className:"mono",style:{direction:"ltr"}},nmDeviceId())))}),RE("div",{className:"text-[9px] leading-5 mt-1",style:{color:"var(--text-muted)"}},"برای Sync سرورمحور، ابتدا Backend را در تنظیمات وارد کن و با Google وارد شو؛ سپس همگام‌سازی چنددستگاهی از طریق revision و Conflict API انجام می‌شود.")),
   RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},RE("div",{className:"flex items-center justify-between"},RE("div",null,RE("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"حریم خصوصی"),RE("div",{className:"text-[10px]",style:{color:"var(--text-muted)"}},"داده‌ها پیش‌فرض محلی هستند")),RE("button",{onClick:()=>saveSec({privacyMode:!sec.privacyMode}),className:"px-3 py-1.5 rounded-full text-[11px]",style:{background:sec.privacyMode?"#34D39922":"var(--bg-card2)",color:sec.privacyMode?"#34D399":"var(--text-muted)"}},sec.privacyMode?"فعال":"غیرفعال")),RE("p",{className:"text-[10px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"حالت حریم خصوصی برای پنهان‌کردن داده‌های حساس در رابط کاربری آماده شده و در نسخه‌های بعدی به نمایشگرهای مالی بیشتری تعمیم پیدا می‌کند."))
  ); }
+
+class NmSettingsErrorBoundary extends React.Component {
+  constructor(props){ super(props); this.state={hasError:false,error:null}; }
+  static getDerivedStateFromError(error){ return {hasError:true,error}; }
+  componentDidCatch(error, info){ try{ console.error("[Namello settings boundary]", error, info); }catch(e){} }
+  render(){
+    if(this.state.hasError){
+      const msg=this.state.error && (this.state.error.message || String(this.state.error));
+      return RE("div",{className:"px-4 mt-4 pb-16",style:{color:"var(--text-primary)"}},
+        RE("div",{className:"rounded-2xl p-4",style:{background:"var(--bg-card)",border:"1px solid #F8717155"}},
+          RE("div",{className:"text-sm font-semibold mb-2",style:{color:"#F87171"}},"خطا در یکی از بخش‌های تنظیمات"),
+          RE("div",{className:"text-[11px] leading-5 mb-3",style:{color:"var(--text-muted)"}},"یک بخش تنظیمات باعث خطا شد؛ سایر لایه‌های Namello باید همچنان قابل استفاده باشند."),
+          RE("div",{className:"text-[10px] leading-5 mb-3",style:{color:"#F87171",direction:"ltr",textAlign:"left",wordBreak:"break-word"}},String(msg||"Unknown error")),
+          RE("button",{type:"button",onClick:()=>this.setState({hasError:false,error:null}),className:"w-full py-2 rounded-lg text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"تلاش دوباره")
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
     const [, forceTick] = useState(0);
@@ -9507,7 +9528,7 @@ function App() {
             RE(NmAppThemeCard, { value: appTheme, onChange: persistAppTheme }),
             RE(NmIconThemeCard, { value: iconTheme, onChange: persistIconTheme, showToast }),
             RE(NmNavLayoutCard, { value: navLayout, onChange: persistNavLayout }),
-            RE(NmNavOrderCard, { value: navOrder, onChange: persistNavOrder }),
+            RE(NmSettingsErrorBoundary, null, RE(NmNavOrderCard, { value: navOrder, onChange: persistNavOrder })),
             RE(NmLibrarySettingsCard, { open: !!openSettingsSection.library, onToggle: () => toggleSettingsSection("library") }),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("button", { onClick: () => toggleSettingsSection("language"), className: "w-full flex items-center justify-between mb-2" },
