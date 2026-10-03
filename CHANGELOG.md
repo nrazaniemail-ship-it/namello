@@ -1,11 +1,3 @@
-## 1.22.31 — Version Code 64
-
-- Dashboard source scope text under Statistical Analysis / Advanced Evaluation; Dashboard Performance no longer shows base-account reference in its subtitle.
-- Checklist quick up/down controls for Journal Entry items 6, 7 and 32.
-- Removed duplicate free-form risk-dollar input; the new-state control remains the single manual entry.
-- Multi-pass chart image processing with selectable Fast OCR / Precise Chart Processing; Entry/TP/SL extraction feeds R-multiple and dollar-risk calculations.
-- Reviewed baseline weights for Calculated Success Probability, with user-editable weights preserved through a new v3 storage key.
-
 ## 1.22.30 — Version Code 63
 - Journal entry: checklist editors for Daily Plan, Chart Evaluation and Setup Readiness retain condition add/delete/reorder controls.
 - Setup Readiness moved before Buy/Sell in entry flow; entry numbering remains continuous.
