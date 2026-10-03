@@ -3643,8 +3643,7 @@ function NmGuideLevelsField({ kind, value, onChange }) {
     const remove = (o) => { persist(options.filter(x => x !== o)); if (sel.includes(o)) onChange(sel.filter(x => x !== o)); };
     const add = () => { const v = newText.trim(); if (!v) return; if (!options.includes(v)) persist([...options, v]); if (!sel.includes(v)) onChange([...sel, v]); setNewText(""); };
     return RE("div", { style: { position: "relative", paddingTop: 6 } },
-        RE("button", { type: "button", onClick: () => setEditMode(m => !m), style: { position: "absolute", top: -6, left: -6, zIndex: 1, background: editMode ? "#F8717122" : "var(--bg-card2)", border: `1px solid ${editMode ? "#F8717155" : "var(--border-2)"}`, borderRadius: 8, padding: 4 }, "aria-label": "ویرایش/حذف گزینه‌ها" },
-            RE(Trash2, { size: 11, color: editMode ? "#F87171" : "var(--text-muted)" })),
+        JournalEditToggle({ editMode, onToggle: () => setEditMode(m => !m) }),
         RE("div", { className: "flex flex-wrap gap-1.5" }, options.map((o, i) => editMode
             ? RE("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                 RE("button", { type: "button", onClick: () => move(i, -1), disabled: i === 0, style: { opacity: i === 0 ? 0.3 : 1 } }, RE(ChevronUp, { size: 12, color: "var(--text-muted)" })),
