@@ -1,3 +1,8 @@
+# Namello 1.22.24
+
+- رفع خطای SyntaxError که در نسخه 1.22.23 باعث نمایش Script error در اجرای برنامه می‌شد.
+- منطق نسخه 1.22.23 بدون تغییر محتوایی حفظ شد.
+
 # Namello 1.22.23
 
 - Dashboard Advanced Evaluation now directly analyzes Chart, Trade, and Day Plan checklists; management UI removed from Dashboard.

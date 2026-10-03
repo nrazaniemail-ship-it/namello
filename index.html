@@ -2547,12 +2547,13 @@ const RE = React.createElement;
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.22.23";
-const NM_VERSION_CODE = 56;
+const NM_VERSION_NAME = "1.22.24";
+const NM_VERSION_CODE = 57;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "۱۱ مهر ۱۴۰۵";
+const NM_VERSION_DATE = "۱۲ مهر ۱۴۰۵";
 const NM_CHANGELOG = [
-    "نسخه 1.22.23: مدیریت Chart/Trade/Day Plan از داشبورد حذف شد و تحلیل مستقیم هر سه چک‌لیست (Chart، Trade و Day Plan) در ارزیابی پیشرفته قرار گرفت؛ در ثبت ورود ژورنال «آمادگی برنامه روزانه» قبل از آمادگی ستاپ اضافه شد، چک‌لیست‌های سه‌گانه از همان‌جا قابل ویرایش/حذف/افزودن/جابجایی شدند، امتیاز آمادگی برنامه روزانه وارد تحلیل آماری و وزن‌دهی احتمال موفقیت محاسباتی شد، شماره‌گذاری ثبت ورود اصلاح شد، پروفایل/تمپلیت ظاهر مستقل گرفتند، خط زرد کنار لایه فعال حذف و «ترتیب لایه‌ها» به تنظیمات اضافه شد.
+    "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
+    "نسخه 1.22.23: مدیریت Chart/Trade/Day Plan از داشبورد حذف شد و تحلیل مستقیم هر سه چک‌لیست (Chart، Trade و Day Plan) در ارزیابی پیشرفته قرار گرفت؛ در ثبت ورود ژورنال «آمادگی برنامه روزانه» قبل از آمادگی ستاپ اضافه شد، چک‌لیست‌های سه‌گانه از همان‌جا قابل ویرایش/حذف/افزودن/جابجایی شدند، امتیاز آمادگی برنامه روزانه وارد تحلیل آماری و وزن‌دهی احتمال موفقیت محاسباتی شد، شماره‌گذاری ثبت ورود اصلاح شد، پروفایل/تمپلیت ظاهر مستقل گرفتند، خط زرد کنار لایه فعال حذف و «ترتیب لایه‌ها» به تنظیمات اضافه شد.",
     "نسخه 1.22.22: اصلاح آیکن/نسخه‌بندی PWA و همسان‌سازی شماره نسخه با Android Native؛ قابلیت‌های نسخه 1.22.20 شامل همگام‌سازی R-multiple و ریسک دلاری و پارامترهای تحلیل آماری حفظ شد.",
     "نسخه 1.22.20: مقدار R-multiple و ریسک دلاری ثبت ورود با باکس «مقدار جدید/حالت جدید» همگام شد؛ ریسک دلاری، احتمال موفقیت ذهنی/محاسباتی و سایر پارامترهای جدید ثبت ورود به تحلیل سودآوری داشبورد اضافه شدند و پارامترهای جدید در وزن‌دهی احتمال موفقیت محاسباتی قابل تنظیم شدند.",
     "نسخه 1.22.19: مدیریت Chart/Trade/Day Plan ساده‌تر شد، متن شروط چندسطره شد، امتیاز آمادگی ستاپ و ارزیابی چارت به پارامترهای تحلیلی اضافه شد، R/R برنامه‌ریزی‌شده حذف و استخراج چارت برای R-multiple و ریسک دلاری بهبود یافت.",
@@ -3899,7 +3900,17 @@ const NM_DEFAULT_NAV_ORDER = ["dashboard","live","news","journal","marketeval","
 function NmNavOrderCard({value,onChange}){
  const defs={dashboard:"داشبورد",live:"نشست‌ها",news:"اخبار",journal:"ژورنال",marketeval:"ارزیابی بازار",calendar:"تقویم",finance:"مالی",systems:"سیستم‌ها",strategy:"استراتژی",goals:"اهداف معامله‌گری",lifegoals:"اهداف زندگی",gratitude:"شکرگزاری",psychology:"روانشناسی",exportall:"خروجی جامع",library:"کتابخانه",settings:"تنظیمات",about:"درباره برنامه"};
  const move=(i,d)=>{const j=i+d;if(j<0||j>=value.length)return;const n=[...value];[n[i],n[j]]=[n[j],n[i]];onChange(n)};
- return RE(NmCollapsible,{title:"ترتیب لایه‌ها",subtitle:"ترتیب نمایش لایه‌ها را به‌صورت سفارشی جابه‌جا کن.",icon:"↕️"},RE("div",{className:"space-y-1.5"},value.map((k,i)=>RE("div",{key:k,className:"flex items-center gap-2 rounded-lg px-2.5 py-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},RE("span",{className:"w-6 text-center text-[10px] font-bold",style:{color:"var(--accent-gold)"}},i+1),RE("span",{className:"flex-1 text-[11px]",style:{color:"var(--text-primary)"}},defs[k]||k),RE("button",{type:"button",onClick:()=>move(i,-1),disabled:i===0,className:"p-1",style:{opacity:i===0?.3:1}},RE(ChevronUp,{size:13})),RE("button",{type:"button",onClick:()=>move(i,1),disabled:i===value.length-1,className:"p-1",style:{opacity:i===value.length-1?.3:1}},RE(ChevronDown,{size:13})))),RE("button",{type:"button",onClick:()=>onChange(NM_DEFAULT_NAV_ORDER),className:"w-full mt-2 py-2 rounded-lg text-[10px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"بازگشت به ترتیب پیش‌فرض"));
+ return RE(NmCollapsible,{title:"ترتیب لایه‌ها",subtitle:"ترتیب نمایش لایه‌ها را به‌صورت سفارشی جابه‌جا کن.",icon:"↕️"},
+   RE("div",{className:"space-y-1.5"},
+     value.map((k,i)=>RE("div",{key:k,className:"flex items-center gap-2 rounded-lg px-2.5 py-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
+       RE("span",{className:"w-6 text-center text-[10px] font-bold",style:{color:"var(--accent-gold)"}},i+1),
+       RE("span",{className:"flex-1 text-[11px]",style:{color:"var(--text-primary)"}},defs[k]||k),
+       RE("button",{type:"button",onClick:()=>move(i,-1),disabled:i===0,className:"p-1",style:{opacity:i===0 ? .3 : 1}},RE(ChevronUp,{size:13})),
+       RE("button",{type:"button",onClick:()=>move(i,1),disabled:i===value.length-1,className:"p-1",style:{opacity:i===value.length-1 ? .3 : 1}},RE(ChevronDown,{size:13}))
+     )),
+     RE("button",{type:"button",onClick:()=>onChange(NM_DEFAULT_NAV_ORDER),className:"w-full mt-2 py-2 rounded-lg text-[10px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"بازگشت به ترتیب پیش‌فرض")
+   )
+ );
 }
 
 function NmNavLayoutCard({ value, onChange }) {
@@ -5022,56 +5033,55 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
  const [editing,setEditing]=React.useState(false);
  const [draft,setDraft]=React.useState(plan?.conditions||[]);
  React.useEffect(()=>{setDraft(plan?.conditions||[])},[plan?.id,JSON.stringify(plan?.conditions||[])]);
- const save=()=>{if(onPlanChange)onPlanChange({...plan,conditions:draft});setEditing(false);};
- const cancel=()=>{setDraft(plan?.conditions||[]);setEditing(false);};
+ const save=()=>{onPlanChange?.({...plan,conditions:draft});setEditing(false)};
+ const cancel=()=>{setDraft(plan?.conditions||[]);setEditing(false)};
  const add=()=>setDraft(a=>[...a,{id:'j'+Date.now().toString(36),type:'checkbox',label:'شرط جدید',options:[]}]);
  const update=(i,k,v)=>setDraft(a=>a.map((x,n)=>n===i?{...x,[k]:v}:x));
  const move=(i,d)=>setDraft(a=>{const j=i+d;if(j<0||j>=a.length)return a;const n=[...a];[n[i],n[j]]=[n[j],n[i]];return n});
  const remove=i=>setDraft(a=>a.filter((_,n)=>n!==i));
- return React.createElement(Field,{label:React.createElement('span',{className:'flex items-center gap-1.5'},label,React.createElement('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش'))},
-   React.createElement(React.Fragment,null,
-    score&&React.createElement('div',{className:'rounded-lg px-2.5 py-2 mb-1.5 flex items-center justify-between',style:{background:score.no?'#F8717110':'#34D39910',border:'1px solid '+(score.no?'#F8717138':'#34D39938')}},React.createElement('span',{className:'text-[10px]',style:{color:'var(--text-secondary)'}},label+': ',React.createElement('b',{style:{color:score.no?'#F87171':'#34D399'}},score.score===null?'—':score.score+'%'),' · ',score.answered,'/',score.total,' پاسخ'),React.createElement('span',{className:'text-[9px]',style:{color:score.no?'#F87171':'var(--text-muted)'}},score.no?score.no+' نقض قانون':'بدون نقض قانون')),
-    editing&&React.createElement('div',{className:'rounded-xl p-2.5 mb-2',style:{background:'var(--bg-card2)',border:'1px solid var(--border-2)'}},
-      draft.map((c,i)=>React.createElement('div',{key:c.id,className:'rounded-lg p-2 mb-1.5',style:{background:'var(--bg-page)',border:'1px solid var(--border-1)'}},
-        React.createElement('div',{className:'flex items-start gap-1.5'},
-          React.createElement('div',{className:'flex flex-col gap-0.5'},React.createElement('button',{type:'button',onClick:()=>move(i,-1),disabled:i===0,className:'p-1',style:{opacity:i===0?.3:1}},React.createElement(ChevronUp,{size:12})),React.createElement('button',{type:'button',onClick:()=>move(i,1),disabled:i===draft.length-1,className:'p-1',style:{opacity:i===draft.length-1?.3:1}},React.createElement(ChevronDown,{size:12}))),
-          React.createElement('select',{value:c.type||'checkbox',onChange:e=>update(i,'type',e.target.value),className:'rounded px-1.5 py-1 text-[9px]',style:{background:'var(--bg-card2)',color:'var(--text-primary)',border:'1px solid var(--border-2)'}},['checkbox','category','number','text','multi'].map(x=>React.createElement('option',{key:x,value:x},x))),
-          React.createElement('textarea',{value:c.label||'',rows:1,onChange:e=>update(i,'label',e.target.value),className:'flex-1 bg-transparent outline-none text-[10px]',style:{color:'var(--text-primary)',minHeight:28,resize:'none',lineHeight:1.6}}),
-          React.createElement('button',{type:'button',onClick:()=>remove(i),className:'p-1'},React.createElement(Trash2,{size:12,color:'#F87171'}))),
-        ['category','multi'].includes(c.type)&&React.createElement('input',{value:(c.options||[]).join(', '),onChange:e=>update(i,'options',e.target.value.split(',').map(x=>x.trim()).filter(Boolean)),placeholder:'حالت‌ها با , جدا شوند',className:'w-full mt-1 bg-transparent outline-none text-[9px]',style:{color:'var(--text-secondary)',borderTop:'1px solid var(--border-1)',paddingTop:5}})
-      )),
-      React.createElement('div',{className:'flex gap-1.5 mt-1'},React.createElement('button',{type:'button',onClick:add,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--bg-page)',color:'var(--accent-gold)'}},'+ افزودن حالت/شرط'),React.createElement('button',{type:'button',onClick:save,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره چک‌لیست'))),
-    React.createElement('div',{className:'space-y-1.5'},(plan?.conditions||[]).map(c=>React.createElement('div',{key:c.id,className:'rounded-lg px-2.5 py-2',style:{background:'var(--bg-card2)'}},React.createElement('div',{className:'flex items-center justify-between gap-2'},React.createElement('span',{className:'text-[10px]',style:{color:'var(--text-secondary)',flex:1,minWidth:0,whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:1.75}},c.label),c.type==='checkbox'?React.createElement('div',{className:'flex gap-1'},[[true,'✓'],[false,'✕'],[null,'—']].map(([v,l])=>React.createElement('button',{key:String(v),type:'button',onClick:()=>onChange({...answers,[c.id]:v}),className:'px-2 py-1 rounded',style:{background:answers[c.id]===v?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers[c.id]===v?'var(--accent-gold)':'var(--text-muted)'}},l))):React.createElement('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}}))))))
-   ));
+ const scoreBox=score&&RE('div',{className:'rounded-lg px-2.5 py-2 mb-1.5 flex items-center justify-between',style:{background:score.no?'#F8717110':'#34D39910',border:'1px solid '+(score.no?'#F8717138':'#34D39938')}},
+   RE('span',{className:'text-[10px]',style:{color:'var(--text-secondary)'}},label+': ',RE('b',{style:{color:score.no?'#F87171':'#34D399'}},score.score==null?'—':score.score+'%'),' · ',score.answered,'/',score.total,' پاسخ'),
+   RE('span',{className:'text-[9px]',style:{color:score.no?'#F87171':'var(--text-muted)'}},score.no?score.no+' نقض قانون':'بدون نقض قانون'));
+ const editor=editing&&RE('div',{className:'rounded-xl p-2.5 mb-2',style:{background:'var(--bg-card2)',border:'1px solid var(--border-2)'}},
+   draft.map((c,i)=>RE('div',{key:c.id,className:'rounded-lg p-2 mb-1.5',style:{background:'var(--bg-page)',border:'1px solid var(--border-1)'}},
+     RE('div',{className:'flex items-start gap-1.5'},
+       RE('div',{className:'flex flex-col gap-0.5'},
+         RE('button',{type:'button',onClick:()=>move(i,-1),disabled:i===0,className:'p-1',style:{opacity:i===0 ? .3 : 1}},RE(ChevronUp,{size:12})),
+         RE('button',{type:'button',onClick:()=>move(i,1),disabled:i===draft.length-1,className:'p-1',style:{opacity:i===draft.length-1 ? .3 : 1}},RE(ChevronDown,{size:12}))),
+       RE('select',{value:c.type||'checkbox',onChange:e=>update(i,'type',e.target.value),className:'rounded px-1.5 py-1 text-[9px]',style:{background:'var(--bg-card2)',color:'var(--text-primary)',border:'1px solid var(--border-2)'}},['checkbox','category','number','text','multi'].map(x=>RE('option',{key:x,value:x},x))),
+       RE('textarea',{value:c.label||'',rows:1,onChange:e=>update(i,'label',e.target.value),className:'flex-1 bg-transparent outline-none text-[10px]',style:{color:'var(--text-primary)',minHeight:28,resize:'none',lineHeight:1.6}}),
+       RE('button',{type:'button',onClick:()=>remove(i),className:'p-1'},RE(Trash2,{size:12,color:'#F87171'}))),
+     ['category','multi'].includes(c.type)&&RE('input',{value:(c.options||[]).join(', '),onChange:e=>update(i,'options',e.target.value.split(',').map(x=>x.trim()).filter(Boolean)),placeholder:'حالت‌ها با , جدا شوند',className:'w-full mt-1 bg-transparent outline-none text-[9px]',style:{color:'var(--text-secondary)',borderTop:'1px solid var(--border-1)',paddingTop:5}})
+   )),
+   RE('div',{className:'flex gap-1.5 mt-1'},
+     RE('button',{type:'button',onClick:add,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--bg-page)',color:'var(--accent-gold)'}},'+ افزودن حالت/شرط'),
+     RE('button',{type:'button',onClick:save,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره چک‌لیست')));
+ const viewer=RE('div',{className:'space-y-1.5'},(plan?.conditions||[]).map(c=>RE('div',{key:c.id,className:'rounded-lg px-2.5 py-2',style:{background:'var(--bg-card2)'}},
+   RE('div',{className:'flex items-center justify-between gap-2'},
+     RE('span',{className:'text-[10px]',style:{color:'var(--text-secondary)',flex:1,minWidth:0,whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:1.75}},c.label),
+     c.type==='checkbox' ? RE('div',{className:'flex gap-1'},[[true,'✓'],[false,'✕'],[null,'—']].map(([v,l])=>RE('button',{key:String(v),type:'button',onClick:()=>onChange({...answers,[c.id]:v}),className:'px-2 py-1 rounded',style:{background:answers[c.id]===v?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers[c.id]===v?'var(--accent-gold)':'var(--text-muted)'}},l))) :
+       RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}})
+   )
+ )));
+ return RE(Field,{label:RE('span',{className:'flex items-center gap-1.5'},label,RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
 }
 
 function NmPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist"}){
  const score=nmPlanChecklistScore(plan,answers);
- return React.createElement(Field,{label},
-   React.createElement(React.Fragment,null,
-    score && React.createElement("div",{className:"rounded-lg px-2.5 py-2 mb-1.5 flex items-center justify-between",style:{background:score.no?"#F8717110":"#34D39910",border:"1px solid "+(score.no?"#F8717138":"#34D39938")}},
-      React.createElement("span",{className:"text-[10px]",style:{color:"var(--text-secondary)"}},label+": ",React.createElement("b",{style:{color:score.no?"#F87171":"#34D399"}},score.score===null?"—":score.score+"%")," · ",score.answered,"/",score.total," پاسخ"),
-      React.createElement("span",{className:"text-[9px]",style:{color:score.no?"#F87171":"var(--text-muted)"}},score.no?score.no+" نقض قانون":"بدون نقض قانون")),
-    React.createElement("div",{className:"space-y-1.5"},(plan.conditions||[]).map(c=>
-     React.createElement("div",{key:c.id,className:"rounded-lg px-2.5 py-2",style:{background:"var(--bg-card2)"}},
-       React.createElement("div",{className:"flex items-center justify-between gap-2"},
-         React.createElement("span",{className:"text-[10px]",style:{color:"var(--text-secondary)"}},c.label),
-         c.type==="checkbox" ? React.createElement("div",{className:"flex gap-1"},[[true,"✓"],[false,"✕"],[null,"—"]].map(([v,l])=>React.createElement("button",{key:String(v),type:"button",onClick:()=>onChange({...answers,[c.id]:v}),className:"px-2 py-1 rounded",style:{background:answers[c.id]===v?"color-mix(in srgb, var(--accent-gold) 20%, transparent)":"var(--bg-page)",color:answers[c.id]===v?"var(--accent-gold)":"var(--text-muted)"}},l)))
-         : c.type==="number" ? React.createElement("input",{type:"number",min:1,max:10,value:answers[c.id]??"",onChange:e=>onChange({...answers,[c.id]:e.target.value===""?null:Number(e.target.value)}),className:"w-16 rounded px-2 py-1 bg-transparent text-[10px]",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}})
-         : React.createElement("select",{value:answers[c.id]??"",onChange:e=>onChange({...answers,[c.id]:e.target.value||null}),className:"rounded px-2 py-1 bg-transparent text-[10px]",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}},React.createElement("option",{value:""},"بی‌پاسخ"),(c.options||[]).map(o=>React.createElement("option",{key:o,value:o},o)))
-       )
+ return RE(Field,{label},RE(React.Fragment,null,
+   score&&RE('div',{className:'rounded-lg px-2.5 py-2 mb-1.5 flex items-center justify-between',style:{background:score.no?'#F8717110':'#34D39910',border:'1px solid '+(score.no?'#F8717138':'#34D39938')}},
+     RE('span',{className:'text-[10px]',style:{color:'var(--text-secondary)'}},label+': ',RE('b',{style:{color:score.no?'#F87171':'#34D399'}},score.score==null?'—':score.score+'%'),' · ',score.answered,'/',score.total,' پاسخ'),
+     RE('span',{className:'text-[9px]',style:{color:score.no?'#F87171':'var(--text-muted)'}},score.no?score.no+' نقض قانون':'بدون نقض قانون')),
+   RE('div',{className:'space-y-1.5'},(plan?.conditions||[]).map(c=>RE('div',{key:c.id,className:'rounded-lg px-2.5 py-2',style:{background:'var(--bg-card2)'}},
+     RE('div',{className:'flex items-center justify-between gap-2'},
+       RE('span',{className:'text-[10px]',style:{color:'var(--text-secondary)',flex:1,minWidth:0,whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:1.75}},c.label),
+       c.type==='checkbox' ? RE('div',{className:'flex gap-1'},[[true,'✓'],[false,'✕'],[null,'—']].map(([v,l])=>RE('button',{key:String(v),type:'button',onClick:()=>onChange({...answers,[c.id]:v}),className:'px-2 py-1 rounded',style:{background:answers?.[c.id]===v?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers?.[c.id]===v?'var(--accent-gold)':'var(--text-muted)'}},l))) :
+       RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}})
      )
-   )
-  )
-  )
+   ))))
  );
 }
 
-
-
-/* ================= Namello Account & Encrypted Sync v2 ================= */
-const NM_SYNC_STATE_KEY = "namello_sync_state_v2";
-const NM_DEVICE_KEY = "namello_device_id_v1";
 function nmDeviceId(){ let id=localStorage.getItem(NM_DEVICE_KEY); if(!id){ id=(crypto.randomUUID?crypto.randomUUID():"nm-"+Date.now()+"-"+Math.random().toString(16).slice(2)); try{localStorage.setItem(NM_DEVICE_KEY,id)}catch(e){} } return id; }
 function nmSyncState(){ return nmSecRead(NM_SYNC_STATE_KEY,{revision:0,updatedAt:null,lastRemoteAt:null,lastStatus:"local-only",conflictCount:0}); }
 function nmSaveSyncState(p){ const n={...nmSyncState(),...p}; nmSecWrite(NM_SYNC_STATE_KEY,n); return n; }
