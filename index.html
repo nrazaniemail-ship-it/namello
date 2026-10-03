@@ -7298,7 +7298,7 @@ function App() {
         mainTrendDirection: "bullish", marketBias: "bullish", marketCondition: "trend",
         wave: "", trigs: [], targets: [], stops: [], reversalPatterns: [],
         divergenceMain: [], divergenceEntry: [],
-        mainGuideLevels: [], entryGuideLevels: [], planAnswers: {},
+        mainGuideLevels: [], entryGuideLevels: [], planAnswers: {}, chartAnswers: {}, dayPlanAnswers: {},
     });
     function openNewTradeForm() {
         const d = lastTradeDefaultsRef.current;
@@ -7312,7 +7312,7 @@ function App() {
             marketBias: d.marketBias, marketCondition: d.marketCondition, wave: d.wave, trigs: d.trigs || [], targets: d.targets || [], stops: d.stops || [],
             reversalPatterns: d.reversalPatterns || [],
             divergenceMain: d.divergenceMain || [], divergenceEntry: d.divergenceEntry || [],
-            successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: d.planAnswers || {}, chartAnswers: {}, dayPlanAnswers: {}, setupReadinessPct: null, chartReadinessPct: null, dayPlanReadinessPct: null,
+            successProb: "", psychology: [], plannedTargetPrice: "", plannedStopPrice: "", planAnswers: d.planAnswers || {}, chartAnswers: d.chartAnswers || {}, dayPlanAnswers: d.dayPlanAnswers || {}, setupReadinessPct: null, chartReadinessPct: null, dayPlanReadinessPct: null,
             chartImageMain: "", chartImageEntryStart: "", voiceNoteBefore: "",
         });
         setShowOpenForm(true);
@@ -7382,7 +7382,7 @@ function App() {
             reversalPatterns: openForm.reversalPatterns || [],
             divergenceMain: openForm.divergenceMain || [], divergenceEntry: openForm.divergenceEntry || [],
             mainGuideLevels: openForm.mainGuideLevels || [], entryGuideLevels: openForm.entryGuideLevels || [],
-            planAnswers: openForm.planAnswers || {},
+            planAnswers: openForm.planAnswers || {}, chartAnswers: openForm.chartAnswers || {}, dayPlanAnswers: openForm.dayPlanAnswers || {},
         };
         persistTrades([trade, ...trades]);
         setShowOpenForm(false);
