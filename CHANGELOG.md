@@ -1,3 +1,8 @@
+## 1.22.31 — Version Code 64
+- Dashboard performance header no longer displays the base-account reference.
+- Added a compact dynamic base-account summary below Statistical Analysis and Advanced Evaluation.
+- Dashboard section headings for Statistical Analysis, Advanced Evaluation and Comprehensive Dashboard Output are displayed more prominently as headers.
+
 ## 1.22.30 — Version Code 63
 - Journal entry: checklist editors for Daily Plan, Chart Evaluation and Setup Readiness retain condition add/delete/reorder controls.
 - Setup Readiness moved before Buy/Sell in entry flow; entry numbering remains continuous.

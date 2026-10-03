@@ -18,8 +18,8 @@ const APP_SHELL = ["./manifest.json", "./icon-192.png", "./icon-512.png", "./ico
 const OPTIONAL_LOCAL = ["./version.json", "./icon-midnight-192.png", "./icon-emerald-192.png", "./icon-royal-192.png", "./icon-graphite-192.png", "./icon-sunset-192.png", "./icon-ruby-192.png"];
 
 const RUNTIME_DEPS = [
-  "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js",
-  "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js",
+  "https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js",
+  "https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js",
   "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
   "https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.32.0/plotly.min.js",
   "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4",
