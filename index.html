@@ -4919,10 +4919,16 @@ class NmDashboardErrorBoundary extends React.Component {
   }
 }
 
+function nmDashboardAccountSummary(list,allList){
+ const xs=Array.isArray(list)?list:[], all=Array.isArray(allList)?allList:[];
+ if(!xs.length)return "حساب مبنا: بدون حساب انتخاب‌شده";
+ if(all.length>0&&xs.length===all.length)return "حساب مبنا: کل حساب‌ها";
+ if(xs.length===1)return `حساب مبنا: ${xs[0]}`;
+ return `حساب‌های مبنا: ${xs.join("، ")}`;
+}
 function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrades,activeAccount,plans,dayPlans,chartPlans,setPlans,setDayPlans,setChartPlans,statisticalAnalysisSection,baseAccounts,selectedBaseAccounts,onToggleBaseAccount,onSelectBaseType,onToggleAllBaseAccounts,onOpenBasePicker,showBasePicker,accountTypeOf,onExportAdvancedExcel,onExportAdvancedPdf,onExportComprehensiveExcel,onExportComprehensivePdf,dashboardDataSource,onDashboardDataSourceChange,statementTrades,statementImporting,statementImportError,onImportDashboardStatementFiles,onClearDashboardStatement,dashboardStatementTrades}){
  const [filters,setFilters]=React.useState(()=>{try{return {...{range:"all",session:"all",setup:"all",direction:"all"},...JSON.parse(localStorage.getItem(NM_DASH_FILTER_KEY)||"{}")} }catch(e){return{range:"all",session:"all",setup:"all",direction:"all"}}});
  const [showAdvanced,setShowAdvanced]=React.useState(true);
- const nmDashboardAccountSummary=(list,allList)=>{const xs=Array.isArray(list)?list:[], all=Array.isArray(allList)?allList:[];if(!xs.length)return "حساب مبنا: بدون حساب انتخاب‌شده";if(all.length>0&&xs.length===all.length)return "حساب مبنا: کل حساب‌ها";if(xs.length===1)return `حساب مبنا: ${xs[0]}`;return `حساب‌های مبنا: ${xs.join("، ")}`;};
  const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");return Array.isArray(x)&&x.length?x:NM_DASH_DEFAULT_LAYOUT}catch(e){return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);const [replay,setReplay]=React.useState(null);const [coach,setCoach]=React.useState(false);
  const persistFilters=x=>{setFilters(x);try{localStorage.setItem(NM_DASH_FILTER_KEY,JSON.stringify(x))}catch(e){}};const saveLayout=a=>{setLayout(a);try{localStorage.setItem(NM_DASH_LAYOUT_KEY,JSON.stringify(a))}catch(e){}};const reorder=(from,to)=>{if(!from||from===to)return;const a=[...layout],i=a.indexOf(from),j=a.indexOf(to);if(i<0||j<0)return;a.splice(i,1);a.splice(j,0,from);saveLayout(a);};const moveWidget=(id,dir)=>{const a=[...layout],i=a.indexOf(id),j=i+dir;if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];saveLayout(a);};
  const analysisPlans=React.useMemo(()=>[...(plans||[]),...(chartPlans||[]),...(dayPlans||[])],[plans,chartPlans,dayPlans]);
