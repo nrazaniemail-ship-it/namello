@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello1.0.0</title>
+<title>Namello1.0.5</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -81,7 +81,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello1.0.0…</div>
+<div id="boot-status">Loading Namello1.0.5…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -373,7 +373,7 @@ function makeIcon(emoji) {
     return /* @__PURE__ */ React.createElement("span", { className, style: { fontSize: size, color, lineHeight: 1, display: "inline-flex", ...style } }, emoji);
   };
 }
-const Clock = makeIcon("⏱"), TrendingUp = makeIcon("📈"), TrendingDown = makeIcon("📉"), Plus = makeIcon("➕"), Trash2 = makeIcon("🗑️"), ChevronDown = makeIcon("▾"), ChevronUp = makeIcon("▴"), Target = makeIcon("🎯"), X = makeIcon("✕"), Check = makeIcon("✓"), Wallet = makeIcon("💰"), Hash = makeIcon("#️⃣"), Flame = makeIcon("🔥"), Snowflake = makeIcon("❄️"), AlertTriangle = makeIcon("⚠️"), SettingsIcon = makeIcon("⚙️"), Download = makeIcon("⬇️"), Bell = makeIcon("🔔"), BellOff = makeIcon("🔕"), PiggyBank = makeIcon("🐖"), Coffee = makeIcon("☕"), MoreHorizontal = makeIcon("⋯"), LineChartIcon = makeIcon("📈"), ListChecks = makeIcon("☑️"), Flag = makeIcon("🚩"), TreeIcon = makeIcon("🌳"), BookOpen = makeIcon("📚"), BarChart3 = makeIcon("📊"), FileSpreadsheet = makeIcon("📑"), Newspaper = makeIcon("📰"), Edit3 = makeIcon("✏️"), Heart = makeIcon("🙏"), User = makeIcon("👤"), Info = makeIcon("ℹ️"), ImagePlus = makeIcon("🖼️"), Mic = makeIcon("🎙️"), Sun = makeIcon("☀️"), Moon = makeIcon("🌙"), CalendarIcon = makeIcon("📅"), Brain = makeIcon("🧠"), UploadIcon = makeIcon("📤"), IdCard = makeIcon("🪪");
+const Clock = makeIcon("⏱"), TrendingUp = makeIcon("📈"), TrendingDown = makeIcon("📉"), Plus = makeIcon("➕"), Trash2 = makeIcon("🗑️"), ChevronDown = makeIcon("▾"), ChevronUp = makeIcon("▴"), ChevronLeft = makeIcon("‹"), ChevronRight = makeIcon("›"), Target = makeIcon("🎯"), X = makeIcon("✕"), Check = makeIcon("✓"), Wallet = makeIcon("💰"), Hash = makeIcon("#️⃣"), Flame = makeIcon("🔥"), Snowflake = makeIcon("❄️"), AlertTriangle = makeIcon("⚠️"), SettingsIcon = makeIcon("⚙️"), Download = makeIcon("⬇️"), Bell = makeIcon("🔔"), BellOff = makeIcon("🔕"), PiggyBank = makeIcon("🐖"), Coffee = makeIcon("☕"), MoreHorizontal = makeIcon("⋯"), LineChartIcon = makeIcon("📈"), ListChecks = makeIcon("☑️"), Flag = makeIcon("🚩"), TreeIcon = makeIcon("🌳"), BookOpen = makeIcon("📚"), BarChart3 = makeIcon("📊"), FileSpreadsheet = makeIcon("📑"), Newspaper = makeIcon("📰"), Edit3 = makeIcon("✏️"), Heart = makeIcon("🙏"), User = makeIcon("👤"), Info = makeIcon("ℹ️"), ImagePlus = makeIcon("🖼️"), Mic = makeIcon("🎙️"), Sun = makeIcon("☀️"), Moon = makeIcon("🌙"), CalendarIcon = makeIcon("📅"), Brain = makeIcon("🧠"), UploadIcon = makeIcon("📤"), IdCard = makeIcon("🪪");
 function findChild(children, Comp) {
   let found = null;
   React.Children.forEach(children, (c) => {
@@ -2660,11 +2660,12 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.0";
-const NM_VERSION_CODE = 1;
+const NM_VERSION_NAME = "1.0.5";
+const NM_VERSION_CODE = 5;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "نسخهٔ بازطراحی‌شده";
 const NM_CHANGELOG = [
+    "نسخه 1.0.5: دکمه فوروارد بلااستفاده از کنترل‌های داخل کارت اپیزود حذف شد؛ Before/Next با رنگ تأکیدی نمایش داده می‌شوند؛ خطای ChevronLeft در پخش‌کننده شناور برطرف شد و آیکون‌های چپ/راست به‌صورت تعریف‌شده استفاده می‌شوند.",
     "نسخه 1.0.0 اصلاحی: مثلث‌های جمع/باز داشبورد با همان استایل استاندارد تنظیمات یکسان شدند؛ باکس مدیریت جفت‌ارز از لایه ژورنال حذف شد و مدیریت/افزودن جفت‌ارز در فرم ثبت ورود حفظ شد؛ پروژه Native ویجت از بسته اصلی برنامه جدا نگه داشته شد.",
     "نسخه 1.0.0: بازطراحی Namello؛ امنیت، پشتیبان و ذخیره ابری با Namello Backend و حساب/Sync واقعی در یک سربرگ واحد ادغام شدند و سبک مثلث‌های جمع/باز شدن یکسان شد. ویجت اندروید نیز به‌صورت بستهٔ Native جداگانه آماده شده است.",
     "نسخه 1.22.31: عنوان داشبورد عملکرد دیگر حساب مبنا را نمایش نمی‌دهد؛ خلاصه حساب مبنا زیر تحلیل آماری و ارزیابی پیشرفته اضافه شد و تیترهای سه‌گانه Dashboard به‌صورت پررنگ‌تر نمایش داده می‌شوند.",
@@ -4406,9 +4407,9 @@ function NmGlobalPlayer({ tab }) {
                 RE("div", { className: "flex items-center justify-between text-[10px] mb-1", style: { color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } },
                     RE("span", null, nmFmtTime(cur)), RE("span", null, nmFmtTime(dur))),
                 RE("div", { className: "flex items-center justify-start gap-2" },
-                    RE("button", { type: "button", onClick: previousEpisode, className: "p-1.5", "aria-label": "اپیزود قبلی" }, RE(ChevronLeft, { size: 18, color: "var(--text-primary)" })),
+                    RE("button", { type: "button", onClick: previousEpisode, className: "p-1.5", "aria-label": "اپیزود قبلی", title: "اپیزود قبلی" }, RE(ChevronLeft, { size: 18, color: "var(--accent-gold)" })),
                     RE("button", { type: "button", onClick: toggle, className: "w-10 h-10 rounded-full flex items-center justify-center", style: { background: "var(--accent-gold)", color: "var(--bg-page)", fontSize: 16 }, "aria-label": "پخش/توقف" }, playing ? "⏸" : "▶"),
-                    RE("button", { type: "button", onClick: nextEpisode, className: "p-1.5", "aria-label": "اپیزود بعدی" }, RE(ChevronRight, { size: 18, color: "var(--text-primary)" })),
+                    RE("button", { type: "button", onClick: nextEpisode, className: "p-1.5", "aria-label": "اپیزود بعدی", title: "اپیزود بعدی" }, RE(ChevronRight, { size: 18, color: "var(--accent-gold)" })),
                     RE("select", { value: rate, onChange: e => { setRate(Number(e.target.value)); nmSetPlayerState({ rate: Number(e.target.value) }); }, className: "text-[11px] rounded-lg px-1.5 py-1 bg-transparent outline-none", style: { color: "var(--text-secondary)", border: "1px solid var(--border-2)" } },
                         [0.75, 1, 1.25, 1.5, 2].map(r => RE("option", { key: r, value: r, style: { background: "var(--bg-card2)" } }, r + "x"))))));
     const mini = RE("div", { className: "inline-flex items-center gap-1.5 rounded-full pl-1.5 pr-2.5 py-1", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", maxWidth: 170, direction: "ltr" } },
@@ -4592,10 +4593,9 @@ function NmPodcastRow({ podcast, onChange, onRemove, onPlay, askDeleteConfirm })
         RE("div", { className: "flex items-center justify-between text-[9px] mb-1", style: { color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } }, RE("span", null, nmFmtTime(ps.cur)), RE("span", null, nmFmtTime(ps.dur))),
         RE("div", { className: "flex items-center justify-between gap-1" },
             RE("button", { type: "button", onClick: () => nmRequestCmd("shuffle"), className: "w-9 h-9 rounded-full flex items-center justify-center", style: { background: "transparent", border: ps.shuffle ? "1px solid var(--accent-gold)" : "1px solid var(--border-2)" }, "aria-label": ps.shuffle ? "خاموش کردن Shuffle" : "روشن کردن Shuffle", title: ps.shuffle ? "Shuffle: روشن" : "Shuffle: خاموش" }, RE(NmShuffleIcon, { active: !!ps.shuffle, size: 19 })),
-            i > 0 && RE("button", { type: "button", onClick: () => onPlay(podcast, episodes[i - 1]), className: "p-1.5", "aria-label": "اپیزود قبلی" }, "◀"),
+            i > 0 && RE("button", { type: "button", onClick: () => onPlay(podcast, episodes[i - 1]), className: "p-1.5 w-9 h-9 rounded-full flex items-center justify-center", style: { color: "var(--accent-gold)", border: "1px solid var(--border-2)" }, "aria-label": "اپیزود قبلی", title: "اپیزود قبلی" }, RE(ChevronLeft, { size: 22, color: "var(--accent-gold)" })),
             RE("button", { type: "button", onClick: () => nmRequestCmd("toggle"), className: "w-10 h-10 rounded-full flex items-center justify-center", style: { background: "var(--accent-gold)", color: "var(--bg-page)" }, "aria-label": "پخش/توقف" }, ps.playing ? "⏸" : "▶"),
-            i < episodes.length - 1 && RE("button", { type: "button", onClick: () => onPlay(podcast, episodes[i + 1]), className: "p-1.5", "aria-label": "اپیزود بعدی" }, "▶"),
-            RE("button", { type: "button", onClick: () => nmRequestCmd("skip", 15), className: "p-1.5", "aria-label": "جلو ۱۵ ثانیه" }, "⏩"),
+            i < episodes.length - 1 && RE("button", { type: "button", onClick: () => onPlay(podcast, episodes[i + 1]), className: "p-1.5 w-9 h-9 rounded-full flex items-center justify-center", style: { color: "var(--accent-gold)", border: "1px solid var(--border-2)" }, "aria-label": "اپیزود بعدی", title: "اپیزود بعدی" }, RE(ChevronRight, { size: 22, color: "var(--accent-gold)" })),
             RE("button", { type: "button", onClick: () => nmRequestCmd("loop"), className: "w-9 h-9 rounded-full flex items-center justify-center", style: { background: "transparent", border: ps.loopMode !== "off" ? "1px solid var(--accent-gold)" : "1px solid var(--border-2)" }, "aria-label": ps.loopMode === "one" ? "Loop single: روشن" : ps.loopMode === "all" ? "Loop all: روشن" : "Loop خاموش", title: ps.loopMode === "one" ? "Loop single" : ps.loopMode === "all" ? "Loop all" : "Loop خاموش" }, RE(NmRepeatIcon, { mode: ps.loopMode || "off", size: 19 })),
             RE("button", { type: "button", onClick: () => nmRequestCmd("shuttle"), className: "px-2 py-1 rounded-md text-[10px]", style: { color: "var(--accent-gold)", border: "1px solid var(--border-2)" }, "aria-label": "تغییر سرعت پخش", title: "تغییر سرعت پخش" }, (ps.rate || 1) + "x")
         )
