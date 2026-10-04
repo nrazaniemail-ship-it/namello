@@ -1,3 +1,10 @@
+# v14 — Safe minimal install-version packaging
+
+- Base: v12.
+- Only the PWA display name was normalized to `Namello 1.0.8` in the manifests and HTML title.
+- Preserved manifest `id`, `start_url`, Service Worker cache/version, `versionCode`, and all application code from v12.
+- No Safe Browsing-related claim is made by this package; that status depends on the deployed domain and Google Safe Browsing.
+
 ## 1.0.8 — PWA install/version manifest fix
 - همه مانیفست‌های تم آیکون به نسخه 1.0.8 هماهنگ شدند.
 - کش سرویس‌ورکر برای نسخه 1.0.8 نوسازی شد تا مانیفست قدیمی در نصب PWA استفاده نشود.
