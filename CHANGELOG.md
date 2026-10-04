@@ -1,3 +1,7 @@
+## 1.0.8 — Dashboard menu logo refinement
+- لوگوی لایه داشبورد در منوی لایه‌ها با تصویر اختصاصی داشبورد یکسان شد.
+- همین لوگو در نوار لایه‌های پایین نیز برای داشبورد استفاده می‌شود؛ لایه نشست‌ها استثناء قبلی خود را حفظ می‌کند.
+
 
 ## 1.0.8 — Dashboard logo and layer terminology refinement
 - Dashboard layer logo updated using the supplied gauge image.
