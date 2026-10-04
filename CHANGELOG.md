@@ -1,3 +1,9 @@
+# Namello 1.0.6
+
+- Added an independent Trading Calendar evaluation-source box under the calendar title.
+- Calendar can now use Journal trades or Statement trades as its data source.
+- Added selectable base accounts for the calendar; statement data for other selected accounts is loaded from per-account storage.
+
 ## 1.0.5
 - حذف دکمه Forward بلااستفاده از Player داخل کارت اپیزود.
 - نمایش Before/Next با رنگ تأکیدی.

@@ -2458,7 +2458,7 @@ function StatementLayer({ statementTrades, onImport, onClear, importing, importE
    منطق تقویم (چه شمسی چه میلادی) کاملاً بر پایه‌ی رشته‌ی تاریخِ میلادیِ خودِ معامله‌ها
    (t.date به فرمت YYYY-MM-DD) کار می‌کنه؛ سیستم نمایش فقط تعیین می‌کنه که ماه/روزها با چه
    تقویمی روی صفحه چیده بشن، نه اینکه داده‌ها چطور ذخیره بشن. */
-function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, cursorM, setCursor, selectedDate, setSelectedDate, onEditTrade, todayDateStr, lang = "fa", topSlot, multiAcct, activeAcct }) {
+function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, cursorM, setCursor, selectedDate, setSelectedDate, onEditTrade, todayDateStr, lang = "fa", topSlot, sourceSlot, multiAcct, activeAcct }) {
     const [showSettings, setShowSettings] = useState(false);
     const [chartRange, setChartRange] = useState("monthly");
     const isJalali = calendarSettings.system === "jalali";
@@ -2564,6 +2564,7 @@ function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, curs
             React.createElement("h2", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, lang === "en" ? "Trading Calendar" : "تقویم معاملاتی"),
             React.createElement("button", { onClick: () => setShowSettings(true), className: "p-2 rounded-lg", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": lang === "en" ? "Calendar Settings" : "تنظیمات تقویم" },
                 React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" }))),
+        sourceSlot,
         React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
             React.createElement("div", { className: "flex items-center justify-between mb-3" },
                 React.createElement("button", { onClick: () => goMonth(-1), className: "p-1.5 rounded-lg", style: { background: "var(--bg-card2)" } },
@@ -2660,8 +2661,8 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.5";
-const NM_VERSION_CODE = 5;
+const NM_VERSION_NAME = "1.0.6";
+const NM_VERSION_CODE = 6;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "نسخهٔ بازطراحی‌شده";
 const NM_CHANGELOG = [
@@ -4718,6 +4719,47 @@ function NmCalendarAccountPicker({ accounts, activeAccount, selected, onToggle, 
             accounts.map(code => RE("label", { key: code, className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px]", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } },
                 RE("input", { type: "checkbox", checked: selected.includes(code), onChange: () => onToggle(code) }),
                 code, code === activeAccount && RE("span", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, " (فعلی)")))));
+}
+function NmCalendarSourcePicker({ source, setSource, accounts, activeAccount, selected, onToggle, onToggleAll, statementImporting, statementImportError, statementTrades, onImportStatementFiles, onClearStatementTrades }) {
+    const [open, setOpen] = useState(false);
+    const label = selected.length === accounts.length ? "همه‌ی حساب‌ها" : (selected.length === 1 ? selected[0] : selected.length + " حساب");
+    const sourceButtons = RE("div", { className: "grid grid-cols-2 gap-1.5" },
+        [["journal", "معاملات ژورنال"], ["statement", "ارزیابی استیتمنت"]].map(([mode, text]) => RE("button", {
+            key: mode, type: "button", onClick: () => setSource(mode), className: "py-2 rounded-lg text-[10px] font-semibold",
+            style: { background: source === mode ? "var(--accent-gold)" : "var(--bg-page)", color: source === mode ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid " + (source === mode ? "var(--accent-gold)" : "var(--border-2)") }
+        }, text))
+    );
+    const accountButton = RE("button", { type: "button", onClick: () => setOpen(o => !o), className: "w-full flex items-center justify-between rounded-lg px-3 py-2 mt-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+        RE("span", { className: "text-[10px]", style: { color: "var(--text-secondary)" } }, "حساب مبنای تقویم: ", RE("b", { style: { color: "var(--accent-gold)" } }, label)),
+        open ? RE(ChevronUp, { size: 14, color: "var(--text-muted)" }) : RE(ChevronDown, { size: 14, color: "var(--text-muted)" })
+    );
+    const accountPicker = open ? RE("div", { className: "rounded-lg p-2 mt-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+        RE("label", { className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mb-1", style: { color: "var(--accent-gold)", borderBottom: "1px solid var(--border-2)" } },
+            RE("input", { type: "checkbox", checked: selected.length === accounts.length, onChange: onToggleAll }), "همه‌ی حساب‌ها"
+        ),
+        accounts.map(code => RE("label", { key: code, className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px]", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } },
+            RE("input", { type: "checkbox", checked: selected.includes(code), onChange: () => onToggle(code) }),
+            code,
+            code === activeAccount ? RE("span", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, " (فعلی)") : null
+        ))
+    ) : null;
+    const statementBlock = source === "statement" ? RE("div", { className: "mt-2" },
+        RE("div", { className: "text-[9px] mb-1.5", style: { color: "var(--text-muted)" } }, activeAccount ? `حساب مقصد ایمپورت: ${activeAccount}` : "ابتدا یک حساب را فعال کن"),
+        RE("div", { className: "grid grid-cols-2 gap-1.5" },
+            RE("label", { className: "py-2 rounded-lg text-[10px] text-center cursor-pointer", style: { background: "#F59E0B", color: "#17130b" } },
+                statementImporting ? "در حال پردازش…" : "ایمپورت استیتمنت",
+                RE("input", { type: "file", accept: ".csv,.xlsx,.xls,.htm,.html", multiple: true, className: "hidden", disabled: statementImporting || !activeAccount, onChange: e => { if (e.target.files?.length) onImportStatementFiles(e.target.files); e.target.value = ""; } })
+            ),
+            RE("button", { type: "button", disabled: !statementTrades.length, onClick: onClearStatementTrades, className: "py-2 rounded-lg text-[10px]", style: { background: "var(--bg-page)", color: statementTrades.length ? "#F87171" : "var(--text-muted)", border: "1px solid var(--border-2)" } }, "پاک‌کردن استیتمنت")
+        ),
+        statementImportError ? RE("div", { className: "text-[9px] mt-1.5", style: { color: "#F87171" } }, statementImportError) : null,
+        RE("div", { className: "text-[9px] mt-1.5", style: { color: "var(--text-muted)" } }, `${statementTrades.length} معامله در استیتمنت حساب فعلی`)
+    ) : null;
+    return RE("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
+        RE("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تقویم معاملاتی"),
+        RE("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "منبع این بخش مستقل است؛ تقویم می‌تواند بر اساس معاملات ژورنال یا معاملات استیتمنت حساب‌های مبنا نمایش داده شود."),
+        sourceButtons, accountButton, accountPicker, statementBlock
+    );
 }
 
 
@@ -7058,6 +7100,8 @@ function App() {
     const calcProbParams = useMemo(() => buildCalcProbParams(config, now.dst, customFieldDefsForStats), [config, now.dst, customFieldDefsForStats]);
     const [calAccountSelection, setCalAccountSelection] = useState(null);
     const [calOtherTrades, setCalOtherTrades] = useState({});
+    const [calendarDataSource, setCalendarDataSource] = useState(() => { try { return localStorage.getItem("ns_namello_calendar_data_source_v1") === "statement" ? "statement" : "journal"; } catch (e) { return "journal"; } });
+    const [calStatementTradesCache, setCalStatementTradesCache] = useState({});
     useEffect(() => { (async () => { try { const r = await window.storage.get(NM_CAL_ACCOUNTS_KEY); const a = JSON.parse(r.value); if (Array.isArray(a)) setCalAccountSelection(a); } catch (e) { } })(); }, []);
     const calSelFiltered = (calAccountSelection || []).filter(c => accounts.includes(c));
     const calSelectedAccounts = calSelFiltered.length ? calSelFiltered : (activeAccount ? [activeAccount] : []);
@@ -7073,14 +7117,32 @@ function App() {
         })();
         return () => { alive = false; };
     }, [tab, calSelectedAccounts.join(","), activeAccount, trades]);
+    useEffect(() => { try { localStorage.setItem("ns_namello_calendar_data_source_v1", calendarDataSource); } catch (e) {} }, [calendarDataSource]);
+    useEffect(() => {
+        if (tab !== "calendar" || calendarDataSource !== "statement") return undefined;
+        const others = calSelectedAccounts.filter(c => c !== activeAccount && !(c in calStatementTradesCache));
+        if (!others.length) return undefined;
+        let alive = true;
+        (async () => {
+            const upd = {};
+            for (const code of others) { try { const r = await window.storage.get(`namello_statement_trades_${code}`); upd[code] = r ? JSON.parse(r.value) : []; } catch (e) { upd[code] = []; } }
+            if (alive) setCalStatementTradesCache(prev => ({ ...prev, ...upd }));
+        })();
+        return () => { alive = false; };
+    }, [tab, calendarDataSource, calSelectedAccounts.join(","), activeAccount, statementTrades]);
     const calendarTrades = useMemo(() => {
         const all = [];
         calSelectedAccounts.forEach(code => {
-            if (code === activeAccount) trades.forEach(t => all.push(t));
-            else (calOtherTrades[code] || []).forEach(t => all.push({ ...t, __acct: code }));
+            if (calendarDataSource === "statement") {
+                const src = code === activeAccount ? statementTrades : (calStatementTradesCache[code] || []);
+                src.forEach(t => all.push(code === activeAccount ? t : { ...t, __acct: code }));
+            } else {
+                if (code === activeAccount) trades.forEach(t => all.push(t));
+                else (calOtherTrades[code] || []).forEach(t => all.push({ ...t, __acct: code }));
+            }
         });
         return all;
-    }, [calSelectedAccounts.join(","), trades, calOtherTrades, activeAccount]);
+    }, [calendarDataSource, calSelectedAccounts.join(","), trades, statementTrades, calOtherTrades, calStatementTradesCache, activeAccount]);
     const persistCalAccounts = async (next) => { setCalAccountSelection(next); try { await window.storage.set(NM_CAL_ACCOUNTS_KEY, JSON.stringify(next)); } catch (e) { } };
     function toggleCalAccount(code) {
         const next = calSelectedAccounts.includes(code) ? calSelectedAccounts.filter(c => c !== code) : [...calSelectedAccounts, code];
@@ -9373,7 +9435,7 @@ function App() {
             setSelectedDate: setSelectedCalendarDate,
             onEditTrade: (t) => { if (t.__acct && t.__acct !== activeAccount) { showToast("این معامله متعلق به حساب " + t.__acct + " است؛ برای ویرایش، آن حساب را فعال کنید."); return; } openEditTrade(t); },
             multiAcct: calSelectedAccounts.length > 1, activeAcct: activeAccount,
-            topSlot: RE(NmCalendarAccountPicker, { accounts, activeAccount, selected: calSelectedAccounts, onToggle: toggleCalAccount, onToggleAll: toggleAllCalAccounts }),
+            sourceSlot: RE(NmCalendarSourcePicker, { source: calendarDataSource, setSource: setCalendarDataSource, accounts, activeAccount, selected: calSelectedAccounts, onToggle: toggleCalAccount, onToggleAll: toggleAllCalAccounts, statementImporting, statementImportError, statementTrades, onImportStatementFiles: importStatementFiles, onClearStatementTrades: clearStatementTrades }),
             todayDateStr: todayStr,
             lang: appLanguage,
         }))),
