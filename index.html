@@ -1556,7 +1556,7 @@ function nmCustomFieldCalcParams(defs) {
 }
 function buildCalcProbParams(config, dst, customDefs) {
     const sessionParam = {
-        key: "session", label: "سشن یا رویداد معاملاتی", multi: false,
+        key: "session", label: "نشست یا رویداد معاملاتی", multi: false,
         get: t => {
             if (t.tags && t.tags.length)
                 return t.tags[0].label;
@@ -1598,7 +1598,7 @@ const DEFAULT_CALC_PROB_WEIGHTS = {
     entryGuideLevels: 4, // سطوح راهنمای تایم ورود — متوسط
     reversalPatterns: 4, // الگوی کندل برگشتی تایم ورود — متوسط
     psychology: 4, // روانشناسی — متوسط
-    session: 7, // سشن / رویداد معاملاتی — زیاد
+    session: 7, // نشست / رویداد معاملاتی — زیاد
     direction: 0, pair: 0, weekday: 0, news: 0, // پارامترهای جدید: پیش‌فرض بدون تأثیر روی احتمال؛ از «وزن‌ها» قابل تنظیم
     divergenceMain: 3, divergenceEntry: 3,
 };
@@ -1702,17 +1702,17 @@ const DEFAULT_ABOUT_SECTIONS = [
     {
         id: "about1",
         title: "نامللو چیست؟",
-        content: "نامللو یک ژورنال معاملاتی جامع برای تریدرهاییه که به روش ICT و بر اساس سشن‌ها و کیل‌زون‌های نیویورک کار می‌کنن. این برنامه ساعت زنده‌ی سشن‌ها/کیل‌زون‌ها/سیلور بولت‌ها، ثبت دقیق معاملات، مدیریت مالی، تحلیل آماری و مدیریت اهداف رو در یک اپلیکیشن واحد و قابل‌نصب (PWA) کنار هم آورده.",
+        content: "نامللو یک ژورنال معاملاتی جامع برای تریدرهاییه که به روش ICT و بر اساس نشست‌ها و کیل‌زون‌های نیویورک کار می‌کنن. این برنامه ساعت زنده‌ی نشست‌ها/کیل‌زون‌ها/سیلور بولت‌ها، ثبت دقیق معاملات، مدیریت مالی، تحلیل آماری و مدیریت اهداف رو در یک اپلیکیشن واحد و قابل‌نصب (PWA) کنار هم آورده.",
     },
     {
         id: "about2",
         title: "چرا ژورنال‌نویسی معاملاتی مهمه؟",
-        content: "بدون ثبت دقیق و منظم معاملات، هیچ تریدری نمی‌تونه نقاط قوت و ضعف واقعی سیستم معاملاتی‌ش رو پیدا کنه. ژورنال‌نویسی کمک می‌کنه بفهمی کدوم سشن، کدوم سیستم، کدوم فراکتال یا کدوم حالت روانی برات سودآورتره، احساس رو از تصمیم‌گیری جدا کنی، و به‌مرور یک روش معاملاتی پایدار و قابل‌تکرار بسازی.",
+        content: "بدون ثبت دقیق و منظم معاملات، هیچ تریدری نمی‌تونه نقاط قوت و ضعف واقعی سیستم معاملاتی‌ش رو پیدا کنه. ژورنال‌نویسی کمک می‌کنه بفهمی کدوم نشست، کدوم سیستم، کدوم فراکتال یا کدوم حالت روانی برات سودآورتره، احساس رو از تصمیم‌گیری جدا کنی، و به‌مرور یک روش معاملاتی پایدار و قابل‌تکرار بسازی.",
     },
     {
         id: "about3",
         title: "قابلیت‌های اصلی برنامه",
-        content: "کاربر (تعریف کاربر و تمپلیت‌های شخصی) • نشست‌ها (ساعت زنده‌ی سشن‌ها، کیل‌زون‌ها و سیلور بولت‌های نیویورک) • اخبار (ثبت و ردیابی رویدادهای تقویمی) • ارزیابی چارت (چک‌لیست پیش از معامله) • ژورنال (ثبت ورود و نتیجه‌ی معاملات با ده‌ها پارامتر دقیق، به‌همراه مدیریت مالی) • سیستم‌های معاملاتی • استراتژی • اهداف معامله‌گری، اهداف زندگی و شکرگزاری • تحلیل (آمار سودآوری بر اساس هر پارامتر، سودآورترین شرایط معامله، احتمال موفقیت محاسباتی و نمودار سه‌بعدی).",
+        content: "کاربر (تعریف کاربر و تمپلیت‌های شخصی) • نشست‌ها (ساعت زنده‌ی نشست‌ها، کیل‌زون‌ها و سیلور بولت‌های نیویورک) • اخبار (ثبت و ردیابی رویدادهای تقویمی) • ارزیابی چارت (چک‌لیست پیش از معامله) • ژورنال (ثبت ورود و نتیجه‌ی معاملات با ده‌ها پارامتر دقیق، به‌همراه مدیریت مالی) • سیستم‌های معاملاتی • استراتژی • اهداف معامله‌گری، اهداف زندگی و شکرگزاری • تحلیل (آمار سودآوری بر اساس هر پارامتر، سودآورترین شرایط معامله، احتمال موفقیت محاسباتی و نمودار سه‌بعدی).",
     },
     {
         id: "about4",
@@ -1765,7 +1765,7 @@ const PARAM_DEFS = {
     mainTrend: { label: "جهت روند اصلی", get: t => t.mainTrendDirection === "bullish" ? "صعودی" : t.mainTrendDirection === "bearish" ? "نزولی" : "—" },
     dailyCandle: { label: "جهت کندل روزانه", get: t => t.dailyCandleDirection === "bullish" ? "صعودی" : t.dailyCandleDirection === "bearish" ? "نزولی" : t.dailyCandleDirection === "neutral" ? "خنثی" : "—" },
     dailyTrend: { label: "جهت روند روزانه", get: t => t.dailyTrendDirection === "bullish" ? "صعودی" : t.dailyTrendDirection === "bearish" ? "نزولی" : t.dailyTrendDirection === "neutral" ? "خنثی" : "—" },
-    session: { label: "سشن معاملاتی", get: t => sessionLabelOf(t) },
+    session: { label: "نشست معاملاتی", get: t => sessionLabelOf(t) },
     trend: { label: "هم راستایی معامله با روند اصلی", get: t => t.tradeDirectionRel === "with" ? "هم جهت با روند اصلی" : t.tradeDirectionRel === "against" ? "خلاف جهت روند اصلی" : "—" },
     rr: { label: "R-multiple", get: t => (t.rrReward !== null && t.rrReward !== undefined) ? `1:${t.rrReward}` : "—" },
     bias: { label: "جهت روند تایم ورود", get: t => t.marketBias === "bullish" ? "صعودی" : t.marketBias === "bearish" ? "نزولی" : "—" },
@@ -2177,7 +2177,7 @@ function GratitudeChecklistLayer({ activeAccount, list, newText, setNewText, onA
     const isDone = g => g.state === "done" || (!g.state && Number(g.progress) >= 100);
     const toggleDone = g => onUpdateState(g.id, isDone(g) ? "pending" : "done");
     return (React.createElement("div", { className: "px-4 mt-4" },
-        React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "شکر گزاری"),
+        RE(NmLayerHeading,{title:"شکر گزاری",Icon:Heart}),
         !activeAccount ? React.createElement("div", { className: "rounded-xl p-4 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "اول از ژورنال یک حساب ایجاد کن.") :
         React.createElement(React.Fragment, null,
             React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
@@ -2211,7 +2211,7 @@ function GratitudeChecklistLayer({ activeAccount, list, newText, setNewText, onA
 function GoalsLayer({ title, activeAccount, list, newText, setNewText, onAdd, onUpdateText, onUpdateProgress, onDelete, onMove, onExport, onExportPdf, askDeleteConfirm, itemLabel }) {
     const noun = itemLabel || "هدف";
     return (React.createElement("div", { className: "px-4 mt-4" },
-        React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, title),
+        RE(NmLayerHeading,{title:title,Icon:title === "اهداف زندگی" ? TreeIcon : Flag}),
         !activeAccount ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0627\u0648\u0644 \u0627\u0632 \u062A\u0628 \u0698\u0648\u0631\u0646\u0627\u0644 \u06CC\u06A9 \u062D\u0633\u0627\u0628 \u0627\u06CC\u062C\u0627\u062F \u06A9\u0646.")) : (React.createElement(React.Fragment, null,
             React.createElement("div", { className: "flex gap-2 mb-4" },
                 React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
@@ -2248,7 +2248,7 @@ function GoalsLayer({ title, activeAccount, list, newText, setNewText, onAdd, on
                     " PDF"))))));
 }
 /* ---------------- تحلیل بر پایه‌ی معاملات استخراج‌شده از استیتمنت ----------------
-   چون گزارش بروکر برچسب‌هایی مثل سشن/سیستم/بایاس/فرکتال رو نداره (این‌ها فقط در فرم ثبت ژورنال
+   چون گزارش بروکر برچسب‌هایی مثل نشست/سیستم/بایاس/فرکتال رو نداره (این‌ها فقط در فرم ثبت ژورنال
    دستی انتخاب می‌شن)، این نما فقط چیزهایی رو نشون می‌ده که واقعاً از داده‌ی خام استیتمنت
    قابل‌محاسبه‌ست: آمار کلی، منحنی سرمایه، و شکست بر اساس نماد. */
 /* ---------------- تحلیل روانشناسی (SWOT) ----------------
@@ -2452,7 +2452,7 @@ function StatementAnalysisView({ statementTrades }) {
         return React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "هنوز معامله‌ای از استیتمنت استخراج نشده — اول از تب «ارزیابی استیتمنت» یک فایل بارگذاری کن.");
     }
     return (React.createElement(React.Fragment, null,
-        React.createElement("div", { className: "rounded-xl p-3 mb-3 text-[11px] leading-6", style: { background: "color-mix(in srgb, var(--accent-gold) 7%, transparent)", border: "1px solid color-mix(in srgb, var(--accent-gold) 20%, transparent)", color: "var(--text-secondary)" } }, "این تحلیل فقط از داده‌ی خامِ استیتمنت (بدون برچسب سشن/سیستم/بایاس که فقط در ژورنال دستی ثبت می‌شن) محاسبه شده."),
+        React.createElement("div", { className: "rounded-xl p-3 mb-3 text-[11px] leading-6", style: { background: "color-mix(in srgb, var(--accent-gold) 7%, transparent)", border: "1px solid color-mix(in srgb, var(--accent-gold) 20%, transparent)", color: "var(--text-secondary)" } }, "این تحلیل فقط از داده‌ی خامِ استیتمنت (بدون برچسب نشست/سیستم/بایاس که فقط در ژورنال دستی ثبت می‌شن) محاسبه شده."),
         React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-4" },
             [["تعداد معاملات", stats.total], ["نرخ برد", stats.winRate !== null ? stats.winRate + "%" : "—"], ["سود خالص", stats.netPnl], ["پرافیت فکتور", stats.profitFactor ?? "—"]].map(([label, val]) => (React.createElement("div", { key: label, className: "rounded-xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("div", { className: "text-[10px] mb-1", style: { color: "var(--text-muted)" } }, label),
@@ -2612,7 +2612,7 @@ function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, curs
     return (React.createElement("div", { className: "px-4 mt-4" },
         topSlot,
         React.createElement("div", { className: "flex items-center justify-between mb-2" },
-            React.createElement("h2", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, lang === "en" ? "Trading Calendar" : "تقویم معاملاتی"),
+            RE(NmLayerHeading,{title:(lang === "en" ? "Trading Calendar" : "تقویم معاملاتی"),Icon:CalendarIcon}),
             React.createElement("button", { onClick: () => setShowSettings(true), className: "p-2 rounded-lg", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": lang === "en" ? "Calendar Settings" : "تنظیمات تقویم" },
                 React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" }))),
         sourceSlot,
@@ -2738,7 +2738,7 @@ const NM_CHANGELOG = [
     "نسخه 1.22.14: دکمه «نصب Namello به‌عنوان اپ» بازطراحی شد؛ دریافت beforeinstallprompt پایدارتر شد و در صورت نبودن prompt، مسیر رسمی Chrome برای Install app به‌صورت واضح راهنمایی می‌شود.",
     "نسخه 1.22.14: لوگوی لایه ژورنال با لوگوی جدید ارسالی جایگزین شد.",
     "نسخه 1.22.14: بخش بروزرسانی در «درباره برنامه» به آخرین نسخه و آخرین تغییرات واقعی پروژه به‌روزرسانی شد.",
-    "نسخه 1.22.13: جستجو و فیلتر سریع ژورنال با خلاصه KPI و فیلتر اشتباهات/نتیجه/جهت/سشن اضافه شد.",
+    "نسخه 1.22.13: جستجو و فیلتر سریع ژورنال با خلاصه KPI و فیلتر اشتباهات/نتیجه/جهت/نشست اضافه شد.",
     "نسخه 1.22.13: Calendar Day Review با P&L، تعداد برد/باخت و تعداد Discipline Mistake برای روز انتخاب‌شده اضافه شد.",
     "نسخه 1.22.12: داشبورد سه بخش مجزا با خروجی مستقل برای تحلیل آماری، ارزیابی پیشرفته و خروجی جامع اضافه شد؛ مسیرهای امنیت، پشتیبان و Sync در تنظیمات تفکیک شدند.",
     "نسخه 1.22.10: منطق Dashboard به baseline سالم 1.22.5 بازگردانده شد تا خطای خالی‌شدن Dashboard برطرف شود؛ قابلیت‌های مستقل نسخه‌های بعدی حفظ شدند.",
@@ -3528,7 +3528,7 @@ function nmDstAtUTC(utcDate) {
     const p = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", timeZoneName: "short" }).formatToParts(utcDate).find(x => x.type === "timeZoneName");
     return !!p && p.value === "EDT";
 }
-/* رویدادها/سشن‌هایی که دقیقاً در تاریخ+ساعت داده‌شده (به وقت نیویورک) فعال‌اند — برای پرکردن خودکار باکس سشن/رویداد از روی زمان رخ‌دادن سقف/کف. */
+/* رویدادها/نشست‌هایی که دقیقاً در تاریخ+ساعت داده‌شده (به وقت نیویورک) فعال‌اند — برای پرکردن خودکار باکس نشست/رویداد از روی زمان رخ‌دادن سقف/کف. */
 function nmActiveEventNamesAt(config, dateStr, timeStr) {
     if (!dateStr || !timeStr || !/^\d{1,2}:\d{2}$/.test(timeStr)) return [];
     const [hh, mi] = timeStr.split(":").map(Number);
@@ -3546,17 +3546,17 @@ function NmItemCard({ num, title, hint, color, children }) {
         children);
 }
 function NmEventSelect({ config, value, onChange }) {
-    const groups = [["سشن‌ها", config.sessions], ["کیل‌زون‌ها و رویدادها", config.killzones], ["سیلور بولت", config.silverbullets]];
+    const groups = [["نشست‌ها", config.sessions], ["کیل‌زون‌ها و رویدادها", config.killzones], ["سیلور بولت", config.silverbullets]];
     const known = groups.some(g => (g[1] || []).some(ev => ev.name === value));
     return RE("select", { value: value || "", onChange: e => onChange(e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } },
         RE("option", { value: "", style: { background: "var(--bg-card2)" } }, "— انتخاب کنید —"),
         value && !known && RE("option", { value, style: { background: "var(--bg-card2)" } }, value),
         groups.map(g => RE("optgroup", { key: g[0], label: g[0] }, (g[1] || []).map(ev => RE("option", { key: ev.key, value: ev.name, style: { background: "var(--bg-card2)" } }, ev.name)))));
 }
-/* باکس چندانتخابی سشن/رویداد: با تعیین زمان به‌صورت خودکار پر می‌شود (نگاه کنید به setTimeAuto در NmMarketEvalLayer)،
+/* باکس چندانتخابی نشست/رویداد: با تعیین زمان به‌صورت خودکار پر می‌شود (نگاه کنید به setTimeAuto در NmMarketEvalLayer)،
    ولی تک‌تک گزینه‌ها هم قابل افزودن/برداشتن دستی هستند — چون ممکن است چند رویداد هم‌زمان فعال باشند. */
 function NmEventMultiSelect({ config, value, onChange, hint }) {
-    const groups = [["سشن‌ها", config.sessions], ["کیل‌زون‌ها و رویدادها", config.killzones], ["سیلور بولت", config.silverbullets]];
+    const groups = [["نشست‌ها", config.sessions], ["کیل‌زون‌ها و رویدادها", config.killzones], ["سیلور بولت", config.silverbullets]];
     const known = new Set(groups.flatMap(g => (g[1] || []).map(ev => ev.name)));
     const sel = value || [];
     const toggle = (name) => onChange(sel.includes(name) ? sel.filter(x => x !== name) : [...sel, name]);
@@ -3593,7 +3593,7 @@ function NmMarketEvalLayer({ config, pairs, askDeleteConfirm }) {
         setSavedMsg("");
     }, [date, pair, ready]);
     const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setSavedMsg(""); };
-    // با تعیین زمان رخ‌دادن سقف/کف، باکس سشن/رویداد را با آنچه در همان لحظه فعال است خودکار پر می‌کند.
+    // با تعیین زمان رخ‌دادن سقف/کف، باکس نشست/رویداد را با آنچه در همان لحظه فعال است خودکار پر می‌کند.
     const setTimeAuto = (timeKey, eventsKey, v) => {
         setForm(f => ({ ...f, [timeKey]: v, [eventsKey]: v ? nmActiveEventNamesAt(config, date, v) : f[eventsKey] }));
         setSavedMsg("");
@@ -3641,17 +3641,17 @@ function NmMarketEvalLayer({ config, pairs, askDeleteConfirm }) {
         editing && RE("div", { className: "rounded-xl p-2.5 mb-3 flex items-center justify-between gap-2 text-[12px]", style: { background: nmTint(13), color: "var(--accent-gold)", border: "1px solid " + nmTint(35) } },
             RE("span", null, "✎ در حال ویرایش ارزیابی ثبت‌شده — پس از تغییر، «ذخیره‌ی تغییرات» را بزنید."),
             RE("button", { type: "button", onClick: cancelEdit, className: "underline shrink-0" }, "انصراف")),
-        RE("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "برای هر روز، سشن/رویدادی که سقف و کف قیمتی روزانه در آن رخ داده و زمان دقیقش (به وقت نیویورک) و همچنین روز هفته‌ای که سقف/کف هفتگی رخ داده را ثبت کنید. نتیجه‌ی آماری در لایه‌ی «تحلیل ← ارزیابی سقف/کف قیمت» دیده می‌شود."),
+        RE("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "برای هر روز، نشست/رویدادی که سقف و کف قیمتی روزانه در آن رخ داده و زمان دقیقش (به وقت نیویورک) و همچنین روز هفته‌ای که سقف/کف هفتگی رخ داده را ثبت کنید. نتیجه‌ی آماری در لایه‌ی «تحلیل ← ارزیابی سقف/کف قیمت» دیده می‌شود."),
         RE("div", { className: "grid grid-cols-2 gap-2 mb-1" },
             RE(Field, { label: "تاریخ (میلادی)" }, RE("input", { type: "date", value: date, onChange: e => e.target.value && setDate(e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
             RE(Field, { label: "جفت‌ارز" }, RE("select", { value: pair, onChange: e => setPair(e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } }, (pairs || []).map(p => RE("option", { key: p, value: p, style: { background: "var(--bg-card2)" } }, p))))),
         RE("div", { className: "text-[10px] mb-3", style: { color: "var(--text-muted)" } }, "روز انتخاب‌شده: " + nmJalaliText(date) + " (" + weekdayFromDateStr(date) + ") — هفته‌ی شروع‌شده از دوشنبه‌ی " + nmJalaliText(nmWeekStart(date))),
         RE(NmItemCard, { num: 1, title: "سقف روزانه", color: HI },
             RE(Field, { label: "زمان رخ‌دادن سقف قیمتی روزانه (NY) — دستی" }, timeBox("highTime", "highEvents")),
-            RE(Field, { label: "سشن یا رویداد معاملاتی که سقف قیمتی روزانه در آن رخ داده" }, RE(NmEventMultiSelect, { config, value: form.highEvents, onChange: v => set("highEvents", v) }))),
+            RE(Field, { label: "نشست یا رویداد معاملاتی که سقف قیمتی روزانه در آن رخ داده" }, RE(NmEventMultiSelect, { config, value: form.highEvents, onChange: v => set("highEvents", v) }))),
         RE(NmItemCard, { num: 2, title: "کف روزانه", color: LO },
             RE(Field, { label: "زمان رخ‌دادن کف قیمتی روزانه (NY) — دستی" }, timeBox("lowTime", "lowEvents")),
-            RE(Field, { label: "سشن یا رویداد معاملاتی که کف قیمتی روزانه در آن رخ داده" }, RE(NmEventMultiSelect, { config, value: form.lowEvents, onChange: v => set("lowEvents", v) }))),
+            RE(Field, { label: "نشست یا رویداد معاملاتی که کف قیمتی روزانه در آن رخ داده" }, RE(NmEventMultiSelect, { config, value: form.lowEvents, onChange: v => set("lowEvents", v) }))),
         RE(NmItemCard, { num: 3, title: "سقف هفتگی", color: HI },
             RE(Field, { label: "روز هفته‌ای که سقف قیمتی هفتگی رخ داده" }, daySelect("weekHigh"))),
         RE(NmItemCard, { num: 4, title: "کف هفتگی", color: LO },
@@ -3769,14 +3769,14 @@ function NmPriceExtremesAnalysis() {
                         RE("div", { className: "rounded-xl p-3 mb-3", style: { background: nmTint(8), border: "1px solid " + nmTint(28) } },
                             RE("div", { className: "text-[12px] font-bold mb-1.5", style: { color: "var(--accent-gold)" } }, "پاسخ به سؤال‌ها (" + kindLabel + ")"),
                             topSentence(stats.tm, kindLabel + (wdF === "all" ? " روزانه" : " در روزهای " + wdF) + " بیشتر در بازه‌ی زمانی"),
-                            topSentence(stats.ev, kindLabel + (wdF === "all" ? " روزانه" : " در روزهای " + wdF) + " بیشتر در سشن/رویداد"),
+                            topSentence(stats.ev, kindLabel + (wdF === "all" ? " روزانه" : " در روزهای " + wdF) + " بیشتر در نشست/رویداد"),
                             topSentence(stats.dy, kindLabel + " هفتگی بیشتر در روز"),
                             RE("div", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, stats.nDaily + " روز و " + stats.nWeekly + " هفته ثبت‌شده" + (stats.nDaily < 20 ? " — برای نتیجه‌ی قابل‌اعتماد، حداقل ۲۰ روز داده لازم است." : ""))),
                         stats.tm.rows.length > 0 && RE("div", { className: "mb-3" },
                             RE("div", { className: "text-[12px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, kindLabel + " روزانه — بر اساس بازه‌ی زمانی (NY)"),
                             RE(NmBars, { rows: stats.tm.rows, color: kindColor })),
                         stats.ev.rows.length > 0 && RE("div", { className: "mb-3" },
-                            RE("div", { className: "text-[12px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, kindLabel + " روزانه — بر اساس سشن/رویداد معاملاتی"),
+                            RE("div", { className: "text-[12px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, kindLabel + " روزانه — بر اساس نشست/رویداد معاملاتی"),
                             RE(NmBars, { rows: stats.ev.rows, color: kindColor })),
                         stats.dy.rows.length > 0 && RE("div", null,
                             RE("div", { className: "text-[12px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, kindLabel + " هفتگی — بر اساس روز هفته"),
@@ -4124,6 +4124,15 @@ function NmStatementSyncCard({ statementTrades, journalTrades, persistTrades, ac
 
 /* ---------------- چیدمان نمایش منوی لایه‌ها (افقی/عمودی) ---------------- */
 const NM_DEFAULT_NAV_ORDER = ["dashboard","live","news","journal","marketeval","calendar","finance","systems","strategy","goals","lifegoals","gratitude" ,"exportall","library","settings","about"];
+
+function NmLayerHeading({ title, Icon, image }) {
+    return React.createElement("h2", { className: "text-sm font-semibold mb-2 flex items-center gap-2", style: { color: "var(--text-primary)" } },
+        image ? React.createElement("img", { src: image, alt: title, className: "w-7 h-7 rounded-lg object-contain shrink-0", style: { background: "#FFFFFF", border: "1px solid var(--border-2)" } }) :
+        Icon ? React.createElement(Icon, { size: 18, color: "var(--accent-gold)", className: "shrink-0" }) : null,
+        title
+    );
+}
+
 const NM_NAV_LABELS = {dashboard:"داشبورد",live:"نشست‌ها",news:"اخبار",journal:"ژورنال",marketeval:"ارزیابی بازار",calendar:"تقویم",finance:"مالی",systems:"سیستم‌ها",strategy:"استراتژی",goals:"اهداف معامله‌گری",lifegoals:"اهداف زندگی",gratitude:"شکرگزاری",exportall:"خروجی جامع",library:"کتابخانه",settings:"تنظیمات",about:"درباره برنامه"};
 function nmNormalizeNavOrder(value){
  const raw=Array.isArray(value)?value:[];
@@ -4722,7 +4731,7 @@ function NmLibrarySettingsCard({ open, onToggle }) {
 }
 function NmLibraryLayer({ showToast, askDeleteConfirm }) {
     return RE("div", { className: "px-4 mt-4 pb-16" },
-        RE("h2", { className: "text-sm font-semibold mb-1", style: { color: "var(--text-primary)" } }, "کتابخانه"),
+        RE(NmLayerHeading,{title:"کتابخانه",Icon:BookOpen}),
         RE("p", { className: "text-[11px] leading-5 mb-4", style: { color: "var(--text-muted)" } }, "کتاب‌های متنی و پادکست/کتاب‌های صوتی خود را اینجا نگه دارید. فایل‌ها داخل خودِ برنامه ذخیره می‌شوند؛ برای فایل‌های حجیم به فضای ذخیره‌سازی دستگاه توجه کنید (تنظیمات ← فضای ذخیره‌سازی)."),
         RE(NmLibraryBooksSection, { showToast, askDeleteConfirm }),
         RE(NmLibraryPodcastsSection, { showToast, askDeleteConfirm }));
@@ -4836,7 +4845,7 @@ const NM_DASH_DEFAULT_LAYOUT = ["kpi","equity","advanced","chartplan","plans","d
 function nmDashNum(v,digits=2){const n=Number(v);return Number.isFinite(n)?n.toLocaleString("en-US",{maximumFractionDigits:digits}):"—";}
 function nmDashPnl(v){const n=Number(v)||0;return `${n>=0?"+":""}${n.toLocaleString("en-US",{maximumFractionDigits:2})}`;}
 function nmDashR(t){if(t&&t.rMultiple!==undefined&&t.rMultiple!==null&&Number.isFinite(Number(t.rMultiple)))return Number(t.rMultiple);const p=Number(t&&t.pnl),r=Number(t&&t.riskDollar);return Number.isFinite(p)&&Number.isFinite(r)&&r>0?p/r:null;}
-function nmDashSession(t){try{return typeof sessionLabelOf==="function"?(sessionLabelOf(t)||"بدون سشن"):(t.session||"بدون سشن");}catch(e){return t.session||"بدون سشن";}}
+function nmDashSession(t){try{return typeof sessionLabelOf==="function"?(sessionLabelOf(t)||"بدون نشست"):(t.session||"بدون نشست");}catch(e){return t.session||"بدون نشست";}}
 function nmDashSetup(t){if(t.systems?.length)return t.systems[0];if(t.entryTimeSystems?.length)return t.entryTimeSystems[0];if(t.system)return t.system;if(t.trigs?.length)return t.trigs[0];return "بدون سیستم";}
 function nmDashFilterDate(t,range,today){if(!t.date)return false;if(range==="all")return true;if(range==="today")return t.date===today;if(range==="month")return t.date.slice(0,7)===today.slice(0,7);if(range==="week"){const d=new Date(t.date+"T00:00:00"),e=new Date(today+"T00:00:00"),st=new Date(e);st.setDate(e.getDate()-6);return d>=st&&d<=e;}return true;}
 function nmDashMetrics(trades,startingBalance=0){const closed=(trades||[]).filter(t=>t.status==="closed"&&Number.isFinite(Number(t.pnl)));const pnl=closed.reduce((s,t)=>s+(Number(t.pnl)||0),0),wins=closed.filter(t=>Number(t.pnl)>0).length;const grossWin=closed.filter(t=>Number(t.pnl)>0).reduce((s,t)=>s+Number(t.pnl),0),grossLoss=Math.abs(closed.filter(t=>Number(t.pnl)<0).reduce((s,t)=>s+Number(t.pnl),0));const pf=grossLoss>0?grossWin/grossLoss:(grossWin>0?Infinity:0);const rs=closed.map(nmDashR).filter(v=>v!==null&&Number.isFinite(v));const avgR=rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null;const expectancy=closed.length?pnl/closed.length:null;let bal=Number(startingBalance)||0,peak=bal,maxDD=0;const curve=[{i:0,balance:bal,date:"شروع"}];closed.slice().sort((a,b)=>`${a.date||""}T${a.time||""}`.localeCompare(`${b.date||""}T${b.time||""}`)).forEach((t,i)=>{bal+=Number(t.pnl)||0;peak=Math.max(peak,bal);maxDD=Math.max(maxDD,peak-bal);curve.push({i:i+1,balance:bal,date:t.date});});return{closed,pnl,wins,losses:closed.length-wins,winRate:closed.length?wins/closed.length*100:0,pf,avgR,expectancy,maxDD,curve};}
@@ -4984,7 +4993,7 @@ const NM_DEFAULT_TRADE_PLAN = {
     { id:"risk", type:"checkbox", label:"ریسک در محدوده مجاز است" },
     { id:"sl", type:"checkbox", label:"حدضرر طبق پلن است" },
     { id:"tp", type:"checkbox", label:"حدسود طبق پلن است" },
-    { id:"session", type:"checkbox", label:"زمان/سشن مناسب است" },
+    { id:"session", type:"checkbox", label:"زمان/نشست مناسب است" },
     { id:"news", type:"checkbox", label:"خبر پرریسک بررسی شد" },
     { id:"emotion", type:"category", label:"آمادگی ذهنی", options:["آماده","خنثی","نامناسب"] },
     { id:"conviction", type:"number", label:"اعتماد به معامله (1-10)" }
@@ -5334,7 +5343,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
    React.createElement("div",{className:"text-[11px] font-semibold mb-2",style:{color:"var(--accent-gold)"}},"فیلترهای Dashboard"),
    React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},
     [["range","بازه",[["today","امروز"],["week","۷ روز"],["month","این ماه"],["all","کل"]]],
-     ["session","سشن",[["all","همه"],...sessions.map(x=>[x,x])]],
+     ["session","نشست",[["all","همه"],...sessions.map(x=>[x,x])]],
      ["setup","سیستم",[["all","همه"],...setups.map(x=>[x,x])]],
      ["direction","جهت",[["all","همه"],["buy","Buy"],["sell","Sell"]]]].map(([key,label,opts])=>
       React.createElement("label",{key,className:"text-[9px]",style:{color:"var(--text-muted)"}},label,
@@ -5350,7 +5359,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      React.createElement("button",{onClick:()=>{setSelected(null);onEditTrade&&onEditTrade(selected)},className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ویرایش معامله"))));
  const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc}); const replayModal=replay&&React.createElement(NmReplayModal,{trade:replay,onClose:()=>setReplay(null)});
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
-   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,React.createElement("h2",{className:"text-base font-bold",style:{color:"var(--text-primary)"}},"داشبورد عملکرد"),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
+   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,RE(NmLayerHeading,{title:"داشبورد عملکرد",image:"icon-dashboard-logo.png"}),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`)),React.createElement("button",{onClick:()=>{saveLayout(NM_DASH_DEFAULT_LAYOUT);try{localStorage.removeItem(NM_DASH_LAYOUT_KEY)}catch(e){}},className:"text-[10px] px-2.5 py-1.5 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"چیدمان پیش‌فرض")),
    statisticalAnalysisSection,
    React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
      React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
@@ -6956,7 +6965,7 @@ function App() {
     /* ---------------- alarm/notification edge detection ---------------- */
     useEffect(() => {
         const allEv = [
-            ...schedule.sessions.map(e => ({ ...e, kind: "سشن" })),
+            ...schedule.sessions.map(e => ({ ...e, kind: "نشست" })),
             ...schedule.killzones.map(e => ({ ...e, kind: "کیل‌زون" })),
             ...schedule.silverbullets.map(e => ({ ...e, kind: "سیلور بولت" })),
         ];
@@ -8324,7 +8333,7 @@ function App() {
 
 سودآوری بر اساس روز هفته (بهترین‌ها): ${topList(byWeekday)}
 سودآوری بر اساس سیستم معاملاتی (بهترین‌ها): ${topList(bySystem)}
-سودآوری بر اساس سشن معاملاتی (بهترین‌ها): ${topList(bySession)}
+سودآوری بر اساس نشست معاملاتی (بهترین‌ها): ${topList(bySession)}
 سودآوری بر اساس حجم لات (بهترین‌ها): ${topList(byLot)}`;
             const headers = { "Content-Type": "application/json" };
             if (apiKey) {
@@ -8735,7 +8744,7 @@ function App() {
         mk("سودآوری-لات", byLot);
         mk("سودآوری-روزهفته", byWeekday);
         mk("سودآوری-سیستم", bySystem);
-        mk("سودآوری-سشن", bySession);
+        mk("سودآوری-نشست", bySession);
         mk("سودآوری-روند", byTrend);
         mk("سودآوری-RR", byRR);
         mk("سودآوری-ریسک-دلاری", byRiskDollar);
@@ -8757,7 +8766,7 @@ function App() {
         mk("سودآوری-Stop", byStop);
         mk("سودآوری-خبر", byNews);
         mk("ترکیب-سیستم-روز", bySystemWeekday);
-        mk("ترکیب-سشن-لات", bySessionLot);
+        mk("ترکیب-نشست-لات", bySessionLot);
         mk(`سه‌بعدی-${PARAM_DEFS[param3dX].label}-${PARAM_DEFS[param3dY].label}`, rows3d);
         XLSX.writeFile(wb, `namello-analysis-${activeAccount}-${todayStr}.xlsx`);
     }
@@ -8765,7 +8774,7 @@ function App() {
         const sec = (name, data) => ({ name, header: ["پارامتر", "سودآوری"], rows: data.map(d => [d.name, d.value]) });
         exportMultiTablesAsPdf("تحلیل آماری", [
             sec("سودآوری-لات", byLot), sec("سودآوری-روزهفته", byWeekday), sec("سودآوری-سیستم", bySystem),
-            sec("سودآوری-سشن", bySession), sec("سودآوری-روند", byTrend), sec("سودآوری-RR", byRR),
+            sec("سودآوری-نشست", bySession), sec("سودآوری-روند", byTrend), sec("سودآوری-RR", byRR),
             sec("سودآوری-آمادگی-ستاپ", bySetupReadiness), sec("سودآوری-ارزیابی-چارت", byChartReadiness), sec("سودآوری-برنامه-روزانه", byDayPlanReadiness),
             sec("سودآوری-بایاس", byBias), sec("سودآوری-فراکتال", byFractal), sec("سودآوری-روندِاصلی", byMainTrend),
             sec("سودآوری-شرایط‌بازار", byCondition), sec("سودآوری-Trig", byTrig), sec("سودآوری-Target", byTarget),
@@ -8777,13 +8786,13 @@ function App() {
         const multi = fn => groupProfitabilityMulti(src, fn);
         return {byLot:groupProfitability(src,t=>t.lot),byRiskDollar:groupProfitability(src,PARAM_DEFS.riskDollar.get),bySubjectiveSuccessProb:groupProfitability(src,PARAM_DEFS.successProb.get),byCalculatedSuccessProb:groupProfitability(src,PARAM_DEFS.calcSuccessProb.get),byDirection:groupProfitability(src,PARAM_DEFS.direction.get),byPair:groupProfitability(src,PARAM_DEFS.pair.get),byDivergenceMain:multi(t=>t.divergenceMain||[]),byDivergenceEntry:multi(t=>t.divergenceEntry||[]),byWeekday:groupProfitability(src,t=>weekdayFromDateStr(t.date)),bySystem:groupProfitability(src,t=>t.system),bySession:groupProfitability(src,sessionLabelOf),byTrend:groupProfitability(src,PARAM_DEFS.trend.get),byRR:groupProfitability(src,PARAM_DEFS.rr.get),byBias:groupProfitability(src,PARAM_DEFS.bias.get),byFractal:groupProfitability(src,PARAM_DEFS.fractal.get),byMainTrend:groupProfitability(src,PARAM_DEFS.mainTrend.get),byCondition:groupProfitability(src,PARAM_DEFS.condition.get),byTrig:multi(t=>(t.trigs&&t.trigs.length)?t.trigs:(t.trig?[t.trig]:[])),byTarget:multi(t=>(t.targets&&t.targets.length)?t.targets:(t.target?[t.target]:[])),byStop:multi(t=>(t.stops&&t.stops.length)?t.stops:(t.stop?[t.stop]:[])),byNews:groupProfitability(src,PARAM_DEFS.news.get),byDuration:groupProfitability(src,t=>durationBucketFa(t.durationMinutes)),bySetupReadiness:groupProfitability(src,PARAM_DEFS.setupReadiness.get),byChartReadiness:groupProfitability(src,PARAM_DEFS.chartReadiness.get),byDayPlanReadiness:groupProfitability(src,PARAM_DEFS.dayPlanReadiness.get),bySystemWeekday:groupProfitability(src,t=>`${t.system||"-"} | ${weekdayFromDateStr(t.date)}`).slice(0,8),bySessionLot:groupProfitability(src,t=>`${sessionLabelOf(t)} | لات ${t.lot}`).slice(0,8),source:src};
     }
-    function exportDashboardStatisticalExcel(){const d=dashboardStatExportData(),wb=XLSX.utils.book_new(),mk=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["پارامتر","سودآوری"],...a.map(x=>[x.name,x.value])]),n.slice(0,31));[["سودآوری-لات",d.byLot],["سودآوری-ریسک-دلاری",d.byRiskDollar],["سودآوری-احتمال-ذهنی",d.bySubjectiveSuccessProb],["سودآوری-احتمال-محاسباتی",d.byCalculatedSuccessProb],["سودآوری-جهت",d.byDirection],["سودآوری-نماد",d.byPair],["سودآوری-واگرایی-اصلی",d.byDivergenceMain],["سودآوری-واگرایی-ورود",d.byDivergenceEntry],["سودآوری-روزهفته",d.byWeekday],["سودآوری-سیستم",d.bySystem],["سودآوری-سشن",d.bySession],["سودآوری-روند",d.byTrend],["سودآوری-RR",d.byRR],["سودآوری-آمادگی-ستاپ",d.bySetupReadiness],["سودآوری-ارزیابی-چارت",d.byChartReadiness],["سودآوری-برنامه-روزانه",d.byDayPlanReadiness],["سودآوری-بایاس",d.byBias],["سودآوری-فراکتال",d.byFractal],["سودآوری-شرایط",d.byCondition],["سودآوری-Trig",d.byTrig],["سودآوری-Target",d.byTarget],["سودآوری-Stop",d.byStop],["سودآوری-خبر",d.byNews],["سودآوری-مدت",d.byDuration],["ترکیب-سیستم-روز",d.bySystemWeekday],["ترکیب-سشن-لات",d.bySessionLot]].forEach(x=>mk(x[0],x[1]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["حساب‌های مبنا"],...(dashboardSelectedAccounts||[]).map(c=>[c])]),"حساب‌های مبنا");XLSX.writeFile(wb,`namello-statistical-dashboard-${activeAccount}-${todayStr}.xlsx`)}
-    function exportDashboardStatisticalPdf(){const d=dashboardStatExportData(),sec=(n,a)=>({name:n,header:["پارامتر","سودآوری"],rows:a.map(x=>[x.name,x.value])});exportMultiTablesAsPdf("خروجی تحلیل آماری",[{name:"حساب‌های مبنا",header:["حساب"],rows:(dashboardSelectedAccounts||[]).map(c=>[c])},sec("سودآوری بر اساس لات",d.byLot),sec("سودآوری بر اساس ریسک دلاری",d.byRiskDollar),sec("سودآوری بر اساس احتمال موفقیت ذهنی",d.bySubjectiveSuccessProb),sec("سودآوری بر اساس احتمال موفقیت محاسباتی",d.byCalculatedSuccessProb),sec("سودآوری بر اساس جهت معامله",d.byDirection),sec("سودآوری بر اساس نماد",d.byPair),sec("سودآوری بر اساس واگرایی تایم اصلی",d.byDivergenceMain),sec("سودآوری بر اساس واگرایی تایم ورود",d.byDivergenceEntry),sec("سودآوری بر اساس روز هفته",d.byWeekday),sec("سودآوری بر اساس سیستم",d.bySystem),sec("سودآوری بر اساس سشن",d.bySession),sec("سودآوری بر اساس روند",d.byTrend),sec("سودآوری بر اساس R:R",d.byRR),sec("سودآوری بر اساس آمادگی ستاپ",d.bySetupReadiness),sec("سودآوری بر اساس ارزیابی چارت",d.byChartReadiness),sec("سودآوری بر اساس آمادگی برنامه روزانه",d.byDayPlanReadiness),sec("سودآوری بر اساس بایاس",d.byBias),sec("سودآوری بر اساس فراکتال",d.byFractal),sec("سودآوری بر اساس شرایط بازار",d.byCondition),sec("سودآوری بر اساس ورود/TP/SL",d.byTrig.concat(d.byTarget,d.byStop)),sec("سودآوری بر اساس خبر",d.byNews),sec("سودآوری بر اساس مدت معامله",d.byDuration)])}
+    function exportDashboardStatisticalExcel(){const d=dashboardStatExportData(),wb=XLSX.utils.book_new(),mk=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["پارامتر","سودآوری"],...a.map(x=>[x.name,x.value])]),n.slice(0,31));[["سودآوری-لات",d.byLot],["سودآوری-ریسک-دلاری",d.byRiskDollar],["سودآوری-احتمال-ذهنی",d.bySubjectiveSuccessProb],["سودآوری-احتمال-محاسباتی",d.byCalculatedSuccessProb],["سودآوری-جهت",d.byDirection],["سودآوری-نماد",d.byPair],["سودآوری-واگرایی-اصلی",d.byDivergenceMain],["سودآوری-واگرایی-ورود",d.byDivergenceEntry],["سودآوری-روزهفته",d.byWeekday],["سودآوری-سیستم",d.bySystem],["سودآوری-نشست",d.bySession],["سودآوری-روند",d.byTrend],["سودآوری-RR",d.byRR],["سودآوری-آمادگی-ستاپ",d.bySetupReadiness],["سودآوری-ارزیابی-چارت",d.byChartReadiness],["سودآوری-برنامه-روزانه",d.byDayPlanReadiness],["سودآوری-بایاس",d.byBias],["سودآوری-فراکتال",d.byFractal],["سودآوری-شرایط",d.byCondition],["سودآوری-Trig",d.byTrig],["سودآوری-Target",d.byTarget],["سودآوری-Stop",d.byStop],["سودآوری-خبر",d.byNews],["سودآوری-مدت",d.byDuration],["ترکیب-سیستم-روز",d.bySystemWeekday],["ترکیب-نشست-لات",d.bySessionLot]].forEach(x=>mk(x[0],x[1]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["حساب‌های مبنا"],...(dashboardSelectedAccounts||[]).map(c=>[c])]),"حساب‌های مبنا");XLSX.writeFile(wb,`namello-statistical-dashboard-${activeAccount}-${todayStr}.xlsx`)}
+    function exportDashboardStatisticalPdf(){const d=dashboardStatExportData(),sec=(n,a)=>({name:n,header:["پارامتر","سودآوری"],rows:a.map(x=>[x.name,x.value])});exportMultiTablesAsPdf("خروجی تحلیل آماری",[{name:"حساب‌های مبنا",header:["حساب"],rows:(dashboardSelectedAccounts||[]).map(c=>[c])},sec("سودآوری بر اساس لات",d.byLot),sec("سودآوری بر اساس ریسک دلاری",d.byRiskDollar),sec("سودآوری بر اساس احتمال موفقیت ذهنی",d.bySubjectiveSuccessProb),sec("سودآوری بر اساس احتمال موفقیت محاسباتی",d.byCalculatedSuccessProb),sec("سودآوری بر اساس جهت معامله",d.byDirection),sec("سودآوری بر اساس نماد",d.byPair),sec("سودآوری بر اساس واگرایی تایم اصلی",d.byDivergenceMain),sec("سودآوری بر اساس واگرایی تایم ورود",d.byDivergenceEntry),sec("سودآوری بر اساس روز هفته",d.byWeekday),sec("سودآوری بر اساس سیستم",d.bySystem),sec("سودآوری بر اساس نشست",d.bySession),sec("سودآوری بر اساس روند",d.byTrend),sec("سودآوری بر اساس R:R",d.byRR),sec("سودآوری بر اساس آمادگی ستاپ",d.bySetupReadiness),sec("سودآوری بر اساس ارزیابی چارت",d.byChartReadiness),sec("سودآوری بر اساس آمادگی برنامه روزانه",d.byDayPlanReadiness),sec("سودآوری بر اساس بایاس",d.byBias),sec("سودآوری بر اساس فراکتال",d.byFractal),sec("سودآوری بر اساس شرایط بازار",d.byCondition),sec("سودآوری بر اساس ورود/TP/SL",d.byTrig.concat(d.byTarget,d.byStop)),sec("سودآوری بر اساس خبر",d.byNews),sec("سودآوری بر اساس مدت معامله",d.byDuration)])}
     function dashboardAdvancedExportData(){const src=(dashboardSelectedTrades||[]).filter(t=>t.status==="closed"),m=nmDashMetrics(src,dashboardStartingBalance),a=nmAdvancedStats(src,dashboardStartingBalance),x=src.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae))),eff=src.filter(t=>Number.isFinite(Number(t.exitEfficiency))),mistakes={};src.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>mistakes[k]=(mistakes[k]||0)+1));const edge=fn=>{const map={};src.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return[name,ts.length,mm.pnl,mm.winRate,mm.expectancy]})};return{src,m,a,avgM:x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA:x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null,mistakes,session:edge(nmDashSession),setup:edge(nmDashSetup)}}
     function exportDashboardAdvancedExcel(){const d=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("شاخص‌های ارزیابی",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Ulcer",d.a.ulcer],["Avg Hold (min)",d.a.avgHold??"—"],["میانگین آمادگی ستاپ (%)",d.a.avgSetupReadiness??"—"],["میانگین ارزیابی چارت (%)",d.a.avgChartReadiness??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"],["Early Exit",d.a.exits.early],["Round-trip",d.a.exits.roundTrip],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]);add("Session Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.session]);add("Setup Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(d.mistakes)]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Chart Plans",[["Chart Plan","تعداد شروط"],...(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات ارزیابی",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...d.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-advanced-evaluation-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardAdvancedPdf(){const d=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی ارزیابی پیشرفته",[{name:"شاخص‌های ریسک و خروج",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"]]},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(d.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
-    function exportDashboardComprehensiveExcel(){const st=dashboardStatExportData(),ad=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("خلاصه داشبورد",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"]]);add("ارزیابی پیشرفته",[["Session","تعداد","P&L","Win Rate","Expectancy"],...ad.session]);add("Edge Setup",[["Setup","تعداد","P&L","Win Rate","Expectancy"],...ad.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(ad.mistakes)]);add("تحلیل-سیستم",[["پارامتر","سودآوری"],...st.bySystem.map(x=>[x.name,x.value])]);add("تحلیل-سشن",[["پارامتر","سودآوری"],...st.bySession.map(x=>[x.name,x.value])]);add("تحلیل-RR",[["پارامتر","سودآوری"],...st.byRR.map(x=>[x.name,x.value])]);add("تحلیل-آمادگی-ستاپ",[["پارامتر","سودآوری"],...st.bySetupReadiness.map(x=>[x.name,x.value])]);add("تحلیل-ارزیابی-چارت",[["پارامتر","سودآوری"],...st.byChartReadiness.map(x=>[x.name,x.value])]);add("تحلیل-روند",[["پارامتر","سودآوری"],...st.byTrend.map(x=>[x.name,x.value])]);add("تحلیل-لات",[["پارامتر","سودآوری"],...st.byLot.map(x=>[x.name,x.value])]);add("تحلیل-روز",[["پارامتر","سودآوری"],...st.byWeekday.map(x=>[x.name,x.value])]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات داشبورد",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...ad.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-comprehensive-dashboard-${activeAccount}-${todayStr}.xlsx`)}
-    function exportDashboardComprehensivePdf(){const st=dashboardStatExportData(),ad=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی جامع داشبورد",[{name:"خلاصه داشبورد",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",ad.a.avgDayPlanReadiness??"—"]]},{name:"تحلیل آماری - سیستم",header:["پارامتر","سودآوری"],rows:st.bySystem.map(x=>[x.name,x.value])},{name:"تحلیل آماری - سشن",header:["پارامتر","سودآوری"],rows:st.bySession.map(x=>[x.name,x.value])},{name:"تحلیل آماری - R:R",header:["پارامتر","سودآوری"],rows:st.byRR.map(x=>[x.name,x.value])},{name:"تحلیل آماری - روند",header:["پارامتر","سودآوری"],rows:st.byTrend.map(x=>[x.name,x.value])},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(ad.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
+    function exportDashboardComprehensiveExcel(){const st=dashboardStatExportData(),ad=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("خلاصه داشبورد",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"]]);add("ارزیابی پیشرفته",[["Session","تعداد","P&L","Win Rate","Expectancy"],...ad.session]);add("Edge Setup",[["Setup","تعداد","P&L","Win Rate","Expectancy"],...ad.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(ad.mistakes)]);add("تحلیل-سیستم",[["پارامتر","سودآوری"],...st.bySystem.map(x=>[x.name,x.value])]);add("تحلیل-نشست",[["پارامتر","سودآوری"],...st.bySession.map(x=>[x.name,x.value])]);add("تحلیل-RR",[["پارامتر","سودآوری"],...st.byRR.map(x=>[x.name,x.value])]);add("تحلیل-آمادگی-ستاپ",[["پارامتر","سودآوری"],...st.bySetupReadiness.map(x=>[x.name,x.value])]);add("تحلیل-ارزیابی-چارت",[["پارامتر","سودآوری"],...st.byChartReadiness.map(x=>[x.name,x.value])]);add("تحلیل-روند",[["پارامتر","سودآوری"],...st.byTrend.map(x=>[x.name,x.value])]);add("تحلیل-لات",[["پارامتر","سودآوری"],...st.byLot.map(x=>[x.name,x.value])]);add("تحلیل-روز",[["پارامتر","سودآوری"],...st.byWeekday.map(x=>[x.name,x.value])]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات داشبورد",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...ad.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-comprehensive-dashboard-${activeAccount}-${todayStr}.xlsx`)}
+    function exportDashboardComprehensivePdf(){const st=dashboardStatExportData(),ad=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی جامع داشبورد",[{name:"خلاصه داشبورد",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",ad.a.avgDayPlanReadiness??"—"]]},{name:"تحلیل آماری - سیستم",header:["پارامتر","سودآوری"],rows:st.bySystem.map(x=>[x.name,x.value])},{name:"تحلیل آماری - نشست",header:["پارامتر","سودآوری"],rows:st.bySession.map(x=>[x.name,x.value])},{name:"تحلیل آماری - R:R",header:["پارامتر","سودآوری"],rows:st.byRR.map(x=>[x.name,x.value])},{name:"تحلیل آماری - روند",header:["پارامتر","سودآوری"],rows:st.byTrend.map(x=>[x.name,x.value])},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(ad.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
     /* ---------------- combined full export ---------------- */
     async function exportAll() {
         const __nmMe = await nmMeLoad();
@@ -8822,7 +8831,7 @@ function App() {
         mk2("تحلیل-لات", byLot);
         mk2("تحلیل-روزهفته", byWeekday);
         mk2("تحلیل-سیستم", bySystem);
-        mk2("تحلیل-سشن", bySession);
+        mk2("تحلیل-نشست", bySession);
         mk2("تحلیل-روند", byTrend);
         mk2("تحلیل-RR", byRR);
         mk2("تحلیل-بایاس", byBias);
@@ -8834,14 +8843,14 @@ function App() {
         mk2("تحلیل-Stop", byStop);
         mk2("تحلیل-خبر", byNews);
         mk2("ترکیب-سیستم-روز", bySystemWeekday);
-        mk2("ترکیب-سشن-لات", bySessionLot);
+        mk2("ترکیب-نشست-لات", bySessionLot);
         mk2(`سه‌بعدی-${PARAM_DEFS[param3dX].label}-${PARAM_DEFS[param3dY].label}`, rows3d);
         const psych = computePsychologyInsights(allClosedAsc, psychOptions);
         const psychAoa = [["دسته", "توضیح"],
             ...psych.strengths.map(s => ["نقطه قوت", s]), ...psych.weaknesses.map(s => ["نقطه ضعف", s]),
             ...psych.threats.map(s => ["تهدید", s]), ...psych.opportunities.map(s => ["فرصت", s])];
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(psychAoa), "روانشناسی");
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["تاریخ", "روز هفته", "جفت‌ارز", "سقف: سشن/رویداد", "سقف: زمان", "کف: سشن/رویداد", "کف: زمان"], ...Object.values(__nmMe.daily || {}).sort((a, b) => a.date < b.date ? -1 : 1).map(r => [r.date, weekdayFromDateStr(r.date), r.pair, (r.highEvents && r.highEvents.length ? r.highEvents.join("، ") : (r.highEvent || "")), r.highTime || "", (r.lowEvents && r.lowEvents.length ? r.lowEvents.join("، ") : (r.lowEvent || "")), r.lowTime || ""])]), "رفتار بازار-روزانه");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["تاریخ", "روز هفته", "جفت‌ارز", "سقف: نشست/رویداد", "سقف: زمان", "کف: نشست/رویداد", "کف: زمان"], ...Object.values(__nmMe.daily || {}).sort((a, b) => a.date < b.date ? -1 : 1).map(r => [r.date, weekdayFromDateStr(r.date), r.pair, (r.highEvents && r.highEvents.length ? r.highEvents.join("، ") : (r.highEvent || "")), r.highTime || "", (r.lowEvents && r.lowEvents.length ? r.lowEvents.join("، ") : (r.lowEvent || "")), r.lowTime || ""])]), "رفتار بازار-روزانه");
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["شروع هفته", "جفت‌ارز", "روز سقف هفتگی", "روز کف هفتگی"], ...Object.values(__nmMe.weekly || {}).sort((a, b) => a.weekStart < b.weekStart ? -1 : 1).map(r => [r.weekStart, r.pair, r.highDay || "", r.lowDay || ""])]), "رفتار بازار-هفتگی");
         XLSX.writeFile(wb, `namello-full-export-${activeAccount}-${todayStr}.xlsx`);
     }
@@ -8878,9 +8887,9 @@ function App() {
             { name: "اهداف زندگی", header: ["تاریخ ثبت", "هدف", "پیشرفت (%)"], rows: lifeGoals.map(g => [g.date, g.text, g.progress || 0]) },
             { name: "شکر گزاری", header: ["تاریخ ثبت", "مورد", "پیشرفت (%)"], rows: gratitude.map(g => [g.date, g.text, g.progress || 0]) },
             { name: "ارزیابی استیتمنت", header: ["تاریخ", "نماد", "جهت", "لات", "سود/زیان"], rows: statementTrades.map(t => [t.date, t.pair, t.direction === "sell" ? "فروش" : "خرید", t.lot, t.pnl]) },
-            sec("تحلیل-سیستم", bySystem), sec("تحلیل-سشن", bySession), sec("تحلیل-روند", byTrend),
+            sec("تحلیل-سیستم", bySystem), sec("تحلیل-نشست", bySession), sec("تحلیل-روند", byTrend),
             { name: "استراتژی", header: ["ردیف", "استراتژی"], rows: strategies.map((s, i) => [i + 1, s.text]) },
-            { name: "ارزیابی رفتار بازار - روزانه", header: ["تاریخ", "روز هفته", "جفت‌ارز", "سقف: سشن/رویداد", "سقف: زمان", "کف: سشن/رویداد", "کف: زمان"], rows: Object.values(__nmMe.daily || {}).sort((a, b) => a.date < b.date ? -1 : 1).map(r => [r.date, weekdayFromDateStr(r.date), r.pair, (r.highEvents && r.highEvents.length ? r.highEvents.join("، ") : (r.highEvent || "")), r.highTime || "", (r.lowEvents && r.lowEvents.length ? r.lowEvents.join("، ") : (r.lowEvent || "")), r.lowTime || ""]) },
+            { name: "ارزیابی رفتار بازار - روزانه", header: ["تاریخ", "روز هفته", "جفت‌ارز", "سقف: نشست/رویداد", "سقف: زمان", "کف: نشست/رویداد", "کف: زمان"], rows: Object.values(__nmMe.daily || {}).sort((a, b) => a.date < b.date ? -1 : 1).map(r => [r.date, weekdayFromDateStr(r.date), r.pair, (r.highEvents && r.highEvents.length ? r.highEvents.join("، ") : (r.highEvent || "")), r.highTime || "", (r.lowEvents && r.lowEvents.length ? r.lowEvents.join("، ") : (r.lowEvent || "")), r.lowTime || ""]) },
             { name: "ارزیابی رفتار بازار - هفتگی", header: ["شروع هفته", "جفت‌ارز", "روز سقف هفتگی", "روز کف هفتگی"], rows: Object.values(__nmMe.weekly || {}).sort((a, b) => a.weekStart < b.weekStart ? -1 : 1).map(r => [r.weekStart, r.pair, r.highDay || "", r.lowDay || ""]) },
             { name: "روانشناسی", header: ["دسته", "توضیح"], rows: psychRows },
         ]);
@@ -8983,7 +8992,7 @@ function App() {
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("h3", { className: "text-[13px] font-semibold mb-3", style: { color: "var(--accent-gold)" } }, "\uD83C\uDFC6 \u0628\u0647\u062A\u0631\u06CC\u0646 \u0648 \u0628\u062F\u062A\u0631\u06CC\u0646 \u062D\u0627\u0644\u062A \u0647\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631"),
                     React.createElement("div", { className: "grid grid-cols-1 gap-2" }, [
-                        { label: "سشن یا رویداد معاملاتی", data: bySession },
+                        { label: "نشست یا رویداد معاملاتی", data: bySession },
                         { label: "خبر", data: byNews },
                         { label: "فراکتال", data: byFractal },
                         { label: "جهت روند روزانه", data: byDailyTrend },
@@ -9036,7 +9045,7 @@ function App() {
                     { title: "سودآوری بر اساس حجم (لات)", data: byLot },
                     { title: "سودآوری بر اساس روز هفته", data: byWeekday },
                     { title: "سودآوری بر اساس سیستم معاملاتی", data: bySystem },
-                    { title: "سودآوری بر اساس سشن معاملاتی", data: bySession },
+                    { title: "سودآوری بر اساس نشست معاملاتی", data: bySession },
                     { title: "سودآوری بر اساس هم راستایی معامله با روند اصلی", data: byTrend },
                     { title: "سودآوری بر اساس R-multiple", data: byRR },
                     { title: "سودآوری بر اساس آمادگی ستاپ", data: bySetupReadiness },
@@ -9052,7 +9061,7 @@ function App() {
                     { title: "سودآوری بر اساس خبر هم‌زمان", data: byNews },
                     { title: "سودآوری بر اساس مدت معامله", data: byDuration },
                     { title: "ترکیب سیستم + روز هفته", data: bySystemWeekday },
-                    { title: "ترکیب سشن + لات", data: bySessionLot },
+                    { title: "ترکیب نشست + لات", data: bySessionLot },
                 ].map(chart => (React.createElement("div", { key: chart.title, className: "mb-4" },
                     React.createElement("h3", { className: "text-[12px] font-semibold mb-2", style: { color: "var(--accent-gold)" } }, chart.title),
                     React.createElement("div", { className: "rounded-xl p-2", style: { background: "var(--bg-card)" } },
@@ -9387,7 +9396,7 @@ function App() {
                     React.createElement("select", { value: journalDirectionFilter, onChange: e => setJournalDirectionFilter(e.target.value), className: "rounded-lg px-2 py-2 text-[10px]", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } },
                         React.createElement("option", { value: "all" }, "همه جهت‌ها"), React.createElement("option", { value: "buy" }, "Buy"), React.createElement("option", { value: "sell" }, "Sell")),
                     React.createElement("select", { value: journalSessionFilter, onChange: e => setJournalSessionFilter(e.target.value), className: "rounded-lg px-2 py-2 text-[10px]", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } },
-                        React.createElement("option", { value: "all" }, "همه سشن‌ها"), journalSessions.map(x => React.createElement("option", { key: x, value: x }, x))),
+                        React.createElement("option", { value: "all" }, "همه نشست‌ها"), journalSessions.map(x => React.createElement("option", { key: x, value: x }, x))),
                     React.createElement("button", { type: "button", onClick: () => setJournalMistakeOnly(v => !v), className: "rounded-lg px-2 py-2 text-[10px]", style: { background: journalMistakeOnly ? "#F59E0B22" : "var(--bg-card2)", color: journalMistakeOnly ? "#F59E0B" : "var(--text-secondary)", border: "1px solid " + (journalMistakeOnly ? "#F59E0B55" : "var(--border-2)") } }, "فقط معاملات دارای اشتباه"))),
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("journal_closed_trades")),
             journalFilteredTrades.length === 0 ? (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, closedTrades.length ? "با فیلتر فعلی معامله‌ای پیدا نشد." : t("journal_no_closed"))) : (React.createElement("div", { className: "grid grid-cols-1 gap-2" }, journalFilteredTrades.map(t => (React.createElement("div", { key: t.id, className: "rounded-xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
@@ -9499,7 +9508,7 @@ function App() {
             lang: appLanguage,
         }))),
         tab === "finance" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, (appLanguage === "en" ? "Financial Management" : "مدیریت مالی")),
+            RE(NmLayerHeading,{title:(appLanguage === "en" ? "Financial Management" : "مدیریت مالی"),Icon:Wallet}),
             React.createElement("button", { type: "button", onClick: () => setShowFinanceSourcePicker(v => !v), className: "w-full flex items-center justify-between rounded-xl px-3 py-2.5 mb-2", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))", color: "var(--text-primary)" }, "aria-expanded": showFinanceSourcePicker },
                 React.createElement("span", { className: "text-[12px] font-semibold" }, "منبع ارزیابی مالی"),
                 React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron", "aria-hidden": true }, showFinanceSourcePicker ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
@@ -9727,7 +9736,7 @@ function App() {
                         React.createElement(Download, { size: 16 }),
                         " PDF")))))),
         tab === "systems" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u0633\u06CC\u0633\u062A\u0645\u200C\u0647\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC"),
+            RE(NmLayerHeading,{title:"سیستم‌های معاملاتی",Icon:BarChart3}),
             React.createElement("div", { className: "flex gap-2 mb-4" },
                 React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                     React.createElement("input", { type: "text", value: newTradingSystemName, onChange: e => setNewTradingSystemName(e.target.value), onKeyDown: e => e.key === "Enter" && addTradingSystemCatalogItem(), placeholder: "\u0646\u0627\u0645 \u0633\u06CC\u0633\u062A\u0645 \u062C\u062F\u06CC\u062F...", className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
@@ -9763,7 +9772,7 @@ function App() {
                     React.createElement(Download, { size: 16 }),
                     " PDF")))),
         tab === "strategy" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC \u0648 \u0645\u0627\u0644\u06CC"),
+            RE(NmLayerHeading,{title:"استراتژی معاملاتی و مالی",Icon:ListChecks}),
             !activeAccount ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0627\u0648\u0644 \u0627\u0632 \u062A\u0628 \u0698\u0648\u0631\u0646\u0627\u0644 \u06CC\u06A9 \u062D\u0633\u0627\u0628 \u0627\u06CC\u062C\u0627\u062F \u06A9\u0646.")) : (React.createElement(React.Fragment, null,
                 React.createElement("div", { className: "flex gap-2 mb-4" },
                     React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
@@ -9882,7 +9891,7 @@ function App() {
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("h3", { className: "text-[13px] font-semibold mb-3", style: { color: "var(--accent-gold)" } }, "\uD83C\uDFC6 \u0628\u0647\u062A\u0631\u06CC\u0646 \u0648 \u0628\u062F\u062A\u0631\u06CC\u0646 \u062D\u0627\u0644\u062A \u0647\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631"),
                     React.createElement("div", { className: "grid grid-cols-1 gap-2" }, [
-                        { label: "سشن یا رویداد معاملاتی", data: bySession },
+                        { label: "نشست یا رویداد معاملاتی", data: bySession },
                         { label: "خبر", data: byNews },
                         { label: "فراکتال", data: byFractal },
                         { label: "جهت روند روزانه", data: byDailyTrend },
@@ -9928,7 +9937,7 @@ function App() {
                     { title: "سودآوری بر اساس حجم (لات)", data: byLot },
                     { title: "سودآوری بر اساس روز هفته", data: byWeekday },
                     { title: "سودآوری بر اساس سیستم معاملاتی", data: bySystem },
-                    { title: "سودآوری بر اساس سشن معاملاتی", data: bySession },
+                    { title: "سودآوری بر اساس نشست معاملاتی", data: bySession },
                     { title: "سودآوری بر اساس هم راستایی معامله با روند اصلی", data: byTrend },
                     { title: "سودآوری بر اساس R-multiple", data: byRR },
                     { title: "سودآوری بر اساس آمادگی ستاپ", data: bySetupReadiness },
@@ -9944,7 +9953,7 @@ function App() {
                     { title: "سودآوری بر اساس خبر هم‌زمان", data: byNews },
                     { title: "سودآوری بر اساس مدت معامله", data: byDuration },
                     { title: "ترکیب سیستم + روز هفته", data: bySystemWeekday },
-                    { title: "ترکیب سشن + لات", data: bySessionLot },
+                    { title: "ترکیب نشست + لات", data: bySessionLot },
                 ].map(chart => (React.createElement("div", { key: chart.title, className: "mb-4" },
                     React.createElement("h3", { className: "text-[12px] font-semibold mb-2", style: { color: "var(--accent-gold)" } }, chart.title),
                     React.createElement("div", { className: "rounded-xl p-2", style: { background: "var(--bg-card)" } },
@@ -9963,7 +9972,7 @@ function App() {
                         React.createElement(Download, { size: 16 }),
                         " PDF"))))))),
         tab === "exportall" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("h2", { className: "text-sm font-semibold mb-1", style: { color: "var(--text-primary)" } }, "خروجی کل"),
+            RE(NmLayerHeading,{title:"خروجی کل",Icon:FileSpreadsheet}),
             React.createElement("div", { className: "text-[11px] font-semibold mb-1", style: { color: "var(--accent-gold)" } }, "خروجی کامل Excel"),
             React.createElement("p", { className: "text-[12px] leading-6 mb-4", style: { color: "var(--text-secondary)" } }, "\u0628\u0627 \u0632\u062F\u0646 \u062F\u06A9\u0645\u0647\u200C\u06CC \u0632\u06CC\u0631\u060C \u06CC\u06A9 \u0641\u0627\u06CC\u0644 Excel \u0633\u0627\u062E\u062A\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u06A9\u0647 \u062A\u0645\u0627\u0645 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627 (\u0698\u0648\u0631\u0646\u0627\u0644\u060C \u0645\u062F\u06CC\u0631\u06CC\u062A \u0645\u0627\u0644\u06CC\u060C \u0633\u06CC\u0633\u062A\u0645\u200C\u0647\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u060C \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u060C \u0627\u0647\u062F\u0627\u0641\u060C \u062A\u062D\u0644\u06CC\u0644 \u0622\u0645\u0627\u0631\u06CC) \u0647\u0631\u06A9\u062F\u0627\u0645 \u062F\u0631 \u06CC\u06A9 \u0634\u06CC\u062A \u062C\u062F\u0627\u06AF\u0627\u0646\u0647 \u0642\u0631\u0627\u0631 \u0645\u06CC\u200C\u06AF\u06CC\u0631\u0646\u062F."),
             !activeAccount ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "اول از تب ژورنال یک حساب ایجاد کن.")) : (React.createElement(React.Fragment, null,
@@ -9980,7 +9989,7 @@ function App() {
                     RE(NmDeveloperExportCard, { trades: closedTrades, accountCode: activeAccount })))))) ,
         tab === "library" && RE(NmLibraryLayer, { showToast, askDeleteConfirm }),
         tab === "settings" && (React.createElement("div", { className: "w-full nm-settings-root" },
-            React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_title")),
+            RE(NmLayerHeading,{title:t("settings_title"),Icon:SettingsIcon}),
             React.createElement("div", { className: "text-[10px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "پروفایل برای هویت و تنظیمات شخصی؛ تمپلت برای ذخیره و بازگردانی مجموعه تنظیمات سفارشی برنامه."),
             React.createElement("div", { className: "px-4 mt-4 nm-settings-stack" },
             RE(NmSettingsAutoCollapse, null,
@@ -10130,7 +10139,7 @@ function App() {
             ),
             )))
         , tab === "about" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u062F\u0631\u0628\u0627\u0631\u0647 \u0628\u0631\u0646\u0627\u0645\u0647"),
+            RE(NmLayerHeading,{title:"درباره برنامه",Icon:Info}),
             React.createElement("p", { className: "text-[11px] mb-4 leading-5", style: { color: "var(--text-muted)" } }, "\u0645\u062D\u062A\u0648\u0627\u06CC \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0627\u0645\u0644\u0627\u064B \u0642\u0627\u0628\u0644 \u0648\u06CC\u0631\u0627\u06CC\u0634\u060C \u0627\u0641\u0632\u0648\u062F\u0646 \u0648 \u062D\u0630\u0641 \u0627\u0633\u062A \u2014 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0645\u0637\u0627\u0628\u0642 \u0633\u0628\u06A9 \u06A9\u0627\u0631\u06CC \u062E\u0648\u062F\u062A \u062A\u063A\u06CC\u06CC\u0631\u0634 \u0628\u062F\u06CC."),
             RE(NmVersionCard, null),
             React.createElement("div", { className: "grid grid-cols-1 gap-2 mb-4" },

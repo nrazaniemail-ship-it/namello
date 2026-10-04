@@ -1,4 +1,10 @@
 
+## 1.0.8 — Dashboard logo and layer terminology refinement
+- Dashboard layer logo updated using the supplied gauge image.
+- Main layer headings now show their layer icon/logo before the title; the نشست‌ها layer remains the exception as requested.
+- In non-نشست‌ها layers, visible «سشن» wording was changed to «نشست».
+
+
 ## 1.0.8 — Journal checklist UI refinement
 - آیتم‌های ۶، ۷ و ۳۲: عبارت‌های «برنامه روزانه»، «چارت» و «ستاپ» با رنگ زرد نمایش داده می‌شوند.
 - «آمادگی ذهنی» و «اعتماد به معامله» در چک‌لیست آمادگی ستاپ به حالت تیک‌محور تغییر کردند.
