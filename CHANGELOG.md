@@ -1,8 +1,7 @@
 # Namello 1.0.8
 
-- Unified Excel/PDF export button styling across all layers.
-- Excel uses the gold primary style; PDF uses the gold outlined secondary style.
-- Preserved existing export actions and layout-specific sizing.
+- یکسان‌سازی استایل دکمه‌های خروجی Excel و PDF در تمام لایه‌ها.
+- افزایش عدد سوم نسخه از 1.0.7 به 1.0.8.
 
 # Namello 1.0.7
 
