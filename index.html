@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello1.0.8</title>
+<title>Namello 1.0.9</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -91,7 +91,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello1.0.8…</div>
+<div id="boot-status">Loading Namello 1.0.9…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -2712,8 +2712,8 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.8";
-const NM_VERSION_CODE = 8;
+const NM_VERSION_NAME = "1.0.9";
+const NM_VERSION_CODE = 9;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "نسخهٔ بازطراحی‌شده";
 const NM_CHANGELOG = [
@@ -3637,7 +3637,7 @@ function NmMarketEvalLayer({ config, pairs, askDeleteConfirm }) {
         RE("option", { value: "", style: { background: "var(--bg-card2)" } }, "— انتخاب کنید —"),
         NM_TRADING_WEEKDAYS.map(d => RE("option", { key: d, value: d, style: { background: "var(--bg-card2)" } }, d)));
     return RE("div", { className: "px-4 mt-4", id: "nm-me-top" },
-        RE("h2", { className: "text-sm font-semibold mb-1", style: { color: "var(--text-primary)" } }, "ارزیابی رفتار بازار"),
+        RE(NmLayerHeading, { title: "ارزیابی رفتار بازار", Icon: Target }),
         editing && RE("div", { className: "rounded-xl p-2.5 mb-3 flex items-center justify-between gap-2 text-[12px]", style: { background: nmTint(13), color: "var(--accent-gold)", border: "1px solid " + nmTint(35) } },
             RE("span", null, "✎ در حال ویرایش ارزیابی ثبت‌شده — پس از تغییر، «ذخیره‌ی تغییرات» را بزنید."),
             RE("button", { type: "button", onClick: cancelEdit, className: "underline shrink-0" }, "انصراف")),
@@ -7982,7 +7982,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello1.0.8</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.9</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8710,7 +8710,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello1.0.8</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.9</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9105,8 +9105,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello1.0.8", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello1.0.8"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.9", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.9"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -9377,12 +9377,12 @@ function App() {
                         weekdayFromDateStr(t.date),
                         ") \u2014 ",
                         t.time),
-                    React.createElement("button", { onClick: () => openCloseForm(t), className: "w-full py-2 rounded-lg text-[12px] font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, tI18n("journal_close_trade")))))))),
+                    React.createElement("button", { onClick: () => openCloseForm(t), className: "w-full py-2 px-3 rounded-lg text-[12px] font-medium text-left flex items-center justify-start gap-2", style: { background: "var(--accent-gold)", color: "var(--bg-page)", textAlign: "left" } }, tI18n("journal_close_trade")))))))),
             React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-4" },
-                React.createElement("button", { onClick: openNewTradeForm, className: "flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
+                React.createElement("button", { onClick: openNewTradeForm, className: "flex items-center justify-start text-left gap-2 py-3 px-3 rounded-xl text-sm font-medium", style: { textAlign: "left", background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
                     React.createElement(Plus, { size: 16 }),
                     " ", t("journal_new_entry")),
-                React.createElement("button", { onClick: () => setShowExportPicker(true), className: "flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium nm-unified-export-btn", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { onClick: () => setShowExportPicker(true), className: "flex items-center justify-start text-left gap-2 py-3 px-3 rounded-xl text-sm font-medium nm-unified-export-btn", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
                     React.createElement(Download, { size: 16 }),
                     " ", t("common_excel"))),
             React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "color-mix(in srgb, #60A5FA 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, #60A5FA 24%, var(--border-1))" } },
