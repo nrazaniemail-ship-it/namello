@@ -1,3 +1,9 @@
+## 1.0.3
+
+- Library audio player: replaced seek-back/seek-forward controls with previous/next episode controls.
+- Previous/next follows the current playlist and respects Loop All at playlist boundaries.
+- Dashboard collapsible section arrows now use the same chevron style as Settings.
+
 # Namello 1.0.2
 
 - سرعت پخش هر اپیزود هنگام شروع به‌صورت پیش‌فرض روی 1x تنظیم شد.

@@ -4262,8 +4262,20 @@ function NmGlobalPlayer({ tab }) {
             const d = e.detail || {};
             if (d.cmd === "toggle") { const a = audioRef.current; if (a) { if (a.paused) a.play().catch(() => { }); else a.pause(); } return; }
             if (d.cmd === "stop") { try { localStorage.removeItem(NM_PLAYER_TRACK_KEY); } catch (e) {} setTrack(null); return; }
-            if (d.cmd === "skip") { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(a.duration || 0, a.currentTime + Number(d.value || 0))); return; }
             if (d.cmd === "seek") { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(a.duration || 0, Number(d.value || 0))); return; }
+            if (d.cmd === "next" || d.cmd === "previous") {
+                const t = trackRef.current;
+                const pl = Array.isArray(t?.playlist) ? t.playlist : [];
+                const idx = Number(t?.playlistIndex);
+                if (!pl.length || !Number.isFinite(idx)) return;
+                let target = d.cmd === "next" ? idx + 1 : idx - 1;
+                if (target >= pl.length) target = loopMode === "all" ? 0 : -1;
+                if (target < 0) target = loopMode === "all" ? pl.length - 1 : -1;
+                if (target < 0) return;
+                const nextTrack = { ...pl[target], playlist: pl, playlistIndex: target };
+                setTrack(nextTrack);
+                return;
+            }
             if (d.cmd === "rate") { const r = Number(d.value) || 1; setRate(r); if (audioRef.current) audioRef.current.playbackRate = r; nmSetPlayerState({ rate: r }); return; }
             if (d.cmd === "shuttle") { const rates = [0.75, 1, 1.25, 1.5, 2]; const curRate = Number(rateRef.current || 1); const idx = rates.indexOf(curRate); const r = rates[(idx + 1 + rates.length) % rates.length]; setRate(r); if (audioRef.current) audioRef.current.playbackRate = r; nmSetPlayerState({ rate: r }); return; }
             if (d.cmd === "shuffle") { setShuffle(v => { const next = !v; nmSetPlayerState({ shuffle: next }); return next; }); return; }
@@ -4309,8 +4321,9 @@ function NmGlobalPlayer({ tab }) {
     if (!track) return null;
     const posKey = "nm_pos_" + track.blobKey;
     const toggle = () => { const a = audioRef.current; if (!a) return; if (a.paused) a.play().catch(() => setErr(true)); else a.pause(); };
-    const skip = (d) => { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(dur || 0, a.currentTime + d)); };
     const seek = (v) => { const a = audioRef.current; if (a) a.currentTime = v; };
+    const previousEpisode = () => nmRequestCmd("previous");
+    const nextEpisode = () => nmRequestCmd("next");
     const onTime = (e) => {
         setCur(e.target.currentTime); nmSetPlayerState({ cur: e.target.currentTime });
         const now = Date.now();
@@ -4356,9 +4369,9 @@ function NmGlobalPlayer({ tab }) {
                 RE("div", { className: "flex items-center justify-between text-[10px] mb-1", style: { color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } },
                     RE("span", null, nmFmtTime(cur)), RE("span", null, nmFmtTime(dur))),
                 RE("div", { className: "flex items-center justify-start gap-2" },
-                    RE("button", { type: "button", onClick: () => skip(-skipS), className: "p-1.5", "aria-label": "عقب" }, RE("span", { style: { fontSize: 15 } }, "⏪")),
+                    RE("button", { type: "button", onClick: previousEpisode, className: "p-1.5", "aria-label": "اپیزود قبلی" }, RE(ChevronLeft, { size: 18, color: "var(--text-primary)" })),
                     RE("button", { type: "button", onClick: toggle, className: "w-10 h-10 rounded-full flex items-center justify-center", style: { background: "var(--accent-gold)", color: "var(--bg-page)", fontSize: 16 }, "aria-label": "پخش/توقف" }, playing ? "⏸" : "▶"),
-                    RE("button", { type: "button", onClick: () => skip(skipS), className: "p-1.5", "aria-label": "جلو" }, RE("span", { style: { fontSize: 15 } }, "⏩")),
+                    RE("button", { type: "button", onClick: nextEpisode, className: "p-1.5", "aria-label": "اپیزود بعدی" }, RE(ChevronRight, { size: 18, color: "var(--text-primary)" })),
                     RE("select", { value: rate, onChange: e => { setRate(Number(e.target.value)); nmSetPlayerState({ rate: Number(e.target.value) }); }, className: "text-[11px] rounded-lg px-1.5 py-1 bg-transparent outline-none", style: { color: "var(--text-secondary)", border: "1px solid var(--border-2)" } },
                         [0.75, 1, 1.25, 1.5, 2].map(r => RE("option", { key: r, value: r, style: { background: "var(--bg-card2)" } }, r + "x"))))));
     const mini = RE("div", { className: "inline-flex items-center gap-1.5 rounded-full pl-1.5 pr-2.5 py-1", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", maxWidth: 170, direction: "ltr" } },
@@ -5175,7 +5188,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        React.createElement("div",{className:"text-[9px] mt-1.5",style:{color:"var(--text-muted)"}},`${dashboardStatementTrades.filter(t=>t.status==="closed").length} معامله بسته‌شده از استیتمنت در حساب‌های مبنا`))),
    React.createElement("button",{type:"button",onClick:onOpenBasePicker,className:"w-full flex items-center justify-between rounded-lg px-3 py-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
      React.createElement("span",{className:"text-[12px]",style:{color:"var(--text-primary)"}},"حساب‌های مبنا: ",selectedBaseAccounts.length===baseAccounts.length&&baseAccounts.length>1?"همه حساب‌ها":selectedBaseAccounts.length>0&&selectedBaseAccounts.every(c=>accountTypeOf(c)==="real")&&baseAccounts.some(c=>accountTypeOf(c)==="demo")?"فقط واقعی":selectedBaseAccounts.length>0&&selectedBaseAccounts.every(c=>accountTypeOf(c)==="demo")&&baseAccounts.some(c=>accountTypeOf(c)==="real")?"فقط آزمایشی":`${selectedBaseAccounts.length} حساب`),
-     showBasePicker?React.createElement(ChevronUp,{size:14,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:14,color:"var(--text-muted)"})),
+     React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},showBasePicker?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))),
    showBasePicker&&React.createElement("div",{className:"rounded-lg p-2 mt-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
      baseAccounts.length>1&&React.createElement("label",{className:"flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mb-1",style:{color:"var(--accent-gold)",borderBottom:"1px solid var(--border-2)"}},React.createElement("input",{type:"checkbox",checked:selectedBaseAccounts.length===baseAccounts.length,onChange:onToggleAllBaseAccounts}),"همه حساب‌ها"),
      React.createElement("div",{className:"flex gap-1.5 px-1 pb-2 mb-1",style:{borderBottom:"1px solid var(--border-2)"}},[["real","فقط واقعی‌ها"],["demo","فقط آزمایشی‌ها"]].map(([ty,lb])=>React.createElement("button",{key:ty,type:"button",onClick:()=>onSelectBaseType(ty),className:"flex-1 py-1.5 rounded-lg text-[11px]",style:{background:nmTint(12),color:"var(--accent-gold)",border:"1px solid "+nmTint(35)}},lb))),
@@ -5205,7 +5218,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
    React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
      React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
        React.createElement("div",{className:"flex items-center gap-2"},React.createElement("span",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")),
-       showAdvanced?React.createElement(ChevronUp,{size:15,color:"var(--text-muted)"}):React.createElement(ChevronDown,{size:15,color:"var(--text-muted)"})),
+       React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},showAdvanced?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))),
      showAdvanced&&React.createElement("div",{className:"pt-2"},
        React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},window.nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
        
@@ -8702,7 +8715,7 @@ function App() {
         return React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
         React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #3B82F6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))" }, "aria-expanded": showStatisticalAnalysis },
             React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),
-            showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 15, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 15, color: "var(--text-muted)" })),
+            React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-2" },
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
                 React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تحلیل آماری"),
@@ -8721,7 +8734,7 @@ function App() {
                               React.createElement("span", { className: "text-[12px]", style: { color: "var(--text-primary)" } },
                                   "\u062D\u0633\u0627\u0628\u200C\u0647\u0627\u06CC \u0645\u0628\u0646\u0627: ",
                                   selectedStatsAccounts.length === accounts.length && accounts.length > 1 ? "همه‌ی حساب‌ها" : (selectedStatsAccounts.length > 0 && selectedStatsAccounts.every(c => accTypeOf(c) === "real") && accounts.some(c => accTypeOf(c) === "demo") ? "فقط واقعی" : (selectedStatsAccounts.length > 0 && selectedStatsAccounts.every(c => accTypeOf(c) === "demo") && accounts.some(c => accTypeOf(c) === "real") ? "فقط آزمایشی" : `${selectedStatsAccounts.length} حساب`))),
-                              showStatsAccountPicker ? React.createElement(ChevronUp, { size: 14, color: "var(--text-muted)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--text-muted)" })),
+                              React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showStatsAccountPicker ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
                           showStatsAccountPicker && (React.createElement("div", { className: "rounded-lg p-2 mb-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                               accounts.length > 1 && (React.createElement("label", { className: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-[12px] mb-1", style: { color: "var(--accent-gold)", borderBottom: "1px solid var(--border-2)" } },
                                   React.createElement("input", { type: "checkbox", checked: selectedStatsAccounts.length === accounts.length, onChange: toggleAllStatsAccounts }),
@@ -8746,7 +8759,7 @@ function App() {
                 React.createElement("div", { className: "rounded-xl p-3 mb-5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                     React.createElement("button", { type: "button", onClick: () => setShowBestConditionsList(v => !v), className: "w-full flex items-center justify-between" },
                         React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--accent-gold)" } }, "\u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u0634\u0631\u0627\u06CC\u0637 \u0645\u0639\u0627\u0645\u0644\u0647"),
-                        showBestConditionsList ? React.createElement(ChevronUp, { size: 16, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 16, color: "var(--accent-gold)" })),
+                        React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showBestConditionsList ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
                     showBestConditionsList && (React.createElement("div", { className: "mt-3 pt-3", style: { borderTop: "1px solid var(--border-1)" } },
                         React.createElement("p", { className: "text-[11px] mb-3 leading-5", style: { color: "var(--text-muted)" } }, "\u0628\u0647\u06CC\u0646\u0647\u200C\u062A\u0631\u06CC\u0646 \u062D\u0627\u0644\u062A \u0647\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u060C \u0628\u0631 \u0627\u0633\u0627\u0633 \u0645\u062C\u0645\u0648\u0639 \u0633\u0648\u062F/\u0632\u06CC\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0627\u062A \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647\u200C\u06CC \u062D\u0633\u0627\u0628(\u0647\u0627\u06CC) \u0627\u0646\u062A\u062E\u0627\u0628\u200C\u0634\u062F\u0647. \u0647\u0645\u06CC\u0646 \u0644\u06CC\u0633\u062A\u060C \u0645\u0628\u0646\u0627\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u200C\u06CC \u00AB\u0627\u062D\u062A\u0645\u0627\u0644 \u0645\u0648\u0641\u0642\u06CC\u062A \u0645\u062D\u0627\u0633\u0628\u0627\u062A\u06CC\u00BB \u062F\u0631 \u0641\u0631\u0645 \u062B\u0628\u062A \u0648\u0631\u0648\u062F \u0627\u0633\u062A."),
                         React.createElement("div", { className: "grid grid-cols-1 gap-1.5" },
