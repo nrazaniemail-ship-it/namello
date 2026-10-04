@@ -78,6 +78,27 @@
   .nm-settings-chevron svg { width: 14px !important; height: 14px !important; color: var(--accent-gold) !important; }
   .nm-collapse-chevron { flex: 0 0 28px; }
   .nm-collapse-chevron svg { display: block; }
+
+/* Unified export controls */
+.nm-export-excel-btn, .nm-export-pdf-btn {
+  min-height: 42px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.nm-export-excel-btn {
+  background: var(--accent-gold) !important;
+  color: var(--bg-page) !important;
+  border: 1px solid var(--accent-gold) !important;
+}
+.nm-export-pdf-btn {
+  background: var(--bg-card2) !important;
+  color: var(--accent-gold) !important;
+  border: 1px solid var(--accent-gold) !important;
+}
+.nm-export-excel-btn:hover, .nm-export-pdf-btn:hover { opacity: .88; }
+.nm-export-excel-btn:active, .nm-export-pdf-btn:active { transform: scale(.98); }
+
 </style>
 </head>
 <body>
@@ -2189,10 +2210,10 @@ function GoalsLayer({ title, activeAccount, list, newText, setNewText, onAdd, on
                 React.createElement("button", { onClick: () => askDeleteConfirm(`این ${noun} حذف بشه؟`, () => onDelete(g.id)), className: "shrink-0" },
                     React.createElement(Trash2, { size: 14, color: "var(--text-muted)" }))))))),
             React.createElement("div", { className: "flex gap-2 mb-4" },
-                React.createElement("button", { onClick: onExport, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { onClick: onExport, className: "nm-export-excel-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                     React.createElement(Download, { size: 16 }),
                     " Excel"),
-                React.createElement("button", { onClick: onExportPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { onClick: onExportPdf, className: "nm-export-pdf-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                     React.createElement(Download, { size: 16 }),
                     " PDF"))))));
 }
@@ -5314,8 +5335,8 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #8B5CF6 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 35%, var(--border-1))"}},
          React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی ارزیابی پیشرفته"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"فقط شاخص‌های ریسک، خروج، Edge، Discipline و Planهای ارزیابی پیشرفته")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
-           React.createElement("button",{onClick:onExportAdvancedExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#8B5CF6",color:"#fff"}},"Excel ارزیابی پیشرفته"),
-           React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته"))),
+           React.createElement("button",{onClick:onExportAdvancedExcel,className:"nm-export-excel-btn py-2.5 rounded-xl text-[11px] font-semibold"},"Excel ارزیابی پیشرفته"),
+           React.createElement("button",{onClick:onExportAdvancedPdf,className:"nm-export-pdf-btn py-2.5 rounded-xl text-[11px] font-semibold"},"PDF ارزیابی پیشرفته"))),
        )),
        React.createElement(PsychologyLayer,{journalTrades:closed,statementTrades:statementTrades,source:psychologyDataSource,setSource:setPsychologyDataSource,psychOptions:psychOptions,activeAccount:activeAccount,statementImporting:statementImporting,statementImportError:statementImportError,onImportDashboardStatementFiles:onImportDashboardStatementFiles,onClearDashboardStatement:onClearDashboardStatement,dashboardStatementTrades:dashboardStatementTrades,baseAccounts:baseAccounts,selectedBaseAccounts:selectedBaseAccounts,onToggleBaseAccount:onToggleBaseAccount,onSelectBaseType:onSelectBaseType,onToggleAllBaseAccounts:onToggleAllBaseAccounts,accountTypeOf:accountTypeOf}),
 React.createElement("section",{className:"rounded-2xl mt-3 mb-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))",overflow:"hidden"}},
@@ -5325,8 +5346,8 @@ React.createElement("section",{className:"rounded-2xl mt-3 mb-3",style:{backgrou
          showComprehensive&&React.createElement("div",{className:"p-3"},
            React.createElement("div",{className:"flex items-center justify-end mb-2"},React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
            React.createElement("div",{className:"grid grid-cols-2 gap-2"},
-             React.createElement("button",{onClick:onExportComprehensiveExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#10B981",color:"#06150f"}},"Excel جامع داشبورد"),
-             React.createElement("button",{onClick:onExportComprehensivePdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#34D399",border:"1px solid #10B981"}},"PDF جامع داشبورد")))),
+             React.createElement("button",{onClick:onExportComprehensiveExcel,className:"nm-export-excel-btn py-2.5 rounded-xl text-[11px] font-semibold"},"Excel جامع داشبورد"),
+             React.createElement("button",{onClick:onExportComprehensivePdf,className:"nm-export-pdf-btn py-2.5 rounded-xl text-[11px] font-semibold"},"PDF جامع داشبورد")))),
    selectedModal,
    excursionModal,
    replayModal,
@@ -9016,8 +9037,8 @@ function App() {
                             React.createElement("div", { className: "text-[9px] mt-1", style: { color: "var(--text-muted)" } }, "گزارش اختصاصی همین بخش بر اساس حساب‌های مبنای داشبورد")),
                         React.createElement("span", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, `${dashboardSelectedAccounts.length} حساب مبنا`)),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                        React.createElement("button", { onClick: exportDashboardStatisticalExcel, className: "flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-semibold", style: { background: "#3B82F6", color: "#fff" } }, React.createElement(Download, { size: 15 }), "Excel تحلیل آماری"),
-                        React.createElement("button", { onClick: exportDashboardStatisticalPdf, className: "flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-semibold", style: { background: "var(--bg-card2)", color: "#60A5FA", border: "1px solid #3B82F6" } }, React.createElement(Download, { size: 15 }), "PDF تحلیل آماری")))))))
+                        React.createElement("button", { onClick: exportDashboardStatisticalExcel, className: "nm-export-excel-btn flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-semibold" }, React.createElement(Download, { size: 15 }), "Excel تحلیل آماری"),
+                        React.createElement("button", { onClick: exportDashboardStatisticalPdf, className: "nm-export-pdf-btn flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-semibold" }, React.createElement(Download, { size: 15 }), "PDF تحلیل آماری")))))))
     );
     })();    return (React.createElement("div", { dir: "rtl", lang: "fa", className: "min-h-screen w-full pb-24", style: { background: "var(--bg-page)", fontFamily: "Vazirmatn, sans-serif" } },
         React.createElement("style", null, `
@@ -9435,7 +9456,7 @@ function App() {
                 (t.voiceNoteBefore || t.voiceNoteAfter) && (React.createElement("div", { className: "flex flex-col gap-1 mb-1" },
                     t.voiceNoteBefore && React.createElement("audio", { src: t.voiceNoteBefore, controls: true, style: { height: 30, width: "100%" } }),
                     t.voiceNoteAfter && React.createElement("audio", { src: t.voiceNoteAfter, controls: true, style: { height: 30, width: "100%" } })))))))),
-            React.createElement("button", { onClick: () => doExport("all"), className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mb-4", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+            React.createElement("button", { onClick: () => doExport("all"), className: "nm-export-excel-btn w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mb-4" },
                 React.createElement(Download, { size: 16 }),
                 " \u062E\u0631\u0648\u062C\u06CC Excel \u0698\u0648\u0631\u0646\u0627\u0644"))))),
         tab === "marketeval" && (RE(NmMarketEvalLayer, { config, pairs, askDeleteConfirm })),
@@ -9677,10 +9698,10 @@ function App() {
                                         React.createElement("button", { onClick: () => askDeleteConfirm(appLanguage === "en" ? "Delete this row?" : "این سطر حذف بشه؟", () => deleteCapitalMgmtRow(row.id)) },
                                             React.createElement(Trash2, { size: 12, color: "var(--text-muted)" }))))))))))))),
                 React.createElement("div", { className: "flex gap-2 mb-4" },
-                    React.createElement("button", { onClick: exportFinancial, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+                    React.createElement("button", { onClick: exportFinancial, className: "nm-export-excel-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                         React.createElement(Download, { size: 16 }),
                         " ", t("common_excel")),
-                    React.createElement("button", { onClick: exportFinancialPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } },
+                    React.createElement("button", { onClick: exportFinancialPdf, className: "nm-export-pdf-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                         React.createElement(Download, { size: 16 }),
                         " PDF")))))),
         tab === "systems" && (React.createElement("div", { className: "px-4 mt-4" },
@@ -9713,10 +9734,10 @@ function App() {
                             React.createElement("textarea", { rows: 3, value: s.description || "", onChange: e => updateTradingSystemDescription(s.id, e.target.value), placeholder: "\u062A\u0648\u0636\u06CC\u062D\u0627\u062A \u0627\u06CC\u0646 \u0633\u06CC\u0633\u062A\u0645 \u0631\u0648 \u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633...", className: "w-full bg-transparent outline-none text-sm resize-none", style: { color: "var(--text-primary)" } }))))));
             }))),
             React.createElement("div", { className: "flex gap-2 mb-4" },
-                React.createElement("button", { onClick: exportSystems, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { onClick: exportSystems, className: "nm-export-excel-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                     React.createElement(Download, { size: 16 }),
                     " Excel"),
-                React.createElement("button", { onClick: exportSystemsPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { onClick: exportSystemsPdf, className: "nm-export-pdf-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                     React.createElement(Download, { size: 16 }),
                     " PDF")))),
         tab === "strategy" && (React.createElement("div", { className: "px-4 mt-4" },
@@ -9741,9 +9762,9 @@ function App() {
                         React.createElement(Trash2, { size: 14, color: "var(--text-muted)" }))))))))))),
         tab === "strategy" && activeAccount && (React.createElement("div", { className: "px-4 mb-4" },
             React.createElement("div", { className: "flex gap-2" },
-                React.createElement("button", { onClick: exportStrategies, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { onClick: exportStrategies, className: "nm-export-excel-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                     React.createElement(Download, { size: 16 }), " خروجی Excel"),
-                React.createElement("button", { onClick: exportStrategiesPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { onClick: exportStrategiesPdf, className: "nm-export-pdf-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                     React.createElement(Download, { size: 16 }), " خروجی PDF")))),
         tab === "goals" && (React.createElement(GoalsLayer, { title: "\u0627\u0647\u062F\u0627\u0641 \u0645\u0639\u0627\u0645\u0644\u0647 \u06AF\u0631\u06CC", activeAccount: activeAccount, list: goals, newText: newGoalText, setNewText: setNewGoalText, onAdd: addGoalRow, onUpdateText: updateGoalRow, onUpdateProgress: updateGoalProgress, onDelete: deleteGoalRow, onMove: moveGoalRow, onExport: exportGoals, onExportPdf: exportGoalsPdf, askDeleteConfirm: askDeleteConfirm })),
         tab === "lifegoals" && (React.createElement(GoalsLayer, { title: "\u0627\u0647\u062F\u0627\u0641 \u0632\u0646\u062F\u06AF\u06CC", activeAccount: activeAccount, list: lifeGoals, newText: newLifeGoalText, setNewText: setNewLifeGoalText, onAdd: addLifeGoalRow, onUpdateText: updateLifeGoalRow, onUpdateProgress: updateLifeGoalProgress, onDelete: deleteLifeGoalRow, onMove: moveLifeGoalRow, onExport: exportLifeGoals, onExportPdf: exportLifeGoalsPdf, askDeleteConfirm: askDeleteConfirm })),
@@ -9913,10 +9934,10 @@ function App() {
                                 React.createElement(Tooltip, { contentStyle: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", fontSize: 11 }, labelStyle: { color: "var(--text-primary)" } }),
                                 React.createElement(Bar, { dataKey: "value", radius: [0, 4, 4, 0] }, chart.data.map((d, i) => React.createElement(Cell, { key: i, fill: d.value >= 0 ? "#34D399" : "#F87171" }))))))))),
                 React.createElement("div", { className: "flex gap-2 mb-4" },
-                    React.createElement("button", { onClick: exportAll, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+                    React.createElement("button", { onClick: exportAll, className: "nm-export-excel-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                         React.createElement(Download, { size: 16 }),
                         " Excel"),
-                    React.createElement("button", { onClick: exportAllPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } },
+                    React.createElement("button", { onClick: exportAllPdf, className: "nm-export-pdf-btn flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium" },
                         React.createElement(Download, { size: 16 }),
                         " PDF"))))))),
         tab === "exportall" && (React.createElement("div", { className: "px-4 mt-4" },
@@ -9927,10 +9948,10 @@ function App() {
                 React.createElement("div", { className: "nm-export-main-box" },
                     React.createElement("div", { className: "text-[11px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, "خروجی‌های اصلی"),
                     React.createElement("div", { className: "nm-export-main-grid" },
-                        React.createElement("button", { onClick: exportAll, className: "nm-export-main-btn w-full flex items-center justify-center gap-2 rounded-xl text-sm font-semibold", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
+                        React.createElement("button", { onClick: exportAll, className: "nm-export-excel-btn nm-export-main-btn w-full flex items-center justify-center gap-2 rounded-xl text-sm font-semibold" },
                             React.createElement(FileSpreadsheet, { size: 18 }),
                             " Excel"),
-                        React.createElement("button", { onClick: exportAllPdf, className: "nm-export-main-btn w-full flex items-center justify-center gap-2 rounded-xl text-sm font-semibold", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--accent-gold)" } },
+                        React.createElement("button", { onClick: exportAllPdf, className: "nm-export-pdf-btn nm-export-main-btn w-full flex items-center justify-center gap-2 rounded-xl text-sm font-semibold" },
                             React.createElement(FileSpreadsheet, { size: 18 }),
                             " PDF"))),
                 React.createElement("div", { className: "nm-export-dev" },
@@ -10259,8 +10280,8 @@ function App() {
                         React.createElement(X, { size: 18, color: "var(--text-muted)" }))),
                 React.createElement("div", { className: "flex flex-col gap-2 mb-2" }, ["daily", "weekly", "monthly", "all"].map(r => (React.createElement("div", { key: r, className: "flex items-center gap-2" },
                     React.createElement("span", { className: "flex-1 text-[12px]", style: { color: "var(--text-primary)" } }, RANGE_LABEL[r]),
-                    React.createElement("button", { onClick: () => doExport(r), className: "px-3 py-2 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } }, "Excel"),
-                    React.createElement("button", { onClick: () => doExportPdf(r), className: "px-3 py-2 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, "PDF")))))))),
+                    React.createElement("button", { onClick: () => doExport(r), className: "nm-export-excel-btn px-3 py-2 rounded-lg text-[11px]" }, "Excel"),
+                    React.createElement("button", { onClick: () => doExportPdf(r), className: "nm-export-pdf-btn px-3 py-2 rounded-lg text-[11px]" }, "PDF")))))))),
         showOpenForm && openForm && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowOpenForm(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },

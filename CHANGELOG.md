@@ -1,3 +1,9 @@
+# Namello 1.0.8
+
+- Unified Excel/PDF export button styling across all layers.
+- Excel uses the gold primary style; PDF uses the gold outlined secondary style.
+- Preserved existing export actions and layout-specific sizing.
+
 # Namello 1.0.7
 
 - Added Settings-style collapse triangles to the Finance and Trading Calendar evaluation-source panels; both are collapsed by default.
