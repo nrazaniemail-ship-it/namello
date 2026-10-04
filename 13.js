@@ -5096,7 +5096,7 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
      c.type!=='checkbox' ? RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}}) : null
    )
  )));
- return RE(Field,{label:RE('span',{className:'w-full flex items-center justify-between gap-2'},RE('span',{className:'min-w-0'},label),RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'shrink-0 px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
+ return RE(Field,{label:RE('span',{className:'block relative w-full',style:{paddingLeft:52}},RE('span',{className:'block min-w-0'},label),RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'absolute left-0 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)',zIndex:1}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
 }
 
 function NmPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist"}){
