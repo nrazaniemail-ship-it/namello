@@ -1,3 +1,9 @@
+# Namello 1.0.7
+
+- Added Settings-style collapse triangles to the Finance and Trading Calendar evaluation-source panels; both are collapsed by default.
+- All Dashboard/Psychology collapsible sections now start collapsed by default.
+- Added Excel and PDF export buttons to the Strategy layer.
+
 # Namello 1.0.6
 
 - Added an independent Trading Calendar evaluation-source box under the calendar title.
