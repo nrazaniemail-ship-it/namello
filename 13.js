@@ -4618,8 +4618,8 @@ const NM_DEFAULT_TRADE_PLAN = {
     { id:"tp", type:"checkbox", label:"حدسود طبق پلن است" },
     { id:"session", type:"checkbox", label:"زمان/سشن مناسب است" },
     { id:"news", type:"checkbox", label:"خبر پرریسک بررسی شد" },
-    { id:"emotion", type:"category", label:"آمادگی ذهنی", options:["آماده","خنثی","نامناسب"] },
-    { id:"conviction", type:"number", label:"اعتماد به معامله (1-10)" }
+    { id:"emotion", type:"checkbox", label:"آمادگی ذهنی" },
+    { id:"conviction", type:"checkbox", label:"اعتماد به معامله" }
   ]
 };
 const NM_DEFAULT_DAY_PLAN = {
@@ -5096,7 +5096,7 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
      c.type!=='checkbox' ? RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}}) : null
    )
  )));
- return RE(Field,{label:RE('span',{className:'flex items-center gap-1.5'},label,RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
+ return RE(Field,{label:RE('span',{className:'w-full flex items-center justify-between gap-2'},RE('span',{className:'min-w-0'},label),RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'shrink-0 px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
 }
 
 function NmPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist"}){
@@ -6041,7 +6041,7 @@ function App() {
     }
     catch (e) { } }, [activeAccount]);
     useEffect(()=>{(async()=>{
-      try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value)setTradePlans(JSON.parse(a.value));}catch(e){}
+      try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value){const saved=JSON.parse(a.value)||[];const idx=saved.findIndex(p=>p.id==="core-trade-plan");if(idx>=0){const cur=saved[idx];const conditions=(cur.conditions||[]).map(c=>c.id==="emotion"?{...c,type:"checkbox",label:"آمادگی ذهنی",options:[]}:c.id==="conviction"?{...c,type:"checkbox",label:"اعتماد به معامله",options:[]}:c);saved[idx]={...cur,name:"برنامه اصلی معامله",scope:"trade",conditions};}setTradePlans(saved);await window.storage.set("namello_trade_plans_v1",JSON.stringify(saved));}}catch(e){}
       try{const a=await window.storage.get("namello_day_plans_v1");if(a?.value)setDayPlans(JSON.parse(a.value));}catch(e){}
       try{
         const a=await window.storage.get("namello_chart_plans_v1");
@@ -9968,8 +9968,8 @@ function App() {
                         const nm = findNewsForTrade(newsEvents, openForm.pair, openForm.date, openForm.time);
                         return nm ? React.createElement("span", { className: "text-[12px]", style: { color: "#FBBF24" } }, nm) : React.createElement("span", { className: "text-[11px]", style: { color: "var(--text-muted)" } });
                     })())),
-                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:openForm.dayPlanAnswers||{},onChange:v=>setOpenForm(f=>({...f,dayPlanAnswers:v,dayPlanReadinessPct:nmReadinessScore(dayPlans[0],v)})),onPlanChange:p=>persistDayPlans([p]),label:numLabel(6,"آمادگی برنامه روزانه"),tickOnly:true}),
-                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:openForm.chartAnswers||{},onChange:v=>setOpenForm(f=>({...f,chartAnswers:v,chartReadinessPct:nmReadinessScore(chartPlans[0],v)})),onPlanChange:p=>persistChartPlans([p]),label:numLabel(7,"ارزیابی چارت"),tickOnly:true}),
+                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:openForm.dayPlanAnswers||{},onChange:v=>setOpenForm(f=>({...f,dayPlanAnswers:v,dayPlanReadinessPct:nmReadinessScore(dayPlans[0],v)})),onPlanChange:p=>persistDayPlans([p]),label:RE("span",null,numLabel(6,hlLabel("برنامه روزانه"))),tickOnly:true}),
+                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:openForm.chartAnswers||{},onChange:v=>setOpenForm(f=>({...f,chartAnswers:v,chartReadinessPct:nmReadinessScore(chartPlans[0],v)})),onPlanChange:p=>persistChartPlans([p]),label:RE("span",null,numLabel(7,hlLabel("ارزیابی چارت"))),tickOnly:true}),
                 React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(8, appLanguage === "en" ? "Fractal" : "فراکتال"), JournalEditToggle({ editMode: fractalEditMode, onToggle: () => setFractalEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
@@ -10278,7 +10278,7 @@ function App() {
                                 React.createElement("span", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u0634\u0631\u0627\u06CC\u0637 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u062B\u0628\u062A\u200C\u0634\u062F\u0647")));
                         })())),
                 React.createElement("div", { className: "mb-2 mt-2" },
-                    tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ"),tickOnly:true}),
+                    tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:RE("span",null,numLabel(32,hlLabel("آمادگی ستاپ"))),tickOnly:true}),
                 React.createElement("div", { className: "rounded-xl p-3 mb-2", style: { background: "#FBBF2414", border: "1px solid #FBBF2455" } },
                 React.createElement("label", { className: "text-[12px] block mb-2 font-extrabold", style: { color: "#FBBF24" } }, numLabel(33, appLanguage === "en" ? "Buy/Sell" : "خرید/فروش")),
                     React.createElement("div", { className: "flex gap-2" },
@@ -10416,8 +10416,8 @@ function App() {
                         React.createElement("input", { type: "time", value: editForm.time, onChange: e => onEditFieldChange("time", e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } }))),
                 React.createElement(Field, { label: "\u062C\u0641\u062A\u200C\u0627\u0631\u0632" },
                     React.createElement("select", { value: editForm.pair, onChange: e => onEditFieldChange("pair", e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } }, pairs.map(p => (React.createElement("option", { key: p, value: p, style: { background: "var(--bg-card2)" } }, p))))),
-                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:editForm.dayPlanAnswers||{},onChange:v=>onEditFieldChange("dayPlanAnswers",v),onPlanChange:p=>persistDayPlans([p]),label:numLabel(6,"آمادگی برنامه روزانه"),tickOnly:true}),
-                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:editForm.chartAnswers||{},onChange:v=>onEditFieldChange("chartAnswers",v),onPlanChange:p=>persistChartPlans([p]),label:numLabel(7,"ارزیابی چارت"),tickOnly:true}),
+                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:editForm.dayPlanAnswers||{},onChange:v=>onEditFieldChange("dayPlanAnswers",v),onPlanChange:p=>persistDayPlans([p]),label:RE("span",null,numLabel(6,hlLabel("برنامه روزانه"))),tickOnly:true}),
+                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:editForm.chartAnswers||{},onChange:v=>onEditFieldChange("chartAnswers",v),onPlanChange:p=>persistChartPlans([p]),label:RE("span",null,numLabel(7,hlLabel("ارزیابی چارت"))),tickOnly:true}),
                 React.createElement(Field, { label: "\u0633\u06CC\u0633\u062A\u0645\u200C\u0647\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC \u062A\u0627\u06CC\u0645 \u0627\u0635\u0644\u06CC (\u0686\u0646\u062F \u062A\u0627 \u0647\u0645 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646\u06CC)" },
                     React.createElement("div", { className: "flex flex-wrap gap-1.5" }, systems.map(s => {
                         const active = (editForm.systems || []).includes(s);
@@ -10513,7 +10513,7 @@ function App() {
                             active ? "✓ " : "",
                             opt));
                     }))),
-                tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:editForm.planAnswers||{},onChange:v=>onEditFieldChange("planAnswers",v),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ"),tickOnly:true}),
+                tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:editForm.planAnswers||{},onChange:v=>onEditFieldChange("planAnswers",v),onPlanChange:p=>persistTradePlans([p]),label:RE("span",null,numLabel(32,hlLabel("آمادگی ستاپ"))),tickOnly:true}),
                 React.createElement("div", { className: "mb-2 mt-3 pt-3", style: { borderTop: "1px solid var(--border-1)" } },
                     React.createElement("h4", { className: "text-[12px] font-semibold mb-2", style: { color: "var(--accent-gold)" } }, "\u0646\u062A\u06CC\u062C\u0647\u200C\u06CC \u0645\u0639\u0627\u0645\u0644\u0647")),
                 React.createElement("div", { className: "mb-2" },
