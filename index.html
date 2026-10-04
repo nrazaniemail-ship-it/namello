@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.8</title>
+<title>Namello1.0.8</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
-<link rel="manifest" href="manifest.json?v=1008" />
+<link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/parastoo-font@latest/dist/font-face.css" />
@@ -2814,7 +2814,7 @@ function nmIconThemeInfo(key) { return NM_ICON_THEMES.find(t => t.key === key) |
 function nmApplyIconTheme(key) {
     const it = nmIconThemeInfo(key);
     const set = (sel, href) => { const el = document.querySelector(sel); if (el) el.setAttribute("href", href); };
-    set('link[rel="manifest"]', it.manifest + "?v=1008");
+    set('link[rel="manifest"]', it.manifest);
     set('link[rel="icon"]', it.icon192);
     set('link[rel="apple-touch-icon"]', it.icon192);
     // به کروم اطلاع می‌دهد که مانیفست عوض شده تا زودتر (نه لزوماً فوری) بررسی و آیکون صفحه‌ی اصلی را به‌روز کند.

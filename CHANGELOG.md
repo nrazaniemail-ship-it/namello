@@ -1,8 +1,3 @@
-## 1.0.8 – PWA install identity fix
-- Force a fresh manifest URL (`?v=1008`) so Chrome does not reuse an older install name/version.
-- All icon-theme manifests now explicitly identify Namello 1.0.8.
-- Service-worker cache bumped to c9.
-
 ## 1.0.8 — PWA install/version manifest fix
 - همه مانیفست‌های تم آیکون به نسخه 1.0.8 هماهنگ شدند.
 - کش سرویس‌ورکر برای نسخه 1.0.8 نوسازی شد تا مانیفست قدیمی در نصب PWA استفاده نشود.
