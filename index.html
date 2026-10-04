@@ -2665,6 +2665,7 @@ const NM_VERSION_CODE = 1;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "نسخهٔ بازطراحی‌شده";
 const NM_CHANGELOG = [
+    "نسخه 1.0.0 اصلاحی: مثلث‌های جمع/باز داشبورد با همان استایل استاندارد تنظیمات یکسان شدند؛ باکس مدیریت جفت‌ارز از لایه ژورنال حذف شد و مدیریت/افزودن جفت‌ارز در فرم ثبت ورود حفظ شد؛ پروژه Native ویجت از بسته اصلی برنامه جدا نگه داشته شد.",
     "نسخه 1.0.0: بازطراحی Namello؛ امنیت، پشتیبان و ذخیره ابری با Namello Backend و حساب/Sync واقعی در یک سربرگ واحد ادغام شدند و سبک مثلث‌های جمع/باز شدن یکسان شد. ویجت اندروید نیز به‌صورت بستهٔ Native جداگانه آماده شده است.",
     "نسخه 1.22.31: عنوان داشبورد عملکرد دیگر حساب مبنا را نمایش نمی‌دهد؛ خلاصه حساب مبنا زیر تحلیل آماری و ارزیابی پیشرفته اضافه شد و تیترهای سه‌گانه Dashboard به‌صورت پررنگ‌تر نمایش داده می‌شوند.",
     "نسخه 1.22.30: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
@@ -4742,7 +4743,19 @@ function NmReplayModal({trade,onClose}){
 
 function NmExcursionModal({trade,onClose,onSave}){const [text,setText]=React.useState("");const [result,setResult]=React.useState(null);const [fileName,setFileName]=React.useState("");const run=()=>{const r=nmApplyExcursion(trade,text);setResult(r.error?{error:r.error}:r.x);};const file=async e=>{const f=e.target.files?.[0];if(!f)return;setFileName(f.name);setText(await f.text());};return React.createElement("div",{className:"fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.72)"}},React.createElement("div",{className:"w-full max-w-lg rounded-2xl p-4 max-h-[92vh] overflow-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-3"},React.createElement("div",{className:"font-bold",style:{color:"var(--text-primary)"}},"MFE / MAE واقعی · ",trade.pair||"Trade"),React.createElement("button",{onClick:onClose},"✕")),React.createElement("div",{className:"text-[10px] leading-5 mb-3",style:{color:"var(--text-muted)"}},"فایل/متن OHLC مسیر معامله را وارد کن. هر ردیف: time, open, high, low, close. محاسبه فقط از High/Low واقعی مسیر انجام می‌شود."),React.createElement("input",{type:"file",accept:".csv,.txt",onChange:file,className:"text-[11px] mb-2 w-full"}),fileName&&React.createElement("div",{className:"text-[10px] mb-2",style:{color:"var(--accent-gold)"}},fileName),React.createElement("textarea",{value:text,onChange:e=>setText(e.target.value),rows:8,placeholder:"time,open,high,low,close\n10:01,3980.2,3983.1,3978.9,3982.4",className:"w-full rounded-xl p-3 text-[11px] mono",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)",color:"var(--text-primary)"}}),result&&React.createElement("div",{className:"rounded-xl p-3 mt-3 text-[11px]",style:{background:"var(--bg-card2)",border:"1px solid var(--border-1)"}},result.error?result.error:`MFE: ${nmDashNum(result.mfe,2)} · MAE: ${nmDashNum(result.mae,2)} · Best Exit: ${nmDashNum(result.bestExit?.price,2)} · Exit Efficiency: ${result.exitEfficiency===null?"—":nmDashNum(result.exitEfficiency,1)+"%"} · MFE R: ${result.bestExit?.rMultiple===null?"—":nmDashNum(result.bestExit?.rMultiple,2)+"R"}`),React.createElement("div",{className:"rounded-xl p-2.5 mt-3 text-[10px]",style:{background:"var(--bg-card2)",color:"var(--text-secondary)"}},React.createElement("b",{style:{color:"var(--accent-gold)"}},"Exit Insight · "),nmExitInsight(selected)),
     React.createElement("div",{className:"grid grid-cols-2 gap-2 mt-3"},React.createElement("button",{onClick:run,className:"py-2.5 rounded-xl text-[11px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"محاسبه"),React.createElement("button",{disabled:!result||result.error,onClick:()=>onSave(result),className:"py-2.5 rounded-xl text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)",opacity:!result||result.error?.5:1}},"ذخیره در معامله"))));}
-function NmDashWidget({id,title,children,onDragStart,onDragOver,onMove}){return React.createElement("section",{draggable:true,onDragStart:e=>onDragStart(e,id),onDragOver:e=>{e.preventDefault();onDragOver(id);},className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex items-center justify-between mb-2 cursor-grab"},React.createElement("div",{className:"text-[11px] font-semibold",style:{color:"var(--accent-gold)"}},title),React.createElement("div",{className:"flex items-center gap-1"},React.createElement("button",{type:"button",onClick:()=>onMove&&onMove(id,-1),className:"px-1.5 rounded",style:{color:"var(--text-muted)"}},"↑"),React.createElement("button",{type:"button",onClick:()=>onMove&&onMove(id,1),className:"px-1.5 rounded",style:{color:"var(--text-muted)"}},"↓"),React.createElement("span",{className:"text-[12px]",style:{color:"var(--text-muted)"}},"⠿"))),children);}
+function NmDashWidget({id,title,children,onDragStart,onDragOver,onMove,defaultOpen=true}){
+ const [open,setOpen]=React.useState(!!defaultOpen);
+ return React.createElement("section",{draggable:true,onDragStart:e=>onDragStart(e,id),onDragOver:e=>{e.preventDefault();onDragOver(id);},className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+  React.createElement("div",{className:"flex items-center justify-between gap-2"},
+   React.createElement("button",{type:"button",onClick:()=>setOpen(v=>!v),className:"flex-1 min-w-0 flex items-center justify-between gap-2",style:{textAlign:"start"},"aria-expanded":open},
+    React.createElement("div",{className:"text-[11px] font-semibold truncate",style:{color:"var(--accent-gold)"}},title),
+    React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},open?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))
+   ),
+   React.createElement("div",{className:"flex items-center gap-1 shrink-0"},React.createElement("button",{type:"button",onClick:()=>onMove&&onMove(id,-1),className:"px-1.5 rounded",style:{color:"var(--text-muted)"}},"↑"),React.createElement("button",{type:"button",onClick:()=>onMove&&onMove(id,1),className:"px-1.5 rounded",style:{color:"var(--text-muted)"}},"↓"),React.createElement("span",{className:"text-[12px]",style:{color:"var(--text-muted)"}},"⠿"))
+  ),
+  open&&React.createElement("div",{className:"mt-2"},children)
+ );
+}
 
 function nmAdvancedStats(trades, startingBalance=0){
  const a=(trades||[]).filter(t=>t.status==='closed'&&Number.isFinite(Number(t.pnl))).slice().sort((x,y)=>`${x.date||''}T${x.time||''}`.localeCompare(`${y.date||''}T${y.time||''}`));
@@ -9058,16 +9071,6 @@ function App() {
             accSettings.broker && (React.createElement("div", { className: "text-[11px] mb-3", style: { color: "var(--text-muted)" } },
                 (appLanguage === "en" ? "Broker: " : "\u0628\u0631\u0648\u06A9\u0631: "),
                 React.createElement("b", { style: { color: "var(--accent-gold)" } }, accSettings.broker))),
-            React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                    React.createElement("span", { className: "text-[12px] font-medium", style: { color: "var(--text-primary)" } }, appLanguage === "en" ? "Pairs" : "\u062C\u0641\u062A\u200C\u0627\u0631\u0632\u0647\u0627"),
-                    React.createElement("button", { onClick: () => addToList("pair"), className: "flex items-center gap-1 text-[11px]", style: { color: "var(--accent-gold)" } },
-                        React.createElement(Plus, { size: 12 }),
-                        " ", t("common_add"))),
-                React.createElement("div", { className: "flex flex-wrap gap-1.5" }, pairs.map(p => (React.createElement("span", { key: p, className: "flex items-center gap-1 text-[11px] px-2 py-1 rounded-full", style: { background: "var(--bg-card2)", color: "var(--text-secondary)" } },
-                    p,
-                    React.createElement("button", { onClick: () => removePair(p) },
-                        React.createElement(X, { size: 10 }))))))),
             (restAlarm || lossCapAlarm || profitCapAlarm) && (React.createElement("div", { className: "flex flex-col gap-2 mb-3" },
                 restAlarm && React.createElement("div", { className: "rounded-xl p-3 flex items-center gap-2 text-[12px]", style: { background: "#F8717122", color: "#F87171" } },
                     React.createElement(Coffee, { size: 15 }),
