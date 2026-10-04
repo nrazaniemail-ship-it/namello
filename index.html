@@ -2145,7 +2145,7 @@ function hlLabel(text) {
     const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const re = new RegExp("(" + terms.sort((a,b) => b.length - a.length).map(esc).join("|") + ")", "g");
     const parts = String(text).split(re);
-    return parts.map((p, i) => terms.includes(p) ? React.createElement("b", { key: i, style: { color: "#FB923C" } }, p) : p);
+    return parts.map((p, i) => terms.includes(p) ? React.createElement("b", { key: i, style: { color: "#FACC15" } }, p) : p);
 }
 function numLabel(n, label) {
     return (React.createElement("span", { className: "flex items-center gap-1.5" },
@@ -2173,10 +2173,9 @@ function progressColor(p) {
 function GratitudeChecklistLayer({ activeAccount, list, newText, setNewText, onAdd, onUpdateText, onUpdateState, onDelete, onMove, onExport, onExportPdf, askDeleteConfirm }) {
     const total = list.length;
     const done = list.filter(g => g.state === "done" || (!g.state && Number(g.progress) >= 100)).length;
-    const rejected = list.filter(g => g.state === "rejected").length;
     const pct = total ? Math.round((done / total) * 100) : 0;
-    const stateFor = g => g.state || (Number(g.progress) >= 100 ? "done" : "pending");
-    const setState = (g, state) => onUpdateState(g.id, state);
+    const isDone = g => g.state === "done" || (!g.state && Number(g.progress) >= 100);
+    const toggleDone = g => onUpdateState(g.id, isDone(g) ? "pending" : "done");
     return (React.createElement("div", { className: "px-4 mt-4" },
         React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "شکر گزاری"),
         !activeAccount ? React.createElement("div", { className: "rounded-xl p-4 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "اول از ژورنال یک حساب ایجاد کن.") :
@@ -2186,7 +2185,7 @@ function GratitudeChecklistLayer({ activeAccount, list, newText, setNewText, onA
                     React.createElement("div", { className: "flex items-center gap-2 min-w-0" },
                         React.createElement("span", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, "شکرگزاری روزانه"),
                         React.createElement("span", { className: "text-xs font-bold mono", style: { color: "#34D399" } }, `${done}/${total} · ${pct}%`)),
-                    React.createElement("span", { className: "text-[11px] truncate", style: { color: rejected ? "#F59E0B" : "var(--text-muted)" } }, rejected ? `${rejected} مورد نیاز به توجه` : "بدون مورد ردشده"))),
+                    React.createElement("span", { className: "text-[11px] truncate", style: { color: "var(--text-muted)" } }, total ? "تیک بزن = انجام شد و امتیاز می‌گیرد" : "آیتم‌های شکرگزاری را اضافه کن"))),
             React.createElement("div", { className: "flex gap-2 mb-3" },
                 React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                     React.createElement("input", { type: "text", value: newText, onChange: e => setNewText(e.target.value), onKeyDown: e => e.key === "Enter" && onAdd(), placeholder: "متن جدید شکرگزاری...", className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
@@ -2194,14 +2193,11 @@ function GratitudeChecklistLayer({ activeAccount, list, newText, setNewText, onA
             total === 0 ? React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "هنوز متن شکرگزاری ثبت نشده.") :
             React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 list.map((g, i) => {
-                    const state = stateFor(g);
-                    return React.createElement("div", { key: g.id, className: "rounded-xl p-2.5 mb-2 last:mb-0 flex items-center gap-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-1)" } },
-                        React.createElement("div", { className: "flex items-center gap-1 shrink-0" },
-                            React.createElement("button", { type: "button", onClick: () => setState(g, "pending"), className: "w-10 h-10 rounded-lg flex items-center justify-center", style: { background: state === "pending" ? "#374151" : "#0A0D0F", color: state === "pending" ? "#D1D5DB" : "#6B7280", border: state === "pending" ? "1px solid #6B7280" : "1px solid transparent" } }, "−"),
-                            React.createElement("button", { type: "button", onClick: () => setState(g, "rejected"), className: "w-10 h-10 rounded-lg flex items-center justify-center", style: { background: state === "rejected" ? "#3A1515" : "#0A0D0F", color: state === "rejected" ? "#F87171" : "#6B7280", border: state === "rejected" ? "1px solid #F87171" : "1px solid transparent" } }, "×"),
-                            React.createElement("button", { type: "button", onClick: () => setState(g, "done"), className: "w-10 h-10 rounded-lg flex items-center justify-center", style: { background: state === "done" ? "#0F3328" : "#0A0D0F", color: state === "done" ? "#34D399" : "#6B7280", border: state === "done" ? "1px solid #34D399" : "1px solid transparent" } }, "✓")),
+                    const checked = isDone(g);
+                    return React.createElement("div", { key: g.id, className: "rounded-xl p-2.5 mb-2 last:mb-0 flex items-center gap-2", style: { background: "var(--bg-card2)", border: checked ? "1px solid #34D39955" : "1px solid var(--border-1)" } },
+                        React.createElement("button", { type: "button", onClick: () => toggleDone(g), "aria-label": checked ? "انجام شد" : "انجام نشده", className: "w-10 h-10 rounded-lg flex items-center justify-center shrink-0", style: { background: checked ? "#0F3328" : "#0A0D0F", color: checked ? "#34D399" : "#6B7280", border: checked ? "1px solid #34D399" : "1px solid #4B5563", fontSize: 22, fontWeight: 700 } }, checked ? "✓" : ""),
                         React.createElement("div", { className: "flex-1 min-w-0" },
-                            React.createElement(AutoGrowTextarea, { value: g.text, onChange: e => onUpdateText(g.id, e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)", minWidth: 0 } }),
+                            React.createElement(AutoGrowTextarea, { value: g.text, onChange: e => onUpdateText(g.id, e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: checked ? "var(--text-muted)" : "var(--text-primary)", minWidth: 0, textDecoration: checked ? "line-through" : "none" } }),
                             React.createElement("div", { className: "flex items-center gap-2 mt-1" },
                                 React.createElement("button", { type: "button", onClick: () => onMove(g.id, -1), disabled: i === 0, className: "text-[10px]", style: { color: "var(--text-muted)", opacity: i === 0 ? .25 : 1 } }, "▲"),
                                 React.createElement("button", { type: "button", onClick: () => onMove(g.id, 1), disabled: i === list.length - 1, className: "text-[10px]", style: { color: "var(--text-muted)", opacity: i === list.length - 1 ? .25 : 1 } }, "▼"),
