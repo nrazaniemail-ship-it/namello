@@ -2141,8 +2141,11 @@ function DraggableFab({ posXPercent, posYPercent, defaultCorner = "bottom-left",
             onPointerUp(); }, onTouchStart: onPointerDown, onTouchMove: onPointerMove, onTouchEnd: onPointerUp, className: "fixed select-none", style: { left: basePos.left, top: basePos.top, zIndex, touchAction: "none" } }, children));
 }
 function hlLabel(text) {
-    const parts = String(text).split(/(اصلی|ورود)/g);
-    return parts.map((p, i) => (p === "اصلی" || p === "ورود") ? React.createElement("b", { key: i, style: { color: "#FB923C" } }, p) : p);
+    const terms = ["برنامه روزانه", "چارت", "روند روزانه", "کندل روزانه", "اصلی", "ورود", "سود", "ضرر", "R-multiple", "ریسک", "روانشناسی", "ذهنی", "محاسباتی", "ستاپ", "قبل", "خروج", "پیپ", "بستن", "خروج دستی", "مدیریت", "اشتباهات", "بعد"];
+    const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp("(" + terms.sort((a,b) => b.length - a.length).map(esc).join("|") + ")", "g");
+    const parts = String(text).split(re);
+    return parts.map((p, i) => terms.includes(p) ? React.createElement("b", { key: i, style: { color: "#FB923C" } }, p) : p);
 }
 function numLabel(n, label) {
     return (React.createElement("span", { className: "flex items-center gap-1.5" },
@@ -2166,6 +2169,48 @@ function progressColor(p) {
     if (v < 90)
         return "#FACC15";
     return "#34D399";
+}
+function GratitudeChecklistLayer({ activeAccount, list, newText, setNewText, onAdd, onUpdateText, onUpdateState, onDelete, onMove, onExport, onExportPdf, askDeleteConfirm }) {
+    const total = list.length;
+    const done = list.filter(g => g.state === "done" || (!g.state && Number(g.progress) >= 100)).length;
+    const rejected = list.filter(g => g.state === "rejected").length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const stateFor = g => g.state || (Number(g.progress) >= 100 ? "done" : "pending");
+    const setState = (g, state) => onUpdateState(g.id, state);
+    return (React.createElement("div", { className: "px-4 mt-4" },
+        React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "شکر گزاری"),
+        !activeAccount ? React.createElement("div", { className: "rounded-xl p-4 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "اول از ژورنال یک حساب ایجاد کن.") :
+        React.createElement(React.Fragment, null,
+            React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+                React.createElement("div", { className: "rounded-xl px-3 py-2.5 flex items-center justify-between gap-2", style: { background: "#10241F", border: "1px solid #1F8A70" } },
+                    React.createElement("div", { className: "flex items-center gap-2 min-w-0" },
+                        React.createElement("span", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, "شکرگزاری روزانه"),
+                        React.createElement("span", { className: "text-xs font-bold mono", style: { color: "#34D399" } }, `${done}/${total} · ${pct}%`)),
+                    React.createElement("span", { className: "text-[11px] truncate", style: { color: rejected ? "#F59E0B" : "var(--text-muted)" } }, rejected ? `${rejected} مورد نیاز به توجه` : "بدون مورد ردشده"))),
+            React.createElement("div", { className: "flex gap-2 mb-3" },
+                React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+                    React.createElement("input", { type: "text", value: newText, onChange: e => setNewText(e.target.value), onKeyDown: e => e.key === "Enter" && onAdd(), placeholder: "متن جدید شکرگزاری...", className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
+                React.createElement("button", { type: "button", onClick: onAdd, className: "px-4 rounded-lg text-sm", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, React.createElement(Plus, { size: 16 }))),
+            total === 0 ? React.createElement("div", { className: "rounded-xl p-6 text-center text-sm mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "هنوز متن شکرگزاری ثبت نشده.") :
+            React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+                list.map((g, i) => {
+                    const state = stateFor(g);
+                    return React.createElement("div", { key: g.id, className: "rounded-xl p-2.5 mb-2 last:mb-0 flex items-center gap-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-1)" } },
+                        React.createElement("div", { className: "flex items-center gap-1 shrink-0" },
+                            React.createElement("button", { type: "button", onClick: () => setState(g, "pending"), className: "w-10 h-10 rounded-lg flex items-center justify-center", style: { background: state === "pending" ? "#374151" : "#0A0D0F", color: state === "pending" ? "#D1D5DB" : "#6B7280", border: state === "pending" ? "1px solid #6B7280" : "1px solid transparent" } }, "−"),
+                            React.createElement("button", { type: "button", onClick: () => setState(g, "rejected"), className: "w-10 h-10 rounded-lg flex items-center justify-center", style: { background: state === "rejected" ? "#3A1515" : "#0A0D0F", color: state === "rejected" ? "#F87171" : "#6B7280", border: state === "rejected" ? "1px solid #F87171" : "1px solid transparent" } }, "×"),
+                            React.createElement("button", { type: "button", onClick: () => setState(g, "done"), className: "w-10 h-10 rounded-lg flex items-center justify-center", style: { background: state === "done" ? "#0F3328" : "#0A0D0F", color: state === "done" ? "#34D399" : "#6B7280", border: state === "done" ? "1px solid #34D399" : "1px solid transparent" } }, "✓")),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                            React.createElement(AutoGrowTextarea, { value: g.text, onChange: e => onUpdateText(g.id, e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)", minWidth: 0 } }),
+                            React.createElement("div", { className: "flex items-center gap-2 mt-1" },
+                                React.createElement("button", { type: "button", onClick: () => onMove(g.id, -1), disabled: i === 0, className: "text-[10px]", style: { color: "var(--text-muted)", opacity: i === 0 ? .25 : 1 } }, "▲"),
+                                React.createElement("button", { type: "button", onClick: () => onMove(g.id, 1), disabled: i === list.length - 1, className: "text-[10px]", style: { color: "var(--text-muted)", opacity: i === list.length - 1 ? .25 : 1 } }, "▼"),
+                                React.createElement("button", { type: "button", onClick: () => askDeleteConfirm("این متن شکرگزاری حذف بشه؟", () => onDelete(g.id)), className: "text-[10px]", style: { color: "#F87171" } }, "حذف"))),
+                        React.createElement("span", { className: "text-[9px] shrink-0", style: { color: "var(--text-muted)" } }, g.date));
+                })),
+            React.createElement("div", { className: "flex gap-2 mb-4" },
+                React.createElement("button", { onClick: onExport, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium nm-unified-export-btn", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } }, React.createElement(Download, { size: 16 }), " Excel"),
+                React.createElement("button", { onClick: onExportPdf, className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium nm-unified-export-btn", style: { background: "var(--bg-card)", color: "var(--accent-gold)", border: "1px solid var(--border-1)" } }, React.createElement(Download, { size: 16 }), " PDF")))));
 }
 function GoalsLayer({ title, activeAccount, list, newText, setNewText, onAdd, onUpdateText, onUpdateProgress, onDelete, onMove, onExport, onExportPdf, askDeleteConfirm, itemLabel }) {
     const noun = itemLabel || "هدف";
@@ -8171,6 +8216,9 @@ function App() {
     }
     function updateGratitudeRow(id, text) { persistGratitude(gratitude.map(g => g.id === id ? { ...g, text } : g)); }
     function updateGratitudeProgress(id, progress) { persistGratitude(gratitude.map(g => g.id === id ? { ...g, progress } : g)); }
+    function updateGratitudeState(id, state) {
+        persistGratitude(gratitude.map(g => g.id === id ? { ...g, state, progress: state === "done" ? 100 : 0 } : g));
+    }
     function deleteGratitudeRow(id) { persistGratitude(gratitude.filter(g => g.id !== id)); }
     function moveGratitudeRow(id, dir) {
         const idx = gratitude.findIndex(g => g.id === id);
@@ -9746,7 +9794,7 @@ function App() {
                     React.createElement(Download, { size: 16 }), " خروجی PDF")))),
         tab === "goals" && (React.createElement(GoalsLayer, { title: "\u0627\u0647\u062F\u0627\u0641 \u0645\u0639\u0627\u0645\u0644\u0647 \u06AF\u0631\u06CC", activeAccount: activeAccount, list: goals, newText: newGoalText, setNewText: setNewGoalText, onAdd: addGoalRow, onUpdateText: updateGoalRow, onUpdateProgress: updateGoalProgress, onDelete: deleteGoalRow, onMove: moveGoalRow, onExport: exportGoals, onExportPdf: exportGoalsPdf, askDeleteConfirm: askDeleteConfirm })),
         tab === "lifegoals" && (React.createElement(GoalsLayer, { title: "\u0627\u0647\u062F\u0627\u0641 \u0632\u0646\u062F\u06AF\u06CC", activeAccount: activeAccount, list: lifeGoals, newText: newLifeGoalText, setNewText: setNewLifeGoalText, onAdd: addLifeGoalRow, onUpdateText: updateLifeGoalRow, onUpdateProgress: updateLifeGoalProgress, onDelete: deleteLifeGoalRow, onMove: moveLifeGoalRow, onExport: exportLifeGoals, onExportPdf: exportLifeGoalsPdf, askDeleteConfirm: askDeleteConfirm })),
-        tab === "gratitude" && (React.createElement(GoalsLayer, { title: "\u0634\u06A9\u0631 \u06AF\u0632\u0627\u0631\u06CC", activeAccount: activeAccount, list: gratitude, newText: newGratitudeText, setNewText: setNewGratitudeText, onAdd: addGratitudeRow, onUpdateText: updateGratitudeRow, onUpdateProgress: updateGratitudeProgress, onDelete: deleteGratitudeRow, onMove: moveGratitudeRow, onExport: exportGratitude, onExportPdf: exportGratitudePdf, askDeleteConfirm: askDeleteConfirm, itemLabel: "\u0645\u062A\u0646" })),
+        tab === "gratitude" && (React.createElement(GratitudeChecklistLayer, { activeAccount: activeAccount, list: gratitude, newText: newGratitudeText, setNewText: setNewGratitudeText, onAdd: addGratitudeRow, onUpdateText: updateGratitudeRow, onUpdateState: updateGratitudeState, onDelete: deleteGratitudeRow, onMove: moveGratitudeRow, onExport: exportGratitude, onExportPdf: exportGratitudePdf, askDeleteConfirm: askDeleteConfirm })),
         false && tab === "statement" && (!activeAccount ? (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0627\u0648\u0644 \u0627\u0632 \u062A\u0628 \u0698\u0648\u0631\u0646\u0627\u0644 \u06CC\u06A9 \u062D\u0633\u0627\u0628 \u0627\u06CC\u062C\u0627\u062F \u06A9\u0646."))) : (React.createElement(StatementLayer, {
             statementTrades: statementTrades,
@@ -10267,26 +10315,26 @@ function App() {
                     React.createElement("button", { onClick: () => setShowOpenForm(false) },
                         React.createElement(X, { size: 18, color: "var(--text-muted)" }))),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
-                    React.createElement(Field, { label: numLabel(1, appLanguage === "en" ? "Date (Gregorian)" : "تاریخ (میلادی)") },
+                    React.createElement(Field, { label: numLabel(1, hlLabel(appLanguage === "en" ? "Date (Gregorian)" : "تاریخ (میلادی)")) },
                         React.createElement("input", { type: "date", value: openForm.date, onChange: e => setOpenForm({ ...openForm, date: e.target.value }), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
-                    React.createElement(Field, { label: numLabel(2, appLanguage === "en" ? "Time (NY)" : "ساعت (NY)") },
+                    React.createElement(Field, { label: numLabel(2, hlLabel(appLanguage === "en" ? "Time (NY)" : "ساعت (NY)")) },
                         React.createElement("input", { type: "time", value: openForm.time, onChange: e => setOpenForm({ ...openForm, time: e.target.value }), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } }))),
                 React.createElement("div", { className: "text-[11px] mb-2", style: { color: "var(--text-muted)" } },
                     "\u0631\u0648\u0632 \u0647\u0641\u062A\u0647: ",
                     React.createElement("b", { style: { color: "var(--accent-gold)" } }, weekdayFromDateStr(openForm.date))),
-                React.createElement(Field, { label: numLabel(3, appLanguage === "en" ? "Currency Pair" : "جفت‌ارز") },
+                React.createElement(Field, { label: numLabel(3, hlLabel(appLanguage === "en" ? "Currency Pair" : "جفت‌ارز")) },
                     React.createElement("select", { value: openForm.pair, onChange: e => e.target.value === "__add__" ? addToList("pair").then(v => v && setOpenForm(f => ({ ...f, pair: v }))) : setOpenForm({ ...openForm, pair: e.target.value }), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } },
                         pairs.map(p => React.createElement("option", { key: p, value: p, style: { background: "var(--bg-card2)" } }, p)),
                         React.createElement("option", { value: "__add__", style: { background: "var(--bg-card2)" } }, "+ \u0627\u0641\u0632\u0648\u062F\u0646 \u062C\u0641\u062A\u200C\u0627\u0631\u0632 \u062C\u062F\u06CC\u062F"))),
                 React.createElement("div", { className: "mb-2" },
-                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(4, appLanguage === "en" ? "Market Sessions & Events" : "نشست‌ها و رویدادهای بازار")),
+                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(4, hlLabel(appLanguage === "en" ? "Market Sessions & Events" : "نشست‌ها و رویدادهای بازار"))),
                     React.createElement("div", { className: "rounded-lg px-3 py-2 flex flex-wrap gap-1.5", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } }, (() => {
                         const [hh, mi] = openForm.time.split(":").map(Number);
                         const tags = tagsForMinutes(config, hh * 60 + mi, now.dst);
                         return tags.length ? tags.map((tg, i) => (React.createElement("span", { key: i, className: "text-[10px] px-2 py-0.5 rounded-full", style: { background: `${tg.color}33`, color: tg.color } }, tg.label))) : React.createElement("span", { className: "text-[11px]", style: { color: "var(--text-muted)" } }, "\u062F\u0631 \u0627\u06CC\u0646 \u0633\u0627\u0639\u062A \u0647\u06CC\u0686 \u0633\u0634\u0646/\u06A9\u06CC\u0644\u200C\u0632\u0648\u0646\u06CC \u0641\u0639\u0627\u0644 \u0646\u06CC\u0633\u062A");
                     })())),
                 React.createElement("div", { className: "mb-2" },
-                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(5, appLanguage === "en" ? "News" : "خبر")),
+                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(5, hlLabel(appLanguage === "en" ? "News" : "خبر"))),
                     React.createElement("div", { className: "rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", minHeight: 20 } }, (() => {
                         const nm = findNewsForTrade(newsEvents, openForm.pair, openForm.date, openForm.time);
                         return nm ? React.createElement("span", { className: "text-[12px]", style: { color: "#FBBF24" } }, nm) : React.createElement("span", { className: "text-[11px]", style: { color: "var(--text-muted)" } });
@@ -10305,9 +10353,9 @@ function App() {
                             React.createElement("input", { type: "text", value: newFractalText, onChange: e => setNewFractalText(e.target.value), onKeyDown: e => e.key === "Enter" && addFractalOptionInline(), placeholder: "\u0641\u0631\u0627\u06A9\u062A\u0627\u0644 \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addFractalOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "#A855F7" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: numLabel(9, appLanguage === "en" ? "Daily Trend Direction" : "جهت روند روزانه") },
+                React.createElement(Field, { label: numLabel(9, hlLabel(appLanguage === "en" ? "Daily Trend Direction" : "جهت روند روزانه")) },
                     React.createElement(ToggleGroup, { value: openForm.dailyTrendDirection, options: DAILY_DIRECTION_OPTIONS, onChange: v => setOpenForm({ ...openForm, dailyTrendDirection: v }) })),
-                React.createElement(Field, { label: numLabel(10, appLanguage === "en" ? "Daily Candle Direction" : "جهت کندل روزانه") },
+                React.createElement(Field, { label: numLabel(10, hlLabel(appLanguage === "en" ? "Daily Candle Direction" : "جهت کندل روزانه")) },
                     React.createElement(ToggleGroup, { value: openForm.dailyCandleDirection, options: DAILY_DIRECTION_OPTIONS, onChange: v => setOpenForm({ ...openForm, dailyCandleDirection: v }) })),
                 React.createElement(Field, { label: numLabel(11, hlLabel(appLanguage === "en" ? "Main Trend Direction" : "جهت روند اصلی")) },
                     React.createElement("div", { className: "flex gap-2" },
@@ -10338,7 +10386,7 @@ function App() {
                                 React.createElement(Plus, { size: 12 }))))),
                 React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(13, hlLabel(appLanguage === "en" ? "Main Timeframe Guide Levels (multi-select)" : "سطوح راهنمای تایم اصلی (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: mainGuideEditMode, onToggle: () => setMainGuideEditMode(m => !m) })) },
                     React.createElement(NmGuideLevelsField, { kind: "main", value: openForm.mainGuideLevels, editMode: mainGuideEditMode, onChange: v => setOpenForm(f => ({ ...f, mainGuideLevels: v })) })),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(14, appLanguage === "en" ? "Main Timeframe Divergence (multi-select)" : "واگرایی تایم اصلی (چند تا هم می‌تونی انتخاب کنی)"), JournalEditToggle({ editMode: divergenceMainEditMode, onToggle: () => setDivergenceMainEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(14, hlLabel(appLanguage === "en" ? "Main Timeframe Divergence (multi-select)" : "واگرایی تایم اصلی (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: divergenceMainEditMode, onToggle: () => setDivergenceMainEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, divergenceMainOptions.map((opt, i) => divergenceMainEditMode ? (React.createElement("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px] mono", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", fontFamily: "JetBrains Mono, monospace" } },
@@ -10406,7 +10454,7 @@ function App() {
                                 React.createElement(Plus, { size: 12 }))))),
                 React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(19, hlLabel(appLanguage === "en" ? "Entry Timeframe Guide Levels (multi-select)" : "سطوح راهنمای تایم ورود (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: entryGuideEditMode, onToggle: () => setEntryGuideEditMode(m => !m) })) },
                     React.createElement(NmGuideLevelsField, { kind: "entry", value: openForm.entryGuideLevels, editMode: entryGuideEditMode, onChange: v => setOpenForm(f => ({ ...f, entryGuideLevels: v })) })),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(20, appLanguage === "en" ? "Entry Timeframe Divergence (multi-select)" : "واگرایی تایم ورود (چند تا هم می‌تونی انتخاب کنی)"), JournalEditToggle({ editMode: divergenceEntryEditMode, onToggle: () => setDivergenceEntryEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(20, hlLabel(appLanguage === "en" ? "Entry Timeframe Divergence (multi-select)" : "واگرایی تایم ورود (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: divergenceEntryEditMode, onToggle: () => setDivergenceEntryEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, divergenceEntryOptions.map((opt, i) => divergenceEntryEditMode ? (React.createElement("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px] mono", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", fontFamily: "JetBrains Mono, monospace" } },
@@ -10466,7 +10514,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newTrigText, onChange: e => setNewTrigText(e.target.value), onKeyDown: e => e.key === "Enter" && addTrigOptionInline(), placeholder: "Trig \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addTrigOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "#60A5FA" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(23, appLanguage === "en" ? "Take Profit (TP) (multi-select)" : "حد سود (TP) (چند تا هم می‌تونی انتخاب کنی)"), JournalEditToggle({ editMode: targetEditMode, onToggle: () => setTargetEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(23, hlLabel(appLanguage === "en" ? "Take Profit (TP) (multi-select)" : "حد سود (TP) (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: targetEditMode, onToggle: () => setTargetEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, targetOptions.map((opt, i) => targetEditMode ? (React.createElement("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px] mono", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", fontFamily: "JetBrains Mono, monospace" } },
@@ -10486,7 +10534,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newTargetText, onChange: e => setNewTargetText(e.target.value), onKeyDown: e => e.key === "Enter" && addTargetOptionInline(), placeholder: "Target \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addTargetOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "#34D399" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(24, appLanguage === "en" ? "Stop Loss (SL) (multi-select) (factor in spread or ATR*(1-1.5))" : "حد ضرر (SL) (چند تا هم می‌تونی انتخاب کنی) (میزان اسپرد یا ATR*(1-1.5) لحاظ گردد.)"), JournalEditToggle({ editMode: stopEditMode, onToggle: () => setStopEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(24, hlLabel(appLanguage === "en" ? "Stop Loss (SL) (multi-select) (factor in spread or ATR*(1-1.5))" : "حد ضرر (SL) (چند تا هم می‌تونی انتخاب کنی) (میزان اسپرد یا ATR*(1-1.5) لحاظ گردد.)")), JournalEditToggle({ editMode: stopEditMode, onToggle: () => setStopEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, stopOptions.map((opt, i) => stopEditMode ? (React.createElement("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px] mono", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", fontFamily: "JetBrains Mono, monospace" } },
@@ -10506,7 +10554,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newStopText, onChange: e => setNewStopText(e.target.value), onKeyDown: e => e.key === "Enter" && addStopOptionInline(), placeholder: "Stop \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addStopOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "#F87171" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(25, "R-multiple"), JournalEditToggle({ editMode: rrEditMode, onToggle: () => setRrEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(25, hlLabel("R-multiple")), JournalEditToggle({ editMode: rrEditMode, onToggle: () => setRrEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, rrOptions.map(opt => (React.createElement("span", { key: opt, className: "flex items-center gap-1 px-3 py-2 rounded-lg text-[12px] mono", style: { background: openForm.rrReward === opt ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: openForm.rrReward === opt ? "var(--accent-gold)" : "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } },
@@ -10518,7 +10566,7 @@ function App() {
                             React.createElement("input", { type: "text", inputMode: "decimal", value: newRrText, onChange: e => setNewRrText(e.target.value), onKeyDown: e => e.key === "Enter" && addRrOptionInline(), placeholder: "\u0645\u0642\u062F\u0627\u0631 \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addRrOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(26, appLanguage === "en" ? "Trade Risk ($)" : "ریسک معامله ($)"), JournalEditToggle({ editMode: riskEditMode, onToggle: () => setRiskEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(26, hlLabel(appLanguage === "en" ? "Trade Risk ($)" : "ریسک معامله ($)")), JournalEditToggle({ editMode: riskEditMode, onToggle: () => setRiskEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, riskOptions.map((opt, i) => riskEditMode ? (React.createElement("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px] mono", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", fontFamily: "JetBrains Mono, monospace" } },
@@ -10547,7 +10595,7 @@ function App() {
                         React.createElement("input", { type: "number", inputMode: "decimal", value: openForm.entry, onChange: e => setOpenForm({ ...openForm, entry: e.target.value }), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } })),
                     React.createElement(Field, { label: numLabel(28, appLanguage === "en" ? `Volume (Lot) — suggested: ${derived.nextLot}` : `حجم (لات) — پیشنهادی: ${derived.nextLot}`) },
                         React.createElement("input", { type: "text", inputMode: "decimal", value: openForm.lot, onChange: e => setOpenForm({ ...openForm, lot: e.target.value }), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(29, appLanguage === "en" ? "Psychology (multi-select)" : "روانشناسی (چند تا هم می‌تونی انتخاب کنی)"), JournalEditToggle({ editMode: psychEditMode, onToggle: () => setPsychEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(29, hlLabel(appLanguage === "en" ? "Psychology (multi-select)" : "روانشناسی (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: psychEditMode, onToggle: () => setPsychEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, psychOptions.map((opt, i) => {
@@ -10572,7 +10620,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newPsychText, onChange: e => setNewPsychText(e.target.value), onKeyDown: e => e.key === "Enter" && addPsychOptionInline(), placeholder: "\u062D\u0627\u0644\u062A \u0631\u0648\u0627\u0646\u06CC \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addPsychOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "#F87171" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(30, appLanguage === "en" ? "Subjective Success Probability (%)" : "احتمال موفقیت ذهنی (%)"), JournalEditToggle({ editMode: successProbEditMode, onToggle: () => setSuccessProbEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(30, hlLabel(appLanguage === "en" ? "Subjective Success Probability (%)" : "احتمال موفقیت ذهنی (%)")), JournalEditToggle({ editMode: successProbEditMode, onToggle: () => setSuccessProbEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, successProbOptions.map(opt => (React.createElement("span", { key: opt, className: "flex items-center gap-1 px-3 py-2 rounded-lg text-[12px] mono", style: { background: openForm.successProb === opt ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: openForm.successProb === opt ? "var(--accent-gold)" : "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } },
@@ -10585,7 +10633,7 @@ function App() {
                             React.createElement("button", { type: "button", onClick: addSuccessProbOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
                 React.createElement("div", { className: "mb-2" },
-                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(31, appLanguage === "en" ? "Calculated Success Probability (%)" : "احتمال موفقیت محاسباتی (%)")),
+                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(31, hlLabel(appLanguage === "en" ? "Calculated Success Probability (%)" : "احتمال موفقیت محاسباتی (%)"))),
                     React.createElement("div", { className: "rounded-lg px-3 py-3 flex items-center justify-between", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", position: "relative" } },
                         React.createElement("button", { type: "button", onClick: () => setShowCalcProbWeights(true), style: { position: "absolute", top: -6, left: -6, background: "var(--bg-card2)", border: "1px solid var(--border-2)", borderRadius: 8, padding: 4 }, "aria-label": "\u0633\u0641\u0627\u0631\u0634\u06CC\u200C\u0633\u0627\u0632\u06CC \u0648\u0632\u0646\u200C\u062F\u0647\u06CC" },
                             React.createElement(Edit3, { size: 11, color: "var(--text-muted)" })),
@@ -10619,10 +10667,10 @@ function App() {
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "with" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "with" ? "#60A5FA22" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "with" ? "#60A5FA" : "var(--text-muted)" } }, "\u0647\u0645 \u062C\u0647\u062A \u0628\u0627 \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC"),
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "against" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "against" ? "#FBBF2422" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "against" ? "#FBBF24" : "var(--text-muted)" } }, "\u062E\u0644\u0627\u0641 \u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC")),
                     React.createElement("p", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u00AB\u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC\u00BB \u0648 \u00AB\u062E\u0631\u06CC\u062F/\u0641\u0631\u0648\u0634\u00BB \u062E\u0648\u062F\u06A9\u0627\u0631 \u0627\u0646\u062A\u062E\u0627\u0628 \u0645\u06CC\u200C\u0634\u0647\u061B \u0627\u06AF\u0647 \u0644\u0627\u0632\u0645 \u0628\u0648\u062F \u062F\u0633\u062A\u06CC \u0647\u0645 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0639\u0648\u0636\u0634 \u06A9\u0646\u06CC.")),
-                React.createElement(Field, { label: numLabel(35, appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله") },
+                React.createElement(Field, { label: numLabel(35, hlLabel(appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله")) },
                     React.createElement(ChartImageField, { label: "چارت تایم اصلی", value: openForm.chartImageMain || "", onChange: v => setOpenForm({ ...openForm, chartImageMain: v }) }),
                     React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }) })),
-                React.createElement(Field, { label: numLabel(36, appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله") },
+                React.createElement(Field, { label: numLabel(36, hlLabel(appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله")) },
                     React.createElement(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت", value: openForm.voiceNoteBefore || "", onChange: v => setOpenForm({ ...openForm, voiceNoteBefore: v }) })),
                 RE(NmCustomFieldsFormSection, { values: openForm.customFields, onChange: v => setOpenForm({ ...openForm, customFields: v }) }),
                 React.createElement("button", { onClick: saveOpenTrade, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
@@ -10636,19 +10684,19 @@ function App() {
                         closingTrade.pair),
                     React.createElement("button", { onClick: () => setClosingTrade(null) },
                         React.createElement(X, { size: 18, color: "var(--text-muted)" }))),
-                React.createElement(Field, { label: numLabel(1, appLanguage === "en" ? "Exit Price (optional)" : "قیمت خروج (اختیاری)") },
+                React.createElement(Field, { label: numLabel(1, hlLabel(appLanguage === "en" ? "Exit Price (optional)" : "قیمت خروج (اختیاری)")) },
                     React.createElement("input", { type: "number", inputMode: "decimal", value: closeForm.exit, onChange: e => onCloseFieldChange("exit", e.target.value), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } })),
                 React.createElement("div", { className: "mb-2" },
-                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(2, appLanguage === "en" ? "Profit/Loss ($)" : "سود/ضرر ($)")),
+                    React.createElement("label", { className: "text-[11px] block mb-1", style: { color: "var(--text-muted)" } }, numLabel(2, hlLabel(appLanguage === "en" ? "Profit/Loss ($)" : "سود/ضرر ($)"))),
                     React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { onClick: () => onCloseFieldChange("pnlSign", "profit"), className: "px-3 rounded-lg text-sm flex items-center gap-1", style: { background: closeForm.pnlSign === "profit" ? "#34D39922" : "var(--bg-card2)", color: closeForm.pnlSign === "profit" ? "#34D399" : "var(--text-muted)", border: "1px solid var(--border-2)" } }, (appLanguage === "en" ? "+ Profit" : "+ سود")),
                         React.createElement("button", { onClick: () => onCloseFieldChange("pnlSign", "loss"), className: "px-3 rounded-lg text-sm flex items-center gap-1", style: { background: closeForm.pnlSign === "loss" ? "#F8717122" : "var(--bg-card2)", color: closeForm.pnlSign === "loss" ? "#F87171" : "var(--text-muted)", border: "1px solid var(--border-2)" } }, (appLanguage === "en" ? "− Loss" : "− ضرر")),
                         React.createElement("div", { className: "flex-1 rounded-lg px-3 py-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             React.createElement("input", { type: "number", inputMode: "decimal", min: "0", value: closeForm.pnl, onChange: e => onCloseFieldChange("pnl", e.target.value), placeholder: (appLanguage === "en" ? "Amount (positive number only)" : "مبلغ (فقط عدد مثبت)"), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
                     React.createElement("p", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, (appLanguage === "en" ? "Since some phone keyboards lack a minus sign, enter the amount as positive and pick the type (profit/loss) with the button above." : "چون بعضی صفحه‌کلیدهای گوشی علامت منفی ندارن، مبلغ رو مثبت وارد کن و نوعش (سود/ضرر) رو با دکمه بالا انتخاب کن."))),
-                React.createElement(Field, { label: numLabel(3, appLanguage === "en" ? "Pips (auto / editable)" : "پیپ (خودکار / قابل‌ویرایش)") },
+                React.createElement(Field, { label: numLabel(3, hlLabel(appLanguage === "en" ? "Pips (auto / editable)" : "پیپ (خودکار / قابل‌ویرایش)")) },
                     React.createElement("input", { type: "number", inputMode: "decimal", value: closeForm.pips, onChange: e => onCloseFieldChange("pips", e.target.value), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } })),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(4, appLanguage === "en" ? "Trade Close Type" : "نوع بستن معامله"), JournalEditToggle({ editMode: closeTypeEditMode, onToggle: () => setCloseTypeEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(4, hlLabel(appLanguage === "en" ? "Trade Close Type" : "نوع بستن معامله")), JournalEditToggle({ editMode: closeTypeEditMode, onToggle: () => setCloseTypeEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, closeTypeOptions.map((opt, i) => (React.createElement("span", { key: opt, className: "flex items-center gap-1 px-3 py-2 rounded-lg text-[12px]", style: { background: closeForm.closeType === opt ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: closeForm.closeType === opt ? "var(--accent-gold)" : "var(--text-muted)" } },
@@ -10665,7 +10713,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newCloseTypeText, onChange: e => setNewCloseTypeText(e.target.value), onKeyDown: e => e.key === "Enter" && addCloseTypeOptionInline(), placeholder: (appLanguage === "en" ? "New option..." : "گزینه‌ی جدید..."), className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addCloseTypeOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(5, appLanguage === "en" ? "Manual Exit Reason" : "علت خروج دستی"), JournalEditToggle({ editMode: manualExitReasonEditMode, onToggle: () => setManualExitReasonEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(5, hlLabel(appLanguage === "en" ? "Manual Exit Reason" : "علت خروج دستی")), JournalEditToggle({ editMode: manualExitReasonEditMode, onToggle: () => setManualExitReasonEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, manualExitReasonOptions.map((opt, i) => manualExitReasonEditMode ? (React.createElement("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
@@ -10682,7 +10730,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newManualExitReasonText, onChange: e => setNewManualExitReasonText(e.target.value), onKeyDown: e => e.key === "Enter" && addManualExitReasonOptionInline(), placeholder: (appLanguage === "en" ? "New reason..." : "علت جدید..."), className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addManualExitReasonOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(6, appLanguage === "en" ? "Trade Management (multi-select)" : "مدیریت معامله (چند تا هم می‌تونی انتخاب کنی)"), JournalEditToggle({ editMode: tradeManagementEditMode, onToggle: () => setTradeManagementEditMode(m => !m) })) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(6, hlLabel(appLanguage === "en" ? "Trade Management (multi-select)" : "مدیریت معامله (چند تا هم می‌تونی انتخاب کنی)")), JournalEditToggle({ editMode: tradeManagementEditMode, onToggle: () => setTradeManagementEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, tradeManagementOptions.map((opt, i) => tradeManagementEditMode ? (React.createElement("span", { key: i, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
@@ -10702,7 +10750,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newTradeManagementText, onChange: e => setNewTradeManagementText(e.target.value), onKeyDown: e => e.key === "Enter" && addTradeManagementOptionInline(), placeholder: (appLanguage === "en" ? "New item..." : "حالت جدید..."), className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addTradeManagementOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات"), RE("button", { type: "button", onClick: () => setDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, disciplineEditMode ? "انصراف" : "ویرایش")) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات")), RE("button", { type: "button", onClick: () => setDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, disciplineEditMode ? "انصراف" : "ویرایش")) },
                     React.createElement(React.Fragment, null,
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, disciplineOptions.map(([key,label], i) => disciplineEditMode ? React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? .3 : 1, color: "var(--text-muted)" } }, "▲"),
@@ -10717,9 +10765,9 @@ function App() {
                             React.createElement("button", { type: "button", onClick: addDisciplineOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } }, RE(Plus, { size: 12 }))))),
                 React.createElement(Field, { label: numLabel(8, appLanguage === "en" ? "Note" : "یادداشت") },
                     React.createElement("textarea", { rows: 2, value: closeForm.note, onChange: e => onCloseFieldChange("note", e.target.value), className: "w-full bg-transparent outline-none text-sm resize-none", style: { color: "var(--text-primary)" } })),
-                React.createElement(Field, { label: numLabel(9, appLanguage === "en" ? "Post-Trade Chart Image" : "تصویر چارت بعد از معامله") },
+                React.createElement(Field, { label: numLabel(9, hlLabel(appLanguage === "en" ? "Post-Trade Chart Image" : "تصویر چارت بعد از معامله")) },
                     React.createElement(ChartImageField, { label: (appLanguage === "en" ? "Entry Timeframe Chart - End" : "چارت تایم ورود - پایان"), value: closeForm.chartImageAfter || "", onChange: v => onCloseFieldChange("chartImageAfter", v) })),
-                React.createElement(Field, { label: numLabel(10, appLanguage === "en" ? "Post-Trade Voice Chart Review" : "ارزیابی صوتی چارت بعد از معامله") },
+                React.createElement(Field, { label: numLabel(10, hlLabel(appLanguage === "en" ? "Post-Trade Voice Chart Review" : "ارزیابی صوتی چارت بعد از معامله")) },
                     React.createElement(VoiceNoteField, { label: (appLanguage === "en" ? "Record voice review of chart after the trade" : "ضبط رویت صوتی از وضعیت چارت بعد از معامله"), value: closeForm.voiceNoteAfter || "", onChange: v => onCloseFieldChange("voiceNoteAfter", v) })),
                 React.createElement("button", { onClick: finalizeClose, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2 nm-unified-export-btn", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
                     React.createElement(Check, { size: 16 }),
@@ -10861,7 +10909,7 @@ function App() {
                                 onEditFieldChange("tradeManagement", next);
                             }, className: "px-3 py-2 rounded-lg text-[12px]", style: { background: active ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: active ? "var(--accent-gold)" : "var(--text-muted)" } }, opt));
                     }))),
-React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات"), RE("button", { type: "button", onClick: () => setEditDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, editDisciplineEditMode ? "انصراف" : "ویرایش")) },
+React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات")), RE("button", { type: "button", onClick: () => setEditDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, editDisciplineEditMode ? "انصراف" : "ویرایش")) },
                     React.createElement(React.Fragment, null,
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, disciplineOptions.map(([key,label], i) => editDisciplineEditMode ? React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? .3 : 1, color: "var(--text-muted)" } }, "▲"),
