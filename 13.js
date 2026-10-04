@@ -3269,7 +3269,7 @@ function NmMarketEvalLayer({ config, pairs, askDeleteConfirm }) {
         RE("option", { value: "", style: { background: "var(--bg-card2)" } }, "— انتخاب کنید —"),
         NM_TRADING_WEEKDAYS.map(d => RE("option", { key: d, value: d, style: { background: "var(--bg-card2)" } }, d)));
     return RE("div", { className: "px-4 mt-4", id: "nm-me-top" },
-        RE("h2", { className: "text-sm font-semibold mb-1", style: { color: "var(--text-primary)" } }, "ارزیابی رفتار بازار"),
+        RE(NmLayerHeading, { title: "ارزیابی رفتار بازار", Icon: Target }),
         editing && RE("div", { className: "rounded-xl p-2.5 mb-3 flex items-center justify-between gap-2 text-[12px]", style: { background: nmTint(13), color: "var(--accent-gold)", border: "1px solid " + nmTint(35) } },
             RE("span", null, "✎ در حال ویرایش ارزیابی ثبت‌شده — پس از تغییر، «ذخیره‌ی تغییرات» را بزنید."),
             RE("button", { type: "button", onClick: cancelEdit, className: "underline shrink-0" }, "انصراف")),
