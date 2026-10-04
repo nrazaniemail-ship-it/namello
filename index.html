@@ -4151,10 +4151,10 @@ async function nmLibDelete(key) {
 async function nmLibLoad(key) { try { const r = await window.storage.get(key); const a = JSON.parse(r.value); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 async function nmLibSave(key, list) { await window.storage.set(key, JSON.stringify(list)); }
 function nmLibId() { return "lib" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-function nmLibPickFile(accept, onPick) {
+function nmLibPickFile(accept, onPick, options) {
     const input = document.createElement("input");
-    input.type = "file"; input.accept = accept || ""; input.style.display = "none";
-    input.onchange = () => { const f = input.files && input.files[0]; input.remove(); if (f) onPick(f); };
+    input.type = "file"; input.accept = accept || ""; input.multiple = !!(options && options.multiple); input.style.display = "none";
+    input.onchange = () => { const files = Array.from(input.files || []); input.remove(); if (files.length) onPick(options && options.multiple ? files : files[0]); };
     document.body.appendChild(input);
     input.click();
 }
@@ -4189,10 +4189,10 @@ function nmLibConfirmThen(askDeleteConfirm, message, fn) {
    Media Session هم تنظیم می‌شود تا کنترل پخش روی صفحه‌ی قفل/اعلان‌های گوشی هم دیده شود. */
 const NM_PLAY_REQ = "namello-play-request";
 const NM_PLAY_STATE = "namello-play-state";
-let nmPlayerState = { episodeId: null, playing: false };
+let nmPlayerState = { episodeId: null, playing: false, cur: 0, dur: 0, rate: 1 };
 function nmSetPlayerState(patch) { nmPlayerState = { ...nmPlayerState, ...patch }; try { window.dispatchEvent(new CustomEvent(NM_PLAY_STATE, { detail: nmPlayerState })); } catch (e) { } }
 function nmRequestPlay(track) { window.dispatchEvent(new CustomEvent(NM_PLAY_REQ, { detail: { track } })); }
-function nmRequestCmd(cmd) { window.dispatchEvent(new CustomEvent(NM_PLAY_REQ, { detail: { cmd } })); }
+function nmRequestCmd(cmd, value) { window.dispatchEvent(new CustomEvent(NM_PLAY_REQ, { detail: { cmd, value } })); }
 function useNmPlayerState() {
     const [st, setSt] = useState(nmPlayerState);
     useEffect(() => { const f = (e) => setSt(e.detail); window.addEventListener(NM_PLAY_STATE, f); return () => window.removeEventListener(NM_PLAY_STATE, f); }, []);
@@ -4222,6 +4222,8 @@ function NmGlobalPlayer({ tab }) {
     const [cur, setCur] = useState(0);
     const [dur, setDur] = useState(0);
     const [rate, setRate] = useState(1);
+    const rateRef = useRef(1);
+    rateRef.current = rate;
     const [err, setErr] = useState(false);
     const lastSave = useRef(0);
     trackRef.current = track;
@@ -4258,6 +4260,10 @@ function NmGlobalPlayer({ tab }) {
             const d = e.detail || {};
             if (d.cmd === "toggle") { const a = audioRef.current; if (a) { if (a.paused) a.play().catch(() => { }); else a.pause(); } return; }
             if (d.cmd === "stop") { try { localStorage.removeItem(NM_PLAYER_TRACK_KEY); } catch (e) {} setTrack(null); return; }
+            if (d.cmd === "skip") { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(a.duration || 0, a.currentTime + Number(d.value || 0))); return; }
+            if (d.cmd === "seek") { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(a.duration || 0, Number(d.value || 0))); return; }
+            if (d.cmd === "rate") { const r = Number(d.value) || 1; setRate(r); if (audioRef.current) audioRef.current.playbackRate = r; nmSetPlayerState({ rate: r }); return; }
+            if (d.cmd === "shuttle") { const rates = [0.75, 1, 1.25, 1.5, 2]; const curRate = Number(rateRef.current || 1); const idx = rates.indexOf(curRate); const r = rates[(idx + 1 + rates.length) % rates.length]; setRate(r); if (audioRef.current) audioRef.current.playbackRate = r; nmSetPlayerState({ rate: r }); return; }
             if (d.track) setTrack(d.track);
         };
         window.addEventListener(NM_PLAY_REQ, onReq);
@@ -4269,7 +4275,7 @@ function NmGlobalPlayer({ tab }) {
         let alive = true; let objUrl = null;
         setErr(false); setCur(0); setDur(0); setPlaying(false); setUrl(null);
         if (!track) { nmSetPlayerState({ episodeId: null, playing: false }); return undefined; }
-        nmSetPlayerState({ episodeId: track.episodeId, playing: false });
+        nmSetPlayerState({ episodeId: track.episodeId, playing: false, cur: 0, dur: 0, rate: rateRef.current });
         (async () => {
             try {
                 const blob = await nmLibGet(track.blobKey);
@@ -4301,12 +4307,12 @@ function NmGlobalPlayer({ tab }) {
     const skip = (d) => { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(dur || 0, a.currentTime + d)); };
     const seek = (v) => { const a = audioRef.current; if (a) a.currentTime = v; };
     const onTime = (e) => {
-        setCur(e.target.currentTime);
+        setCur(e.target.currentTime); nmSetPlayerState({ cur: e.target.currentTime });
         const now = Date.now();
         if (now - lastSave.current > 3000) { lastSave.current = now; try { localStorage.setItem(posKey, String(e.target.currentTime)); } catch (x) { } }
     };
     const onMeta = (e) => {
-        const a = e.target; setDur(a.duration || 0);
+        const a = e.target; setDur(a.duration || 0); nmSetPlayerState({ dur: a.duration || 0 });
         try { const saved = Number(localStorage.getItem(posKey) || 0); if (saved > 2 && saved < (a.duration || 0) - 3) a.currentTime = saved; } catch (x) { }
         a.play().catch(() => { });
     };
@@ -4317,7 +4323,11 @@ function NmGlobalPlayer({ tab }) {
         onPlay: () => { setPlaying(true); nmSetPlayerState({ playing: true }); },
         onPause: () => { setPlaying(false); nmSetPlayerState({ playing: false }); },
         onTimeUpdate: onTime, onLoadedMetadata: onMeta,
-        onEnded: () => { setPlaying(false); nmSetPlayerState({ playing: false }); try { localStorage.removeItem(posKey); } catch (x) { } },
+        onEnded: () => {
+            setPlaying(false); nmSetPlayerState({ playing: false }); try { localStorage.removeItem(posKey); } catch (x) { }
+            const pl = Array.isArray(track.playlist) ? track.playlist : []; const idx = Number(track.playlistIndex);
+            if (pl.length && isFinite(idx) && idx >= 0 && idx < pl.length - 1) { const next = { ...pl[idx + 1], playlist: pl, playlistIndex: idx + 1 }; setTimeout(() => setTrack(next), 60); }
+        },
         onError: () => setErr(true),
     });
     const inLibrary = tab === "library";
@@ -4338,7 +4348,7 @@ function NmGlobalPlayer({ tab }) {
                     RE("button", { type: "button", onClick: () => skip(-skipS), className: "p-1.5", "aria-label": "عقب" }, RE("span", { style: { fontSize: 15 } }, "⏪")),
                     RE("button", { type: "button", onClick: toggle, className: "w-10 h-10 rounded-full flex items-center justify-center", style: { background: "var(--accent-gold)", color: "var(--bg-page)", fontSize: 16 }, "aria-label": "پخش/توقف" }, playing ? "⏸" : "▶"),
                     RE("button", { type: "button", onClick: () => skip(skipS), className: "p-1.5", "aria-label": "جلو" }, RE("span", { style: { fontSize: 15 } }, "⏩")),
-                    RE("select", { value: rate, onChange: e => setRate(Number(e.target.value)), className: "text-[11px] rounded-lg px-1.5 py-1 bg-transparent outline-none", style: { color: "var(--text-secondary)", border: "1px solid var(--border-2)" } },
+                    RE("select", { value: rate, onChange: e => { setRate(Number(e.target.value)); nmSetPlayerState({ rate: Number(e.target.value) }); }, className: "text-[11px] rounded-lg px-1.5 py-1 bg-transparent outline-none", style: { color: "var(--text-secondary)", border: "1px solid var(--border-2)" } },
                         [0.75, 1, 1.25, 1.5, 2].map(r => RE("option", { key: r, value: r, style: { background: "var(--bg-card2)" } }, r + "x"))))));
     const mini = RE("div", { className: "inline-flex items-center gap-1.5 rounded-full pl-1.5 pr-2.5 py-1", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)", maxWidth: 170, direction: "ltr" } },
         triBtn(false),
@@ -4347,7 +4357,7 @@ function NmGlobalPlayer({ tab }) {
     const createPortal = ReactDOM.createPortal;
     return RE(React.Fragment, null,
         audioEl,
-        inLibrary && libSlot ? createPortal(RE("div", { className: "sticky z-30 pb-2", style: { top: "env(safe-area-inset-top, 0px)", direction: "ltr" } }, card(false)), libSlot) : null,
+        /* در کتابخانه کنترل‌های پخش مستقیماً داخل کارت اپیزود رندر می‌شوند؛ پخش‌کننده‌ی جداگانه ساخته نمی‌شود. */
         !inLibrary && miniSlot ? createPortal(mini, miniSlot) : null,
         !inLibrary && centerOpen ? RE("div", { className: "fixed left-0 right-0 z-[55] flex justify-center px-4", style: { top: "50%", transform: "translateY(-50%)", pointerEvents: "none" } }, RE("div", { style: { pointerEvents: "auto", width: "100%", maxWidth: maxW } }, card(true))) : null);
 }
@@ -4486,56 +4496,52 @@ function NmPodcastRow({ podcast, onChange, onRemove, onPlay, askDeleteConfirm })
     const [titleText, setTitleText] = useState(podcast.title);
     const [editEpId, setEditEpId] = useState(null);
     const [epText, setEpText] = useState("");
-
     const saveTitle = () => { onChange({ ...podcast, title: titleText.trim() || podcast.title }); setEditingTitle(false); };
     const addEpisode = () => {
-        nmLibPickFile("audio/*", async (file) => {
-            const id = nmLibId();
-            try { await nmLibPut(id, file); } catch (e) { return; }
-            const ep = { id, title: nmLibTitleFromFileName(file.name), fileName: file.name, mimeType: file.type, sizeBytes: file.size, addedAt: new Date().toISOString() };
-            onChange({ ...podcast, episodes: [...(podcast.episodes || []), ep] });
+        nmLibPickFile("audio/*", async (files) => {
+            const added = [];
+            for (const file of files) {
+                const id = nmLibId();
+                try { await nmLibPut(id, file); } catch (e) { continue; }
+                added.push({ id, title: nmLibTitleFromFileName(file.name), fileName: file.name, mimeType: file.type, sizeBytes: file.size, addedAt: new Date().toISOString() });
+            }
+            if (added.length) onChange({ ...podcast, episodes: [...(podcast.episodes || []), ...added] });
             setOpen(true);
-        });
+        }, { multiple: true });
     };
-    const saveEpRename = () => {
-        onChange({ ...podcast, episodes: podcast.episodes.map(e => e.id === editEpId ? { ...e, title: epText.trim() || e.title } : e) });
-        setEditEpId(null);
-    };
-    const removeEpisode = (epId) => {
-        nmLibConfirmThen(askDeleteConfirm, "این اپیزود حذف شود؟", () => {
-            nmLibDelete(epId); if (nmPlayerState.episodeId === epId) nmRequestCmd("stop");
-            onChange({ ...podcast, episodes: podcast.episodes.filter(e => e.id !== epId) });
-        });
-    };
-
+    const saveEpRename = () => { onChange({ ...podcast, episodes: podcast.episodes.map(e => e.id === editEpId ? { ...e, title: epText.trim() || e.title } : e) }); setEditEpId(null); };
+    const removeEpisode = (epId) => nmLibConfirmThen(askDeleteConfirm, "این اپیزود حذف شود؟", () => { nmLibDelete(epId); if (nmPlayerState.episodeId === epId) nmRequestCmd("stop"); onChange({ ...podcast, episodes: podcast.episodes.filter(e => e.id !== epId) }); });
     const episodes = podcast.episodes || [];
+    const playlist = episodes.map(e => ({ episodeId: e.id, blobKey: e.id, title: e.title, subtitle: podcast.title }));
+    const controls = (ep, i) => activeEpisodeId === ep.id && RE("div", { className: "mt-2 rounded-lg p-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+        RE("input", { type: "range", min: 0, max: ps.dur || 0, step: 0.5, value: Math.min(ps.cur || 0, ps.dur || 0), onChange: e => nmRequestCmd("seek", Number(e.target.value)), className: "w-full", style: { accentColor: "var(--accent-gold)" } }),
+        RE("div", { className: "flex items-center justify-between text-[9px] mb-1", style: { color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } }, RE("span", null, nmFmtTime(ps.cur)), RE("span", null, nmFmtTime(ps.dur))),
+        RE("div", { className: "flex items-center justify-center gap-1" },
+            RE("button", { type: "button", onClick: () => nmRequestCmd("skip", -15), className: "p-1.5", "aria-label": "عقب ۱۵ ثانیه" }, "⏪"),
+            i > 0 && RE("button", { type: "button", onClick: () => onPlay(podcast, episodes[i - 1]), className: "p-1.5", "aria-label": "اپیزود قبلی" }, "◀"),
+            RE("button", { type: "button", onClick: () => nmRequestCmd("toggle"), className: "w-9 h-9 rounded-full flex items-center justify-center", style: { background: "var(--accent-gold)", color: "var(--bg-page)" }, "aria-label": "پخش/توقف" }, ps.playing ? "⏸" : "▶"),
+            i < episodes.length - 1 && RE("button", { type: "button", onClick: () => onPlay(podcast, episodes[i + 1]), className: "p-1.5", "aria-label": "اپیزود بعدی" }, "▶"),
+            RE("button", { type: "button", onClick: () => nmRequestCmd("skip", 15), className: "p-1.5", "aria-label": "جلو ۱۵ ثانیه" }, "⏩"),
+            RE("button", { type: "button", onClick: () => nmRequestCmd("shuttle"), className: "px-2 py-1 rounded-md text-[10px]", style: { color: "var(--accent-gold)", border: "1px solid var(--border-2)" }, "aria-label": "شاتل سرعت پخش" }, "Shuttle"),
+            RE("span", { className: "text-[10px] min-w-7 text-center", style: { color: "var(--text-secondary)" } }, (ps.rate || 1) + "x")
+        )
+    );
     return RE("div", { className: "rounded-xl mb-2 overflow-hidden", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", direction: "ltr", textAlign: "left" } },
         RE("div", { className: "flex items-center gap-2 p-3" },
-            RE("button", { type: "button", onClick: () => setOpen(o => !o), className: "flex-1 flex items-center gap-2 min-w-0", style: { textAlign: "left" } },
-                RE("span", { style: { fontSize: 20 } }, "🎙️"),
-                RE("div", { className: "flex-1 min-w-0" },
-                    editingTitle
-                        ? RE("input", { type: "text", value: titleText, autoFocus: true, onClick: e => e.stopPropagation(), onChange: e => setTitleText(e.target.value), onKeyDown: e => e.key === "Enter" && saveTitle(), onBlur: saveTitle, className: "w-full bg-transparent outline-none text-[13px] font-semibold", style: { color: "var(--text-primary)", borderBottom: "1px solid var(--accent-gold)" } })
-                        : RE("div", { className: "text-[13px] font-semibold truncate", style: { color: "var(--text-primary)" } }, podcast.title),
-                    RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, episodes.length + " اپیزود")),
-                open ? RE(ChevronUp, { size: 14, color: "var(--text-muted)" }) : RE(ChevronDown, { size: 14, color: "var(--text-muted)" })),
-            RE("button", { type: "button", onClick: () => { setEditingTitle(true); setTitleText(podcast.title); }, "aria-label": "تغییر نام" }, RE(Edit3, { size: 13, color: "var(--text-muted)" })),
-            RE("button", { type: "button", onClick: () => nmLibConfirmThen(askDeleteConfirm, "پادکست «" + podcast.title + "» و همه‌ی اپیزودهایش حذف شود؟", onRemove), "aria-label": "حذف پادکست" }, RE(Trash2, { size: 13, color: "#F87171" }))),
+            RE("button", { type: "button", onClick: () => setOpen(o => !o), className: "flex-1 flex items-center gap-2 min-w-0", style: { textAlign: "left" } }, RE("span", { style: { fontSize: 20 } }, "🎙️"), RE("div", { className: "flex-1 min-w-0" }, editingTitle ? RE("input", { type: "text", value: titleText, autoFocus: true, onClick: e => e.stopPropagation(), onChange: e => setTitleText(e.target.value), onKeyDown: e => e.key === "Enter" && saveTitle(), onBlur: saveTitle, className: "w-full bg-transparent outline-none text-[13px] font-semibold", style: { color: "var(--text-primary)", borderBottom: "1px solid var(--accent-gold)" } }) : RE("div", { className: "text-[13px] font-semibold truncate", style: { color: "var(--text-primary)" } }, podcast.title), RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, episodes.length + " اپیزود")), open ? RE(ChevronUp, { size: 14, color: "var(--text-muted)" }) : RE(ChevronDown, { size: 14, color: "var(--text-muted)" })),
+            RE("button", { type: "button", onClick: () => { setEditingTitle(true); setTitleText(podcast.title); }, "aria-label": "تغییر نام" }, RE(Edit3, { size: 13, color: "var(--text-muted)" })), RE("button", { type: "button", onClick: () => nmLibConfirmThen(askDeleteConfirm, "پادکست «" + podcast.title + "» و همه‌ی اپیزودهایش حذف شود؟", onRemove), "aria-label": "حذف پادکست" }, RE(Trash2, { size: 13, color: "#F87171" }))),
         open && RE("div", { className: "px-3 pb-3", style: { borderTop: "1px solid var(--border-1)" } },
             episodes.length === 0 && RE("div", { className: "text-[11px] py-2", style: { color: "var(--text-muted)" } }, "هنوز اپیزودی اضافه نشده."),
-            episodes.map((ep, i) => RE("div", { key: ep.id },
-                RE("div", { className: "flex items-center gap-2 py-2", style: { borderBottom: i < episodes.length - 1 ? "1px solid var(--border-1)" : "none" } },
+            episodes.map((ep, i) => RE("div", { key: ep.id, className: "py-2", style: { borderBottom: i < episodes.length - 1 ? "1px solid var(--border-1)" : "none" } },
+                RE("div", { className: "flex items-center gap-2" },
                     RE("button", { type: "button", onClick: () => onPlay(podcast, ep), className: "w-8 h-8 rounded-full flex items-center justify-center shrink-0", style: { background: activeEpisodeId === ep.id ? "var(--accent-gold)" : "var(--bg-card2)", color: activeEpisodeId === ep.id ? "var(--bg-page)" : "var(--text-secondary)" } }, (activeEpisodeId === ep.id && ps.playing) ? "⏸" : "▶"),
-                    RE("div", { className: "flex-1 min-w-0" },
-                        editEpId === ep.id
-                            ? RE("input", { type: "text", value: epText, autoFocus: true, onChange: e => setEpText(e.target.value), onKeyDown: e => e.key === "Enter" && saveEpRename(), onBlur: saveEpRename, className: "w-full bg-transparent outline-none text-[12px]", style: { color: "var(--text-primary)", borderBottom: "1px solid var(--accent-gold)" } })
-                            : RE("div", { className: "text-[12px] truncate", style: { color: "var(--text-primary)" } }, (i + 1) + ". " + ep.title),
-                        RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, nmFmtBytes(ep.sizeBytes || 0) + " · " + nmLibFmtDate(ep.addedAt))),
-                    RE("button", { type: "button", onClick: () => { setEditEpId(ep.id); setEpText(ep.title); } }, RE(Edit3, { size: 12, color: "var(--text-muted)" })),
-                    RE("button", { type: "button", onClick: () => removeEpisode(ep.id) }, RE(X, { size: 13, color: "#F87171" }))),
-                activeEpisodeId === ep.id && RE("div", { "data-nm-player-lib-slot": "1", className: "mt-1 mb-1" })
+                    RE("div", { className: "flex-1 min-w-0", onClick: () => onPlay(podcast, ep), style: { cursor: "pointer" } }, editEpId === ep.id ? RE("input", { type: "text", value: epText, autoFocus: true, onClick: e => e.stopPropagation(), onChange: e => setEpText(e.target.value), onKeyDown: e => e.key === "Enter" && saveEpRename(), onBlur: saveEpRename, className: "w-full bg-transparent outline-none text-[12px]", style: { color: "var(--text-primary)", borderBottom: "1px solid var(--accent-gold)" } }) : RE("div", { className: "text-[12px] truncate", style: { color: "var(--text-primary)" } }, (i + 1) + ". " + ep.title), RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, nmFmtBytes(ep.sizeBytes || 0) + " · " + nmLibFmtDate(ep.addedAt))),
+                    RE("button", { type: "button", onClick: () => { setEditEpId(ep.id); setEpText(ep.title); } }, RE(Edit3, { size: 12, color: "var(--text-muted)" })), RE("button", { type: "button", onClick: () => removeEpisode(ep.id) }, RE(X, { size: 13, color: "#F87171" }))),
+                controls(ep, i)
             )),
-            RE("button", { type: "button", onClick: addEpisode, className: "w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] mt-1", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } }, RE(Plus, { size: 12 }), "افزودن اپیزود")));
+            RE("button", { type: "button", onClick: addEpisode, className: "w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] mt-1", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } }, RE(Plus, { size: 12 }), "افزودن اپیزودهای صوتی")
+        )
+    );
 }
 function NmLibraryPodcastsSection({ showToast, askDeleteConfirm }) {
     const [podcasts, setPodcasts] = useState([]);
@@ -4556,7 +4562,10 @@ function NmLibraryPodcastsSection({ showToast, askDeleteConfirm }) {
     };
     const playEpisode = (podcast, ep) => {
         if (nmPlayerState.episodeId === ep.id) { nmRequestCmd("toggle"); return; }
-        nmRequestPlay({ episodeId: ep.id, blobKey: ep.id, title: ep.title, subtitle: podcast.title });
+        const episodes = podcast.episodes || [];
+        const playlist = episodes.map(e => ({ episodeId: e.id, blobKey: e.id, title: e.title, subtitle: podcast.title }));
+        const playlistIndex = Math.max(0, episodes.findIndex(e => e.id === ep.id));
+        nmRequestPlay({ episodeId: ep.id, blobKey: ep.id, title: ep.title, subtitle: podcast.title, playlist, playlistIndex });
     };
     return RE("div", { className: "mb-5", style: { direction: "ltr", textAlign: "left" } },
         RE("div", { className: "flex items-center justify-between mb-2" },
