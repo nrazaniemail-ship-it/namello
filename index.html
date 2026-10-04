@@ -2194,9 +2194,9 @@ function GratitudeChecklistLayer({ activeAccount, list, newText, setNewText, onA
             React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 list.map((g, i) => {
                     const checked = isDone(g);
-                    return React.createElement("div", { key: g.id, className: "rounded-xl p-2.5 mb-2 last:mb-0 flex items-center gap-2 flex-row-reverse", style: { background: "var(--bg-card2)", border: checked ? "1px solid #34D39955" : "1px solid var(--border-1)" } },
-                        React.createElement("button", { type: "button", onClick: () => toggleDone(g), "aria-label": checked ? "انجام شد" : "انجام نشده", className: "w-5 h-5 rounded-md flex items-center justify-center shrink-0", style: { background: checked ? "#0F3328" : "#0A0D0F", color: checked ? "#34D399" : "#6B7280", border: checked ? "1px solid #34D399" : "1px solid #4B5563", fontSize: 12, fontWeight: 700 } }, checked ? "✓" : ""),
-                        React.createElement("div", { className: "flex-1 min-w-0" },
+                    return React.createElement("div", { key: g.id, className: "rounded-xl p-2.5 mb-2 last:mb-0 relative min-h-[34px]", style: { background: "var(--bg-card2)", border: checked ? "1px solid #34D39955" : "1px solid var(--border-1)" } },
+                        React.createElement("button", { type: "button", onClick: () => toggleDone(g), "aria-label": checked ? "انجام شد" : "انجام نشده", className: "absolute right-2 top-2 w-5 h-5 rounded-md flex items-center justify-center", style: { background: checked ? "#0F3328" : "#0A0D0F", color: checked ? "#34D399" : "#6B7280", border: checked ? "1px solid #34D399" : "1px solid #4B5563", fontSize: 12, fontWeight: 700 } }, checked ? "✓" : ""),
+                        React.createElement("div", { className: "min-w-0 pr-7" },
                             React.createElement(AutoGrowTextarea, { value: g.text, onChange: e => onUpdateText(g.id, e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: checked ? "var(--text-muted)" : "var(--text-primary)", minWidth: 0, textDecoration: checked ? "line-through" : "none" } }),
                             React.createElement("div", { className: "flex items-center gap-2 mt-1" },
                                 React.createElement("button", { type: "button", onClick: () => onMove(g.id, -1), disabled: i === 0, className: "text-[10px]", style: { color: "var(--text-muted)", opacity: i === 0 ? .25 : 1 } }, "▲"),
