@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.nrazaniemail_ship_it.twa",
-        "sha256_cert_fingerprints": ["F2:4A:83:08:ED:82:B8:FD:68:32:65:10:EB:20:2F:C5:76:C9:44:7D:D8:71:40:D2:F0:E4:79:0A:C0:81:DB:C6"]
+        "sha256_cert_fingerprints": ["E5:22:D8:0B:53:46:5B:55:D3:6A:58:75:18:1A:8A:49:7D:22:E5:91:C0:DF:21:68:1C:28:7B:27:5B:7A:EA:7B"]
       }
     }]
