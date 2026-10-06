@@ -1,9 +1,9 @@
 {
   "id": "./",
-  "name": "Namello 1.0.13",
-  "short_name": "Namello 1.0.13",
+  "name": "Namello 1.0.14",
+  "short_name": "Namello 1.0.14",
   "description": "ژورنال معاملاتی Namello با Dashboard، تحلیل آماری، ارزیابی پیشرفته، ایمپورت استیتمنت MT4/MT5 و مدیریت معاملات",
-  "start_url": "./index.html?v=1013",
+  "start_url": "./index.html?v=1014",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -61,6 +61,6 @@
   "launch_handler": {
     "client_mode": "navigate-existing"
   },
-  "version": "1.0.13",
-  "versionCode": 13
+  "version": "1.0.14",
+  "versionCode": 14
 }

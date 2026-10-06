@@ -1,372 +1,4 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.14</title>
-<meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="icon-192.png" />
-<link rel="apple-touch-icon" href="icon-192.png" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/parastoo-font@latest/dist/font-face.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/samim-font@latest/dist/font-face.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@latest/dist/font-face.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/gandom-font@latest/dist/font-face.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/shabnam-font@latest/dist/font-face.css" />
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Estedad:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-  /* توکن‌های رنگ: پیش‌فرض تیره (:root)، و بازنویسیِ روشن زیرِ html[data-theme="light"]. چون تقریباً
-     همه‌جای اپ به‌جای این ۹ رنگِ پایه از همین متغیرها استفاده می‌کنه، با عوض‌شدنِ data-theme کل
-     اپ به‌صورت خودکار زمینه/متن‌ش عوض می‌شه — بدون نیاز به دست‌کاریِ تک‌تک کامپوننت‌ها. */
-  :root {
-    --bg-page: #0B0E11; --bg-card: #12161C; --bg-card2: #1A1F27;
-    --border-1: #1F242C; --border-2: #262C36;
-    --text-primary: #E8EAED; --text-secondary: #8B93A1; --text-muted: #6B7280;
-    --accent-gold: #D4A64A;
-    --app-font: 'Vazirmatn', sans-serif;
-  }
-  .nm-dashboard { color: var(--text-primary); }
-  /* استایل یکسان خروجی Excel و PDF در تمام لایه‌ها */
-  .nm-unified-export-btn {
-    background: var(--bg-card) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-1) !important;
-    min-height: 44px;
-    transition: opacity .15s ease, transform .15s ease;
-  }
-  .nm-unified-export-btn:active { opacity: .8; transform: translateY(1px); }
 
-  .nm-dashboard input, .nm-dashboard select, .nm-dashboard textarea, .nm-dashboard button { color: var(--text-primary); }
-  .nm-dashboard option { color: var(--text-primary); background: var(--bg-card2); }
-  html[data-theme="light"] {
-    --bg-page: #F5F3EC; --bg-card: #FFFFFF; --bg-card2: #F1EEE4;
-    --border-1: #E4E0D3; --border-2: #D8D3C3;
-    --text-primary: #24282E; --text-secondary: #565F6B; --text-muted: #6B7280;
-    --accent-gold: #A97B1F;
-  }
-  /* ---- تم‌های رنگی برنامه (تنظیمات ← تم لایه‌های برنامه) — فقط متغیرهای رنگی را عوض می‌کنند ---- */
-  html[data-app-theme="pureblack"]:not([data-theme="light"]) { --bg-page: #000000; --bg-card: #0B0B0E; --bg-card2: #16161B; --border-1: #1C1C22; --border-2: #2A2A33; --text-secondary: #9A9AA8; --text-muted: #6C6C7A; --accent-gold: #8B5CF6; }
-  html[data-app-theme="pureblack"][data-theme="light"] { --accent-gold: #7C3AED; }
-  html[data-app-theme="midnight"]:not([data-theme="light"]) { --bg-page: #070B1A; --bg-card: #0D1326; --bg-card2: #172041; --border-1: #1A2444; --border-2: #27345F; --text-secondary: #93A3C4; --text-muted: #6B7A9C; --accent-gold: #60A5FA; }
-  html[data-app-theme="midnight"][data-theme="light"] { --accent-gold: #2563EB; }
-  html[data-app-theme="emerald"]:not([data-theme="light"]) { --bg-page: #07130F; --bg-card: #0D2019; --bg-card2: #143026; --border-1: #16382C; --border-2: #1E4A3A; --text-secondary: #8FB5A6; --text-muted: #5E8A78; --accent-gold: #10B981; }
-  html[data-app-theme="emerald"][data-theme="light"] { --accent-gold: #059669; }
-  html[data-app-theme="royal"]:not([data-theme="light"]) { --bg-page: #0B0716; --bg-card: #140E26; --bg-card2: #1E1638; --border-1: #261B45; --border-2: #372A62; --text-secondary: #A79BC7; --text-muted: #7C6FA3; --accent-gold: #A78BFA; }
-  html[data-app-theme="royal"][data-theme="light"] { --accent-gold: #7C3AED; }
-  html[data-app-theme="graphite"]:not([data-theme="light"]) { --bg-page: #0A0A0C; --bg-card: #121215; --bg-card2: #1B1B20; --border-1: #202026; --border-2: #2C2C34; --text-secondary: #9CA3AF; --text-muted: #6B7280; --accent-gold: #E5E7EB; }
-  html[data-app-theme="graphite"][data-theme="light"] { --accent-gold: #374151; }
-  html[data-app-theme="sunset"]:not([data-theme="light"]) { --bg-page: #120A05; --bg-card: #1D120A; --bg-card2: #291A0F; --border-1: #2C1B10; --border-2: #40291A; --text-secondary: #C2A58E; --text-muted: #8F7460; --accent-gold: #F97316; }
-  html[data-app-theme="sunset"][data-theme="light"] { --accent-gold: #EA580C; }
-  html[data-app-theme="ruby"]:not([data-theme="light"]) { --bg-page: #14060A; --bg-card: #1F0B11; --bg-card2: #2C121A; --border-1: #34141D; --border-2: #4A1E2A; --text-secondary: #C99AA5; --text-muted: #94636E; --accent-gold: #F43F5E; }
-  html[data-app-theme="ruby"][data-theme="light"] { --accent-gold: #E11D48; }
-  html, body { background: var(--bg-page); margin: 0; padding: 0; }
-  * { font-family: var(--app-font); box-sizing: border-box; }
-  #root { min-height: 100vh; }
-  #boot-error { display: none; direction: ltr; text-align: left; color: #F87171; background: #1A0B0B; padding: 16px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; min-height: 100vh; }
-  #boot-status { color: var(--text-muted); font-family: monospace; font-size: 11px; padding: 16px; direction: ltr; text-align: left; }
-  .nm-nav-item { position: relative; transition: background .18s ease, color .18s ease, transform .18s ease; border-radius: 12px; margin: 3px 2px; }
-  .nm-nav-item.nm-nav-active { background: color-mix(in srgb, var(--accent-gold) 10%, transparent); box-shadow: none; border-color: transparent !important; }
-  .nm-nav-item.nm-nav-active::before { display:none !important; }
-  .nm-layer-icon { width: 28px; height: 28px; border-radius: 9px; display:flex; align-items:center; justify-content:center; background: color-mix(in srgb, var(--bg-card2) 82%, var(--accent-gold)); border:1px solid color-mix(in srgb, var(--border-2) 80%, var(--accent-gold)); box-shadow: 0 5px 14px #00000033; }
-  .nm-settings-stack > div:nth-child(3n+1) { background: color-mix(in srgb, var(--bg-card) 88%, #3B82F6 12%) !important; }
-  .nm-settings-stack > div:nth-child(3n+2) { background: color-mix(in srgb, var(--bg-card) 88%, #8B5CF6 12%) !important; }
-  .nm-settings-stack > div:nth-child(3n) { background: color-mix(in srgb, var(--bg-card) 90%, #34D399 10%) !important; }
-  .nm-settings-stack > .nm-profile-card { background: color-mix(in srgb, #3B82F6 8%, var(--bg-card)) !important; border-color: color-mix(in srgb, #3B82F6 28%, var(--border-1)) !important; }
-  .nm-settings-stack > .nm-template-card { background: color-mix(in srgb, #8B5CF6 8%, var(--bg-card)) !important; border-color: color-mix(in srgb, #8B5CF6 28%, var(--border-1)) !important; }
-  .nm-settings-stack > .nm-profile-content { background: color-mix(in srgb, #3B82F6 6%, var(--bg-card)) !important; border-color: color-mix(in srgb, #3B82F6 22%, var(--border-1)) !important; width: 100% !important; }
-  .nm-settings-stack > .nm-template-content { background: color-mix(in srgb, #8B5CF6 6%, var(--bg-card)) !important; border-color: color-mix(in srgb, #8B5CF6 22%, var(--border-1)) !important; width: 100% !important; }
-  .nm-entry-modal .nm-entry-tone > .rounded-lg, .nm-entry-modal .nm-entry-tone .rounded-lg { border-color: color-mix(in srgb, #60A5FA 34%, var(--border-2)) !important; }
-  .nm-result-modal .nm-result-tone > .rounded-lg, .nm-result-modal .nm-result-tone .rounded-lg { border-color: color-mix(in srgb, #34D399 34%, var(--border-2)) !important; }
-  .nm-entry-modal .nm-entry-tone, .nm-result-modal .nm-result-tone { box-shadow: inset 0 2px 0 color-mix(in srgb, currentColor 18%, transparent); }
-  /* چیدمان استاندارد لایه خروجی کل */
-  .nm-export-main-box { background: color-mix(in srgb, var(--accent-gold) 5%, var(--bg-card)); border: 1px solid color-mix(in srgb, var(--accent-gold) 24%, var(--border-1)); border-radius: 18px; padding: 12px; }
-  .nm-export-main-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .nm-export-main-btn { min-height: 74px; }
-  .nm-export-dev { margin-top: 12px; }
-  /* همه‌ی کنترل‌های جمع/باز تنظیمات دقیقاً یک اندازه و رنگ */
-  .nm-settings-chevron { width: 28px; height: 28px; min-width: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--accent-gold) 12%, var(--bg-card2)); border: 1px solid color-mix(in srgb, var(--accent-gold) 28%, var(--border-2)); color: var(--accent-gold) !important; }
-  .nm-settings-chevron svg { width: 14px !important; height: 14px !important; color: var(--accent-gold) !important; }
-  .nm-collapse-chevron { flex: 0 0 28px; }
-  .nm-collapse-chevron svg { display: block; }
-</style>
-</head>
-<body>
-<div id="boot-status">Loading Namello 1.0.14…</div>
-<div id="boot-error"></div>
-<div id="root"></div>
-<div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
-
-<script>
-  // تا وقتی برنامه هنوز mount نشده، هر خطایی واقعاً کشنده‌ست (چون یعنی اصلاً بالا نیومده) و باید
-  // صفحه‌ی کامل خطا رو نشون بدیم. اما بعد از mount موفق، یک خطای بعدی (حتی اگه از دل یه فیچر فرعی
-  // باشه) نباید کل UIِ درحال‌کارِ کاربر رو پاک کنه — به‌جاش یک نوار کوچیک پایین صفحه نشون می‌دیم که
-  // می‌شه بستش، و کار با بقیه‌ی برنامه ادامه پیدا می‌کنه.
-  window.__namelloMounted = false;
-  // اعمال زودهنگام تم (قبل از رندر) تا هنگام باز شدن برنامه، لحظه‌ای رنگ پیش‌فرض دیده نشود.
-  (function () {
-    try {
-      var d = document.documentElement;
-      var m = localStorage.getItem('ns_namello_theme_mode_v1');
-      var t = localStorage.getItem('ns_namello_app_theme_v1');
-      if (m === 'light' || m === 'dark') d.setAttribute('data-theme', m);
-      if (t && t !== 'classic') d.setAttribute('data-app-theme', t);
-    } catch (e) {}
-  })();
-  function showBootError(title, detail) {
-    if (window.__namelloMounted) {
-      showRuntimeErrorBanner(title, detail);
-      return;
-    }
-    var el = document.getElementById('boot-error');
-    var status = document.getElementById('boot-status');
-    if (status) status.style.display = 'none';
-    if (!el) return;
-    el.style.display = 'block';
-    var looksLikeCorruptedLib = /react|xlsx|plotly|tailwind/i.test(String(detail || '')) && /is not a function|is not defined|Unexpected token/i.test(String(detail || ''));
-    var hint = looksLikeCorruptedLib
-      ? 'این نوع خطا معمولاً یعنی یکی از فایل‌های جاوااسکریپتِ برنامه (از cdn.jsdelivr.net) به‌طور کامل دانلود نشده — رایج‌ترین دلیلش اینترنت ناپایداره. لطفاً یه بار دکمه‌ی «تلاش مجدد» رو بزن؛ اگه دوباره تکرار شد، با وای‌فای امتحان کن.'
-      : '';
-    el.innerHTML = '';
-    var pre = document.createElement('div');
-    pre.textContent = '⚠ ' + title + '\n\n' + (detail || '') + (hint ? ('\n\n' + hint) : '') + '\n\n---\nPlease screenshot this and send it back.';
-    el.appendChild(pre);
-    var btn = document.createElement('button');
-    btn.textContent = 'تلاش مجدد (بارگذاری دوباره)';
-    btn.style.cssText = 'margin-top:16px; padding:10px 16px; border-radius:10px; background:#D4A64A; color:#0B0E11; border:none; font-family:inherit; font-size:12px; cursor:pointer;';
-    btn.onclick = function () { window.location.reload(); };
-    el.appendChild(btn);
-  }
-  var runtimeBannerTimer = null;
-  function showRuntimeErrorBanner(title, detail) {
-    var banner = document.getElementById('runtime-error-banner');
-    if (!banner) return;
-    banner.innerHTML = '';
-    var span = document.createElement('span');
-    span.textContent = '⚠ ' + title + ': ' + String(detail || '').slice(0, 160);
-    banner.appendChild(span);
-    var closeBtn = document.createElement('button');
-    closeBtn.textContent = '✕';
-    closeBtn.style.cssText = 'margin-inline-start:10px; background:none; border:none; color:#F87171; font-size:14px; cursor:pointer;';
-    closeBtn.onclick = function () { banner.style.display = 'none'; };
-    banner.appendChild(closeBtn);
-    banner.style.display = 'block';
-    console.error('[Namello runtime error, app still mounted]', title, detail);
-    if (runtimeBannerTimer) clearTimeout(runtimeBannerTimer);
-    runtimeBannerTimer = setTimeout(function () { banner.style.display = 'none'; }, 8000);
-  }
-  window.addEventListener('error', function (e) {
-    var msg = e.message || (e.error && (e.error.stack || e.error.message)) || 'Unknown error';
-    var src = e.filename ? (' at ' + e.filename + ':' + e.lineno + ':' + e.colno) : '';
-    showBootError('Script error', msg + src);
-  }, true);
-  window.addEventListener('unhandledrejection', function (e) {
-    showBootError('Unhandled promise rejection', (e.reason && (e.reason.stack || e.reason.message)) || String(e.reason));
-  });
-
-  /* ================= Namello Storage v2 =================
-     پیش‌تر همه‌ی داده (معاملات، عکس/صدای یادداشت‌ها، تنظیمات) در localStorage بود که سقفش حدود ۵ مگابایت است
-     و پر شدنش بی‌صدا باعث ذخیره‌نشدن می‌شد. حالا داده‌ها در IndexedDB نگه‌داری می‌شوند (ظرفیت صدها مگابایت)،
-     با مهاجرت خودکار و بازبینی‌شده از localStorage قدیمی. اگر IndexedDB در دسترس نبود، به همان رفتار قبلی برمی‌گردد.
-     چند کلیدِ کوچک (تم و پیکربندی رویدادها) عمداً در localStorage هم آینه می‌شوند، چون قبل از بالا آمدن React
-     (جلوگیری از پرش رنگ) و توسط widget.html به‌صورت همگام خوانده می‌شوند. */
-  (function () {
-    var PREFIX = 'ns_';
-    var MIRROR = { namello_theme_mode_v1: 1, namello_app_theme_v1: 1, namello_icon_theme_v1: 1, namello_session_config_v3: 1 };
-    var LS_ONLY = { namello_seen_version_code_v1: 1, namello_update_from_v1: 1 };   // مخصوص همین دستگاه؛ مهاجرت نمی‌شوند
-    var DB_NAME = 'namello_store', STORE = 'kv', META = '__meta__';
-    var backend = 'localStorage';
-    var lastWarn = 0;
-
-    function warn(msg) {
-      var now = Date.now();
-      if (now - lastWarn < 10000) return;
-      lastWarn = now;
-      try { window.dispatchEvent(new CustomEvent('namello-toast', { detail: msg })); } catch (e) {}
-    }
-    var FULL_MSG = 'ذخیره‌سازی ناموفق بود؛ فضای حافظه‌ی برنامه پر است. همین حالا از تنظیمات ← پشتیبان‌گیری فایل پشتیبان بگیرید.';
-
-    /* ---------- پیاده‌سازی قدیمی (localStorage) ---------- */
-    var ls = {
-      async get(key) { var raw = localStorage.getItem(PREFIX + key); if (raw === null) throw new Error('not found'); return { key: key, value: raw, shared: false }; },
-      async set(key, value) {
-        try { localStorage.setItem(PREFIX + key, value); } catch (e) { warn(FULL_MSG); throw e; }
-        return { key: key, value: value, shared: false };
-      },
-      async delete(key) { localStorage.removeItem(PREFIX + key); return { key: key, deleted: true, shared: false }; },
-      async list(prefix) {
-        var keys = [];
-        for (var i = 0; i < localStorage.length; i++) {
-          var k = localStorage.key(i);
-          if (k && k.indexOf(PREFIX + (prefix || '')) === 0 && !LS_ONLY[k.slice(3)]) keys.push(k.slice(3));
-        }
-        return { keys: keys, shared: false };
-      },
-    };
-
-    /* ---------- IndexedDB ---------- */
-    var db = null;
-    function openDb() {
-      return new Promise(function (resolve, reject) {
-        if (!window.indexedDB) { reject(new Error('no-idb')); return; }
-        var rq;
-        try { rq = indexedDB.open(DB_NAME, 1); } catch (e) { reject(e); return; }
-        rq.onupgradeneeded = function () { if (!rq.result.objectStoreNames.contains(STORE)) rq.result.createObjectStore(STORE); };
-        rq.onsuccess = function () { resolve(rq.result); };
-        rq.onerror = function () { reject(rq.error); };
-        rq.onblocked = function () { reject(new Error('idb-blocked')); };
-      });
-    }
-    function run(mode, fn) {
-      return new Promise(function (resolve, reject) {
-        var tx = db.transaction(STORE, mode), st = tx.objectStore(STORE), out;
-        try { out = fn(st); } catch (e) { reject(e); return; }
-        tx.oncomplete = function () { resolve(out && out.result !== undefined ? out.result : undefined); };
-        tx.onerror = function () { reject(tx.error); };
-        tx.onabort = function () { reject(tx.error || new Error('tx-aborted')); };
-      });
-    }
-    function setMirror(key, value) { if (MIRROR[key]) { try { localStorage.setItem(PREFIX + key, value); } catch (e) {} } }
-    var idb = {
-      async get(key) {
-        var v = await run('readonly', function (s) { return s.get(key); });
-        if (v === undefined) throw new Error('not found');
-        return { key: key, value: v, shared: false };
-      },
-      async set(key, value) {
-        try { await run('readwrite', function (s) { return s.put(String(value), key); }); }
-        catch (e) { warn(FULL_MSG); throw e; }
-        setMirror(key, String(value));
-        return { key: key, value: value, shared: false };
-      },
-      async delete(key) {
-        await run('readwrite', function (s) { return s.delete(key); });
-        if (MIRROR[key]) { try { localStorage.removeItem(PREFIX + key); } catch (e) {} }
-        return { key: key, deleted: true, shared: false };
-      },
-      async list(prefix) {
-        var all = await run('readonly', function (s) { return s.getAllKeys(); });
-        var p = prefix || '';
-        return { keys: (all || []).filter(function (k) { return k !== META && String(k).indexOf(p) === 0; }), shared: false };
-      },
-    };
-
-    /* ---------- مهاجرت localStorage → IndexedDB (با بازبینی مقدار به مقدار) ---------- */
-    async function migrate() {
-      var meta = await run('readonly', function (s) { return s.get(META); });
-      if (meta && meta.migrated) return meta;
-      var legacy = {}, n = 0;
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (k && k.indexOf(PREFIX) === 0 && !LS_ONLY[k.slice(3)]) { legacy[k.slice(3)] = localStorage.getItem(k); n++; }
-      }
-      if (n) {
-        await run('readwrite', function (s) { Object.keys(legacy).forEach(function (key) { s.put(legacy[key], key); }); });
-        // بازبینی: همه‌ی مقدارها باید عیناً برگردند، وگرنه هیچ‌چیز از localStorage پاک نمی‌شود
-        for (var key in legacy) {
-          var back = await run('readonly', function (s) { return s.get(key); });
-          if (back !== legacy[key]) throw new Error('verify-failed:' + key);
-        }
-        Object.keys(legacy).forEach(function (key) { if (!MIRROR[key]) { try { localStorage.removeItem(PREFIX + key); } catch (e) {} } });
-      }
-      meta = { migrated: true, at: new Date().toISOString(), count: n, schema: 1 };
-      await run('readwrite', function (s) { return s.put(meta, META); });
-      return meta;
-    }
-
-    var info = { backend: 'localStorage', migratedAt: null, migratedCount: 0, error: null };
-    var api = {
-      get: function (k) { return ready.then(function () { return (backend === 'idb' ? idb : ls).get(k); }); },
-      set: function (k, v) { return ready.then(function () { return (backend === 'idb' ? idb : ls).set(k, v); }); },
-      delete: function (k) { return ready.then(function () { return (backend === 'idb' ? idb : ls).delete(k); }); },
-      list: function (p) { return ready.then(function () { return (backend === 'idb' ? idb : ls).list(p); }); },
-      info: function () { return ready.then(function () { return info; }); },
-      /* حجم هر آیتم (بایتِ تقریبی)، مرتب از بزرگ به کوچک — برای صفحه‌ی «فضای ذخیره‌سازی» */
-      sizes: function () {
-        return ready.then(async function () {
-          var out = [];
-          if (backend === 'idb') {
-            await run('readonly', function (s) {
-              var rq = s.openCursor();
-              rq.onsuccess = function () { var c = rq.result; if (c) { if (c.key !== META) out.push({ key: c.key, size: String(c.value).length * 2 }); c.continue(); } };
-              return rq;
-            });
-          } else {
-            for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf(PREFIX) === 0 && !LS_ONLY[k.slice(3)]) out.push({ key: k.slice(3), size: (localStorage.getItem(k) || '').length * 2 }); }
-          }
-          out.sort(function (a, b) { return b.size - a.size; });
-          return out;
-        });
-      },
-      estimate: async function () {
-        var res = { usage: 0, quota: 0, persisted: null };
-        try { if (navigator.storage && navigator.storage.estimate) { var e = await navigator.storage.estimate(); res.usage = e.usage || 0; res.quota = e.quota || 0; } } catch (e) {}
-        try { if (navigator.storage && navigator.storage.persisted) res.persisted = await navigator.storage.persisted(); } catch (e) {}
-        if (backend !== 'idb') { var used = 0; (await api.sizes()).forEach(function (x) { used += x.size; }); res.usage = used; res.quota = 5 * 1024 * 1024; }
-        return res;
-      },
-      requestPersist: async function () { try { return !!(navigator.storage && navigator.storage.persist && await navigator.storage.persist()); } catch (e) { return false; } },
-    };
-
-    var ready = (async function () {
-      try {
-        db = await openDb();
-        await run('readwrite', function (s) { s.put('1', '__probe__'); });          // تست واقعی قابل‌نوشتن بودن
-        await run('readwrite', function (s) { s.delete('__probe__'); });
-        var meta = await migrate();
-        backend = 'idb'; info.backend = 'idb'; info.migratedAt = meta.at; info.migratedCount = meta.count;
-        // کلیدهای آینه‌شده باید در localStorage هم باشند (اگر پاک شده باشند دوباره ساخته می‌شوند)
-        var keys = (await idb.list('')).keys;
-        for (var i = 0; i < keys.length; i++) { if (MIRROR[keys[i]]) { var v = await run('readonly', function (s) { return s.get(keys[i]); }); if (v !== undefined) setMirror(keys[i], v); } }
-        try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
-      } catch (e) {
-        backend = 'localStorage'; info.backend = 'localStorage'; info.error = String((e && e.message) || e);
-        try { console.warn('Namello: IndexedDB unavailable, using localStorage', e); } catch (e2) {}
-      }
-    })();
-    window.storageReady = ready;
-    window.storage = api;
-  })();
-</script>
-
-<script>
-  // بدون این بلوک، فایل sw.js هیچ‌وقت واقعاً فعال نمی‌شد و برنامه‌ی نصب‌شده هیچ‌چیزی
-  // رو کش نمی‌کرد — همین، دلیل اصلی اجرا نشدنش بدون اینترنت بود.
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('pageshow', function () { try { navigator.serviceWorker.getRegistration().then(function(r){ if(r) r.update(); }); } catch(e){} });
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js').then(function (reg) {
-        try { reg.update(); } catch (e) {}
-      }).catch(function (err) {
-        console.warn('Namello: service worker registration failed', err);
-      });
-    });
-  }
-</script>
-<script>
-;
-</script>
-<script>document.getElementById('boot-status').textContent = 'Loading libraries…';</script>
-<script>
-  // If a required CDN library hangs instead of firing onerror, never leave a blank screen.
-  window.__namelloBootWatchdog = setTimeout(function () {
-    if (!window.__namelloMounted && typeof React === 'undefined') {
-      showBootError('Namello هنوز اجرا نشده', 'کتابخانه اصلی React از شبکه/کش بارگذاری نشده است. یک بار تلاش مجدد را بزنید؛ در صورت تکرار، کش سایت را پاک و دوباره وارد شوید.');
-    }
-  }, 12000);
-</script>
-<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js" onerror="showBootError('Failed to load React', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js" onerror="showBootError('Failed to load ReactDOM', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script async src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" onerror="showBootError('Failed to load XLSX', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script async src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script async src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.32.0/plotly.min.js" onerror="showBootError('Failed to load Plotly', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script async src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" onerror="showBootError('Failed to load Tailwind', 'cdn.jsdelivr.net may be blocked on this network.')"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>
-  document.getElementById('boot-status').textContent = 'Starting app…';
-  if (typeof React === 'undefined') showBootError('React did not load', 'window.React is undefined. Likely a network/CDN block.');
-  else if (typeof ReactDOM === 'undefined') showBootError('ReactDOM did not load', 'window.ReactDOM is undefined. Likely a network/CDN block.');
-</script>
-<script>
 const { useState, useEffect, useCallback, useMemo, useRef } = React;
 // Dashboard account-summary helper is intentionally global so every Dashboard layer
 // (including Statistical Analysis and Advanced Evaluation) can resolve it reliably.
@@ -2194,9 +1826,9 @@ function GratitudeChecklistLayer({ activeAccount, list, newText, setNewText, onA
             React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 list.map((g, i) => {
                     const checked = isDone(g);
-                    return React.createElement("div", { key: g.id, className: "rounded-xl p-2.5 mb-2 last:mb-0 relative min-h-[34px]", style: { background: "var(--bg-card2)", border: checked ? "1px solid #34D39955" : "1px solid var(--border-1)" } },
-                        React.createElement("button", { type: "button", onClick: () => toggleDone(g), "aria-label": checked ? "انجام شد" : "انجام نشده", className: "absolute right-2 top-2 w-5 h-5 rounded-md flex items-center justify-center", style: { background: checked ? "#0F3328" : "#0A0D0F", color: checked ? "#34D399" : "#6B7280", border: checked ? "1px solid #34D399" : "1px solid #4B5563", fontSize: 12, fontWeight: 700 } }, checked ? "✓" : ""),
-                        React.createElement("div", { className: "min-w-0 pr-7" },
+                    return React.createElement("div", { key: g.id, className: "rounded-xl p-2.5 mb-2 last:mb-0 flex items-center gap-2", style: { background: "var(--bg-card2)", border: checked ? "1px solid #34D39955" : "1px solid var(--border-1)" } },
+                        React.createElement("button", { type: "button", onClick: () => toggleDone(g), "aria-label": checked ? "انجام شد" : "انجام نشده", className: "w-10 h-10 rounded-lg flex items-center justify-center shrink-0", style: { background: checked ? "#0F3328" : "#0A0D0F", color: checked ? "#34D399" : "#6B7280", border: checked ? "1px solid #34D399" : "1px solid #4B5563", fontSize: 22, fontWeight: 700 } }, checked ? "✓" : ""),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement(AutoGrowTextarea, { value: g.text, onChange: e => onUpdateText(g.id, e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: checked ? "var(--text-muted)" : "var(--text-primary)", minWidth: 0, textDecoration: checked ? "line-through" : "none" } }),
                             React.createElement("div", { className: "flex items-center gap-2 mt-1" },
                                 React.createElement("button", { type: "button", onClick: () => onMove(g.id, -1), disabled: i === 0, className: "text-[10px]", style: { color: "var(--text-muted)", opacity: i === 0 ? .25 : 1 } }, "▲"),
@@ -4995,8 +4627,8 @@ const NM_DEFAULT_TRADE_PLAN = {
     { id:"tp", type:"checkbox", label:"حدسود طبق پلن است" },
     { id:"session", type:"checkbox", label:"زمان/نشست مناسب است" },
     { id:"news", type:"checkbox", label:"خبر پرریسک بررسی شد" },
-    { id:"emotion", type:"category", label:"آمادگی ذهنی", options:["آماده","خنثی","نامناسب"] },
-    { id:"conviction", type:"number", label:"اعتماد به معامله (1-10)" }
+    { id:"emotion", type:"checkbox", label:"آمادگی ذهنی" },
+    { id:"conviction", type:"checkbox", label:"اعتماد به معامله" }
   ]
 };
 const NM_DEFAULT_DAY_PLAN = {
@@ -5437,6 +5069,7 @@ function nmTradeDayPlanReadiness(t){
  return Number.isFinite(v) ? v : null;
 }
 
+/* v7.1: checklist edit controls are pinned to the physical left edge in RTL layouts. */
 function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist",onPlanChange,tickOnly=false}){
  const score=nmPlanChecklistScore(plan,answers);
  const [editing,setEditing]=React.useState(false);
@@ -5466,13 +5099,14 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
      RE('button',{type:'button',onClick:add,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--bg-page)',color:'var(--accent-gold)'}},'+ افزودن حالت/شرط'),
      RE('button',{type:'button',onClick:save,className:'flex-1 py-2 rounded-lg text-[10px]',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره چک‌لیست')));
  const viewer=RE('div',{className:'space-y-1.5'},(plan?.conditions||[]).map(c=>RE('div',{key:c.id,className:'rounded-lg px-2.5 py-2',style:{background:'var(--bg-card2)'}},
-   RE('div',{className:'flex items-center gap-2',style:{direction:'rtl'}},
-     c.type==='checkbox' && tickOnly ? RE('button',{type:'button',onClick:()=>onChange({...answers,[c.id]:answers?.[c.id]===true?undefined:true}),className:'w-5 h-5 rounded-md flex items-center justify-center shrink-0',style:{background:answers?.[c.id]===true?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers?.[c.id]===true?'var(--accent-gold)':'var(--text-muted)',border:'1px solid '+(answers?.[c.id]===true?'var(--accent-gold)':'var(--border-2)'),fontSize:12,fontWeight:700}},answers?.[c.id]===true?'✓':'') : null,
-     RE('span',{className:'text-[10px]',style:{color:'var(--text-secondary)',flex:1,minWidth:0,whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:1.75}},c.label),
-     c.type==='checkbox' && !tickOnly ? RE('div',{className:'flex gap-1'},[[true,'✓'],[false,'✕'],[null,'—']].map(([v,l])=>RE('button',{key:String(v),type:'button',onClick:()=>onChange({...answers,[c.id]:v}),className:'px-2 py-1 rounded',style:{background:answers[c.id]===v?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers[c.id]===v?'var(--accent-gold)':'var(--text-muted)'}},l))) : c.type!=='checkbox' ? RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}}) : null
+   RE('div',{className:'relative flex items-center gap-2 min-h-[28px]'},
+     c.type==='checkbox' && tickOnly ? RE('button',{type:'button',onClick:()=>onChange({...answers,[c.id]:answers?.[c.id]===true?undefined:true}),className:'absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center',style:{background:answers?.[c.id]===true?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers?.[c.id]===true?'var(--accent-gold)':'var(--text-muted)',border:'1px solid '+(answers?.[c.id]===true?'var(--accent-gold)':'var(--border-2)'),fontSize:12,fontWeight:700}},answers?.[c.id]===true?'✓':'') : null,
+     RE('span',{className:c.type==='checkbox'&&tickOnly?'text-[10px] pr-7':'text-[10px]',style:{color:'var(--text-secondary)',flex:1,minWidth:0,whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:1.75}},c.label),
+     c.type==='checkbox' && !tickOnly ? RE('div',{className:'flex gap-1 shrink-0'},[[true,'✓'],[false,'✕'],[null,'—']].map(([v,l])=>RE('button',{key:String(v),type:'button',onClick:()=>onChange({...answers,[c.id]:v}),className:'px-2 py-1 rounded',style:{background:answers?.[c.id]===v?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers?.[c.id]===v?'var(--accent-gold)':'var(--text-muted)'}},l))) :
+     c.type!=='checkbox' ? RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}}) : null
    )
- )))
- return RE(Field,{label:RE('span',{className:'flex items-center gap-1.5'},label,RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
+ )));
+ return RE(Field,{label:RE('span',{className:'block relative w-full',style:{paddingLeft:52}},RE('span',{className:'block min-w-0'},label),RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'absolute left-0 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)',zIndex:1}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
 }
 
 function NmPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist"}){
@@ -6417,7 +6051,7 @@ function App() {
     }
     catch (e) { } }, [activeAccount]);
     useEffect(()=>{(async()=>{
-      try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value)setTradePlans(JSON.parse(a.value));}catch(e){}
+      try{const a=await window.storage.get("namello_trade_plans_v1");if(a?.value){const saved=JSON.parse(a.value)||[];const idx=saved.findIndex(p=>p.id==="core-trade-plan");if(idx>=0){const cur=saved[idx];const conditions=(cur.conditions||[]).map(c=>c.id==="emotion"?{...c,type:"checkbox",label:"آمادگی ذهنی",options:[]}:c.id==="conviction"?{...c,type:"checkbox",label:"اعتماد به معامله",options:[]}:c);saved[idx]={...cur,name:"برنامه اصلی معامله",scope:"trade",conditions};}setTradePlans(saved);await window.storage.set("namello_trade_plans_v1",JSON.stringify(saved));}}catch(e){}
       try{const a=await window.storage.get("namello_day_plans_v1");if(a?.value)setDayPlans(JSON.parse(a.value));}catch(e){}
       try{
         const a=await window.storage.get("namello_chart_plans_v1");
@@ -9377,12 +9011,12 @@ function App() {
                         weekdayFromDateStr(t.date),
                         ") \u2014 ",
                         t.time),
-                    React.createElement("button", { onClick: () => openCloseForm(t), className: "w-full py-2 px-3 rounded-lg text-[12px] font-medium text-left flex items-center justify-start gap-2", style: { background: "var(--accent-gold)", color: "var(--bg-page)", textAlign: "left" } }, tI18n("journal_close_trade")))))))),
+                    React.createElement("button", { onClick: () => openCloseForm(t), className: "w-full py-2 rounded-lg text-[12px] font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, tI18n("journal_close_trade")))))))),
             React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-4" },
-                React.createElement("button", { onClick: openNewTradeForm, className: "flex items-center justify-start text-left gap-2 py-3 px-3 rounded-xl text-sm font-medium", style: { textAlign: "left", background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
+                React.createElement("button", { onClick: openNewTradeForm, className: "flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
                     React.createElement(Plus, { size: 16 }),
                     " ", t("journal_new_entry")),
-                React.createElement("button", { onClick: () => setShowExportPicker(true), className: "flex items-center justify-start text-left gap-2 py-3 px-3 rounded-xl text-sm font-medium nm-unified-export-btn", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
+                React.createElement("button", { onClick: () => setShowExportPicker(true), className: "flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium nm-unified-export-btn", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
                     React.createElement(Download, { size: 16 }),
                     " ", t("common_excel"))),
             React.createElement("div", { className: "rounded-2xl p-3 mb-3", style: { background: "color-mix(in srgb, #60A5FA 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, #60A5FA 24%, var(--border-1))" } },
@@ -10165,20 +9799,16 @@ function App() {
                     React.createElement(Plus, { size: 16 }),
                     " \u0627\u0641\u0632\u0648\u062F\u0646 \u0628\u062E\u0634")))),
         navLayout !== "vertical" && React.createElement("div", { className: "fixed bottom-0 left-0 right-0 flex overflow-x-auto", style: { background: "var(--bg-card)", borderTop: "1px solid var(--border-1)" } }, navOrder.map(key => {
-            const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,"icon-dashboard-logo.png"], live:[t("tab_live"),Clock,"icon-sessions.png"], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,"icon-journal.png"], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
-            const label=meta[0], Icon=meta[1], navImage=meta[2];
-            return React.createElement("button", { key, onClick:()=>setTab(key), className:"nm-nav-item flex flex-col items-center gap-1 py-2.5 shrink-0 "+(tab===key?"nm-nav-active":""), style:{width:68,color:tab===key?"var(--accent-gold)":"var(--text-muted)"}},
-                React.createElement("span", { className:"nm-layer-icon", style:{background:"var(--bg-card2)"}}, navImage ? React.createElement("img",{src:navImage,alt:label,className:"w-full h-full rounded-[9px] object-contain",style:{background:"var(--bg-card2)"}}) : React.createElement(Icon,{size:17})),
-                React.createElement("span",{className:"text-[10px] px-2 py-0.5 rounded-full",style:{background:tab===key?"color-mix(in srgb, var(--accent-gold) 13%, transparent)":"transparent",fontWeight:tab===key?700:400}},label));
+            const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,false,true], live:[t("tab_live"),Clock,"icon-sessions.png"], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,true], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
+            const label=meta[0], Icon=meta[1], journalLogo=meta[2], dashboardLogo=meta[3];
+            return React.createElement("button", { key, onClick:()=>setTab(key), className:"nm-nav-item flex flex-col items-center gap-1 py-2.5 shrink-0 "+(tab===key?"nm-nav-active":""), style:{width:68,color:tab===key?"var(--accent-gold)":"var(--text-muted)"}}, dashboardLogo ? React.createElement("img",{src:"icon-dashboard-logo.png",alt:"داشبورد",className:"nm-layer-icon object-cover p-0",style:{background:"var(--bg-card2)"}}) : journalLogo ? React.createElement("img",{src:"icon-journal.png",alt:"ژورنال",className:"nm-layer-icon object-cover p-0",style:{background:"var(--bg-card2)"}}) : React.createElement(Icon,{size:17}), React.createElement("span",{className:"text-[10px] px-2 py-0.5 rounded-full",style:{background:tab===key?"color-mix(in srgb, var(--accent-gold) 13%, transparent)":"transparent",fontWeight:tab===key?700:400}},label));
         })),
         navLayout === "vertical" && navMenuOpen && React.createElement(React.Fragment, null,
             React.createElement("div", { className: "fixed inset-0 z-40", style: { background: "#000000AA" }, onClick: () => setNavMenuOpen(false) }),
             React.createElement("div", { className: "fixed top-16 z-50 rounded-2xl overflow-y-auto", style: { insetInlineStart: 12, background: "var(--bg-card)", border: "1px solid var(--border-2)", maxHeight: "70vh", minWidth: 220, boxShadow: "0 10px 40px #000000AA" } }, navOrder.map(key => {
-                const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,"icon-dashboard-logo.png"], live:[t("tab_live"),Clock,"icon-sessions.png"], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,"icon-journal.png"], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
-                const label=meta[0], Icon=meta[1], navImage=meta[2];
-                return React.createElement("button", { key, onClick:()=>{setTab(key);setNavMenuOpen(false)}, className:"w-full flex items-center gap-3 px-4 py-3", style:{color:tab===key?"var(--accent-gold)":"var(--text-primary)",background:tab===key?"color-mix(in srgb, var(--accent-gold) 10%, transparent)":"transparent",borderBottom:"1px solid var(--border-1)"}},
-                    React.createElement("span", { className:"nm-layer-icon", style:{background:"var(--bg-card2)"}}, navImage ? React.createElement("img",{src:navImage,alt:label,className:"w-full h-full rounded-[9px] object-contain",style:{background:"var(--bg-card2)"}}) : React.createElement(Icon,{size:17})),
-                    React.createElement("span",{className:"text-[13px]"},label));
+                const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,false,true], live:[t("tab_live"),Clock,"icon-sessions.png"], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,true], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
+                const label=meta[0], Icon=meta[1], journalLogo=meta[2], dashboardLogo=meta[3];
+                return React.createElement("button", { key, onClick:()=>{setTab(key);setNavMenuOpen(false)}, className:"w-full flex items-center gap-3 px-4 py-3", style:{color:tab===key?"var(--accent-gold)":"var(--text-primary)",background:tab===key?"color-mix(in srgb, var(--accent-gold) 10%, transparent)":"transparent",borderBottom:"1px solid var(--border-1)"}}, dashboardLogo ? React.createElement("img",{src:"icon-dashboard-logo.png",alt:"داشبورد",className:"nm-layer-icon object-cover p-0",style:{background:"var(--bg-card2)"}}) : journalLogo ? React.createElement("img",{src:"icon-journal.png",alt:"ژورنال",className:"nm-layer-icon object-cover p-0",style:{background:"var(--bg-card2)"}}) : React.createElement(Icon,{size:17}), React.createElement("span",{className:"text-[13px]"},label));
             }))),
         showSessionSettings && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowSessionSettings(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
@@ -10200,7 +9830,7 @@ function App() {
                         React.createElement("div", { className: "flex gap-1.5" },
                             [["classic", "کلاسیک"], ["simple", "زنگ ساده"], ["double", "دو ضربه"]].map(([key, label]) => (React.createElement("button", { key: key, onClick: () => changeAlarmTone(key), className: "flex-1 py-1.5 rounded text-[11px]", style: { background: alarmTone === key ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-page)", color: alarmTone === key ? "var(--accent-gold)" : "var(--text-secondary)" } }, label))),
                             React.createElement("button", { onClick: playAlarmBeep, className: "px-3 py-1.5 rounded text-[11px]", style: { background: "var(--bg-page)", color: "var(--text-secondary)" } }, "\u062A\u0633\u062A"))),
-                    React.createElement("p", { className: "text-[10px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "برای هر سشن/کیل‌زون/سیلور بولت یا خبر اقتصادی (از تب «اخبار») که می‌خوای هشدارش فعال بشه، از آیکن زنگ کنار هر ردیف بزن. این هشدار حتی وقتی روی اپ دیگه‌ای هستی هم کار می‌کنه (مرورگر این تب رو پس‌زمینه نگه داشته باشه)؛ مثل نوتیفیکیشن «بازگشت به Namello» روی سامسونگ ممکنه تأخیری داشته باشه یا اصلاً خاموش بشه، مگر اینکه مرورگر رو از مدیریت باتری مستثنا کرده باشی (همون تنظیم که برای بازگشت به Namello لازمه)."),
+                    React.createElement("p", { className: "text-[10px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "برای هر نشست/کیل‌زون/سیلور بولت یا خبر اقتصادی (از تب «اخبار») که می‌خوای هشدارش فعال بشه، از آیکن زنگ کنار هر ردیف بزن. این هشدار حتی وقتی روی اپ دیگه‌ای هستی هم کار می‌کنه (مرورگر این تب رو پس‌زمینه نگه داشته باشه)؛ مثل نوتیفیکیشن «بازگشت به Namello» روی سامسونگ ممکنه تأخیری داشته باشه یا اصلاً خاموش بشه، مگر اینکه مرورگر رو از مدیریت باتری مستثنا کرده باشی (همون تنظیم که برای بازگشت به Namello لازمه)."),
                     RE(NmActiveCardStyleSettings, null),
                     React.createElement("div", { className: "rounded-lg px-3 py-2 mb-2 flex items-center justify-between", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                         React.createElement("div", { className: "flex items-center gap-2" },
@@ -10213,7 +9843,7 @@ function App() {
                 ["sessions", "killzones", "silverbullets"].map(cat => (React.createElement("div", { key: cat, className: "mb-4" },
                     React.createElement("div", { className: "flex items-center gap-2 mb-2 pb-1", style: { borderBottom: "2px solid color-mix(in srgb, var(--accent-gold) 33%, transparent)" } },
                         React.createElement("span", { className: "w-1.5 h-1.5 rounded-full", style: { background: "var(--accent-gold)" } }),
-                        React.createElement("h4", { className: "text-[13px] font-bold", style: { color: "var(--accent-gold)" } }, cat === "sessions" ? `سشن‌ها (${configForm.sessions.length})` : cat === "killzones" ? `کیل‌زون‌ها (${configForm.killzones.length})` : `سیلور بولت (${configForm.silverbullets.length})`)),
+                        React.createElement("h4", { className: "text-[13px] font-bold", style: { color: "var(--accent-gold)" } }, cat === "sessions" ? `نشست‌ها (${configForm.sessions.length})` : cat === "killzones" ? `کیل‌زون‌ها (${configForm.killzones.length})` : `سیلور بولت (${configForm.silverbullets.length})`)),
                     configForm[cat].map(ev => (React.createElement("div", { key: ev.key, className: "rounded-lg p-2 mb-2", style: { background: "var(--bg-card2)" } },
                         React.createElement("div", { className: "flex items-center justify-between mb-1.5" },
                             React.createElement("div", { className: "flex items-center gap-1.5" },
@@ -10348,8 +9978,8 @@ function App() {
                         const nm = findNewsForTrade(newsEvents, openForm.pair, openForm.date, openForm.time);
                         return nm ? React.createElement("span", { className: "text-[12px]", style: { color: "#FBBF24" } }, nm) : React.createElement("span", { className: "text-[11px]", style: { color: "var(--text-muted)" } });
                     })())),
-                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:openForm.dayPlanAnswers||{},onChange:v=>setOpenForm(f=>({...f,dayPlanAnswers:v,dayPlanReadinessPct:nmReadinessScore(dayPlans[0],v)})),onPlanChange:p=>persistDayPlans([p]),label:numLabel(6,"آمادگی برنامه روزانه"),tickOnly:true}),
-                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:openForm.chartAnswers||{},onChange:v=>setOpenForm(f=>({...f,chartAnswers:v,chartReadinessPct:nmReadinessScore(chartPlans[0],v)})),onPlanChange:p=>persistChartPlans([p]),label:numLabel(7,"ارزیابی چارت"),tickOnly:true}),
+                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:openForm.dayPlanAnswers||{},onChange:v=>setOpenForm(f=>({...f,dayPlanAnswers:v,dayPlanReadinessPct:nmReadinessScore(dayPlans[0],v)})),onPlanChange:p=>persistDayPlans([p]),label:RE("span",null,numLabel(6,hlLabel("برنامه روزانه"))),tickOnly:true}),
+                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:openForm.chartAnswers||{},onChange:v=>setOpenForm(f=>({...f,chartAnswers:v,chartReadinessPct:nmReadinessScore(chartPlans[0],v)})),onPlanChange:p=>persistChartPlans([p]),label:RE("span",null,numLabel(7,hlLabel("ارزیابی چارت"))),tickOnly:true}),
                 React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(8, appLanguage === "en" ? "Fractal" : "فراکتال"), JournalEditToggle({ editMode: fractalEditMode, onToggle: () => setFractalEditMode(m => !m) })) },
                     React.createElement("div", { style: { position: "relative", paddingTop: 6 } },
                         
@@ -10658,7 +10288,7 @@ function App() {
                                 React.createElement("span", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u0633\u0648\u062F\u0622\u0648\u0631\u062A\u0631\u06CC\u0646 \u0634\u0631\u0627\u06CC\u0637 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06CC \u062B\u0628\u062A\u200C\u0634\u062F\u0647")));
                         })())),
                 React.createElement("div", { className: "mb-2 mt-2" },
-                    tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ"),tickOnly:true}),
+                    tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:openForm.planAnswers||{},onChange:v=>setOpenForm(f=>({...f,planAnswers:v,setupReadinessPct:nmReadinessScore(tradePlans[0],v)})),onPlanChange:p=>persistTradePlans([p]),label:RE("span",null,numLabel(32,hlLabel("آمادگی ستاپ"))),tickOnly:true}),
                 React.createElement("div", { className: "rounded-xl p-3 mb-2", style: { background: "#FBBF2414", border: "1px solid #FBBF2455" } },
                 React.createElement("label", { className: "text-[12px] block mb-2 font-extrabold", style: { color: "#FBBF24" } }, numLabel(33, appLanguage === "en" ? "Buy/Sell" : "خرید/فروش")),
                     React.createElement("div", { className: "flex gap-2" },
@@ -10759,7 +10389,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newTradeManagementText, onChange: e => setNewTradeManagementText(e.target.value), onKeyDown: e => e.key === "Enter" && addTradeManagementOptionInline(), placeholder: (appLanguage === "en" ? "New item..." : "حالت جدید..."), className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addTradeManagementOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات")), RE("button", { type: "button", onClick: () => setDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, disciplineEditMode ? "انصراف" : "ویرایش")) },
+                React.createElement(Field, { label: RE("span", { className: "block relative w-full", style: { paddingLeft: "68px", minHeight: "26px" } }, RE("span", { className: "block text-right font-semibold", style: { paddingRight: "2px" } }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات"))), RE("button", { type: "button", onClick: () => setDisciplineEditMode(m => !m), className: "px-2 py-1 rounded", style: { position: "absolute", left: 0, right: "auto", top: "50%", transform: "translateY(-50%)", background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)", zIndex: 20, whiteSpace: "nowrap" } }, disciplineEditMode ? "انصراف" : "ویرایش")) },
                     React.createElement(React.Fragment, null,
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, disciplineOptions.map(([key,label], i) => disciplineEditMode ? React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? .3 : 1, color: "var(--text-muted)" } }, "▲"),
@@ -10796,8 +10426,8 @@ function App() {
                         React.createElement("input", { type: "time", value: editForm.time, onChange: e => onEditFieldChange("time", e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } }))),
                 React.createElement(Field, { label: "\u062C\u0641\u062A\u200C\u0627\u0631\u0632" },
                     React.createElement("select", { value: editForm.pair, onChange: e => onEditFieldChange("pair", e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } }, pairs.map(p => (React.createElement("option", { key: p, value: p, style: { background: "var(--bg-card2)" } }, p))))),
-                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:editForm.dayPlanAnswers||{},onChange:v=>onEditFieldChange("dayPlanAnswers",v),onPlanChange:p=>persistDayPlans([p]),label:numLabel(6,"آمادگی برنامه روزانه"),tickOnly:true}),
-                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:editForm.chartAnswers||{},onChange:v=>onEditFieldChange("chartAnswers",v),onPlanChange:p=>persistChartPlans([p]),label:numLabel(7,"ارزیابی چارت"),tickOnly:true}),
+                dayPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:dayPlans[0],answers:editForm.dayPlanAnswers||{},onChange:v=>onEditFieldChange("dayPlanAnswers",v),onPlanChange:p=>persistDayPlans([p]),label:RE("span",null,numLabel(6,hlLabel("برنامه روزانه"))),tickOnly:true}),
+                chartPlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:chartPlans[0],answers:editForm.chartAnswers||{},onChange:v=>onEditFieldChange("chartAnswers",v),onPlanChange:p=>persistChartPlans([p]),label:RE("span",null,numLabel(7,hlLabel("ارزیابی چارت"))),tickOnly:true}),
                 React.createElement(Field, { label: "\u0633\u06CC\u0633\u062A\u0645\u200C\u0647\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC \u062A\u0627\u06CC\u0645 \u0627\u0635\u0644\u06CC (\u0686\u0646\u062F \u062A\u0627 \u0647\u0645 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646\u06CC)" },
                     React.createElement("div", { className: "flex flex-wrap gap-1.5" }, systems.map(s => {
                         const active = (editForm.systems || []).includes(s);
@@ -10893,7 +10523,7 @@ function App() {
                             active ? "✓ " : "",
                             opt));
                     }))),
-                tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:editForm.planAnswers||{},onChange:v=>onEditFieldChange("planAnswers",v),onPlanChange:p=>persistTradePlans([p]),label:numLabel(32,"آمادگی ستاپ"),tickOnly:true}),
+                tradePlans[0] && React.createElement(NmJournalPlanChecklistField,{plan:tradePlans[0],answers:editForm.planAnswers||{},onChange:v=>onEditFieldChange("planAnswers",v),onPlanChange:p=>persistTradePlans([p]),label:RE("span",null,numLabel(32,hlLabel("آمادگی ستاپ"))),tickOnly:true}),
                 React.createElement("div", { className: "mb-2 mt-3 pt-3", style: { borderTop: "1px solid var(--border-1)" } },
                     React.createElement("h4", { className: "text-[12px] font-semibold mb-2", style: { color: "var(--accent-gold)" } }, "\u0646\u062A\u06CC\u062C\u0647\u200C\u06CC \u0645\u0639\u0627\u0645\u0644\u0647")),
                 React.createElement("div", { className: "mb-2" },
@@ -10918,7 +10548,7 @@ function App() {
                                 onEditFieldChange("tradeManagement", next);
                             }, className: "px-3 py-2 rounded-lg text-[12px]", style: { background: active ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: active ? "var(--accent-gold)" : "var(--text-muted)" } }, opt));
                     }))),
-React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات")), RE("button", { type: "button", onClick: () => setEditDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, editDisciplineEditMode ? "انصراف" : "ویرایش")) },
+React.createElement(Field, { label: RE("span", { className: "block relative w-full", style: { paddingLeft: "68px", minHeight: "26px" } }, RE("span", { className: "block text-right font-semibold", style: { paddingRight: "2px" } }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات"))), RE("button", { type: "button", onClick: () => setEditDisciplineEditMode(m => !m), className: "px-2 py-1 rounded", style: { position: "absolute", left: 0, right: "auto", top: "50%", transform: "translateY(-50%)", background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)", zIndex: 20, whiteSpace: "nowrap" } }, editDisciplineEditMode ? "انصراف" : "ویرایش")) },
                     React.createElement(React.Fragment, null,
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, disciplineOptions.map(([key,label], i) => editDisciplineEditMode ? React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? .3 : 1, color: "var(--text-muted)" } }, "▲"),
@@ -11010,6 +10640,3 @@ try {
 } catch (e) {
   showBootError("App render failed", e && (e.stack || e.message) || String(e));
 }
-</script>
-</body>
-</html>
