@@ -2344,7 +2344,7 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.12";
+const NM_VERSION_NAME = "1.0.13";
 const NM_VERSION_CODE = 12;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "نسخهٔ بازطراحی‌شده";
@@ -7616,7 +7616,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.12</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.13</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8344,7 +8344,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.12</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.13</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8739,8 +8739,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.12", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.12"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.13", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.13"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -9799,14 +9799,14 @@ function App() {
                     React.createElement(Plus, { size: 16 }),
                     " \u0627\u0641\u0632\u0648\u062F\u0646 \u0628\u062E\u0634")))),
         navLayout !== "vertical" && React.createElement("div", { className: "fixed bottom-0 left-0 right-0 flex overflow-x-auto", style: { background: "var(--bg-card)", borderTop: "1px solid var(--border-1)" } }, navOrder.map(key => {
-            const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,false,true], live:[t("tab_live"),Clock], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,true], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
+            const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,false,true], live:[t("tab_live"),Clock,"icon-sessions.png"], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,true], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
             const label=meta[0], Icon=meta[1], journalLogo=meta[2], dashboardLogo=meta[3];
             return React.createElement("button", { key, onClick:()=>setTab(key), className:"nm-nav-item flex flex-col items-center gap-1 py-2.5 shrink-0 "+(tab===key?"nm-nav-active":""), style:{width:68,color:tab===key?"var(--accent-gold)":"var(--text-muted)"}}, dashboardLogo ? React.createElement("img",{src:"icon-dashboard-logo.png",alt:"داشبورد",className:"nm-layer-icon object-cover p-0",style:{background:"var(--bg-card2)"}}) : journalLogo ? React.createElement("img",{src:"icon-journal.png",alt:"ژورنال",className:"nm-layer-icon object-cover p-0",style:{background:"var(--bg-card2)"}}) : React.createElement(Icon,{size:17}), React.createElement("span",{className:"text-[10px] px-2 py-0.5 rounded-full",style:{background:tab===key?"color-mix(in srgb, var(--accent-gold) 13%, transparent)":"transparent",fontWeight:tab===key?700:400}},label));
         })),
         navLayout === "vertical" && navMenuOpen && React.createElement(React.Fragment, null,
             React.createElement("div", { className: "fixed inset-0 z-40", style: { background: "#000000AA" }, onClick: () => setNavMenuOpen(false) }),
             React.createElement("div", { className: "fixed top-16 z-50 rounded-2xl overflow-y-auto", style: { insetInlineStart: 12, background: "var(--bg-card)", border: "1px solid var(--border-2)", maxHeight: "70vh", minWidth: 220, boxShadow: "0 10px 40px #000000AA" } }, navOrder.map(key => {
-                const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,false,true], live:[t("tab_live"),Clock], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,true], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
+                const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,false,true], live:[t("tab_live"),Clock,"icon-sessions.png"], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,true], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
                 const label=meta[0], Icon=meta[1], journalLogo=meta[2], dashboardLogo=meta[3];
                 return React.createElement("button", { key, onClick:()=>{setTab(key);setNavMenuOpen(false)}, className:"w-full flex items-center gap-3 px-4 py-3", style:{color:tab===key?"var(--accent-gold)":"var(--text-primary)",background:tab===key?"color-mix(in srgb, var(--accent-gold) 10%, transparent)":"transparent",borderBottom:"1px solid var(--border-1)"}}, dashboardLogo ? React.createElement("img",{src:"icon-dashboard-logo.png",alt:"داشبورد",className:"nm-layer-icon object-cover p-0",style:{background:"var(--bg-card2)"}}) : journalLogo ? React.createElement("img",{src:"icon-journal.png",alt:"ژورنال",className:"nm-layer-icon object-cover p-0",style:{background:"var(--bg-card2)"}}) : React.createElement(Icon,{size:17}), React.createElement("span",{className:"text-[13px]"},label));
             }))),
