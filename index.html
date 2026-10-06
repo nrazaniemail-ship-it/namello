@@ -4608,8 +4608,7 @@ function NmLibraryBooksSection({ showToast, askDeleteConfirm }) {
     };
     return RE("div", { className: "mb-5" },
         viewing && RE(NmBookViewer, { book: viewing, onClose: () => setViewing(null), showToast }),
-        RE("div", { className: "flex items-center justify-between mb-2" },
-            RE("h3", { className: "text-[14px] font-bold flex items-center gap-1.5", style: { color: "var(--text-primary)" } }, RE("span", null, "📖"), "کتاب‌های متنی"),
+        RE("div", { className: "flex items-center justify-start mb-2", style: { direction: "ltr" } },
             RE("button", { type: "button", onClick: addBook, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, RE(Plus, { size: 13 }), "افزودن کتاب")),
         !ready ? null : books.length === 0 ? RE("div", { className: "rounded-xl p-5 text-center text-[12px]", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "هنوز کتابی اضافه نشده. فایل PDF, EPUB یا متنی خود را اضافه کنید.")
             : books.map(b => RE("div", { key: b.id, className: "rounded-xl p-3 mb-2 flex items-center gap-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
@@ -4718,8 +4717,7 @@ function NmLibraryPodcastsSection({ showToast, askDeleteConfirm }) {
         nmRequestPlay({ episodeId: ep.id, blobKey: ep.id, title: ep.title, subtitle: podcast.title, playlist, playlistIndex });
     };
     return RE("div", { className: "mb-5", style: { direction: "ltr", textAlign: "left" } },
-        RE("div", { className: "flex items-center justify-between mb-2" },
-            RE("h3", { className: "text-[14px] font-bold flex items-center gap-1.5", style: { color: "var(--text-primary)", textAlign: "right", direction: "rtl" } }, RE("span", null, "🎧"), "پادکست و کتاب‌های صوتی"),
+        RE("div", { className: "flex items-center justify-start mb-2", style: { direction: "ltr" } },
             RE("button", { type: "button", onClick: addPodcast, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, RE(Plus, { size: 13 }), "پادکست جدید")),
         !ready ? null : podcasts.length === 0 ? RE("div", { className: "rounded-xl p-5 text-center text-[12px]", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "هنوز پادکستی اضافه نشده. یک پادکست بسازید و اپیزودهایش را اضافه کنید.")
             : podcasts.map(p => RE(NmPodcastRow, { key: p.id, podcast: p, onChange: updatePodcast, onRemove: () => removePodcast(p), onPlay: playEpisode, askDeleteConfirm })),
