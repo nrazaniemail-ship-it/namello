@@ -4543,6 +4543,17 @@ function NmBookViewer({ book, onClose, showToast }) {
                             : RE("div", { className: "p-6 text-center text-[12px] leading-7", style: { color: "var(--text-secondary)" } }, "نمایش داخلی این نوع فایل (" + (nmLibExt(book.fileName) || "نامشخص").toUpperCase() + ") ممکن نیست. با دکمه‌ی «اشتراک/دانلود» آن را در برنامه‌ی خوانشگر گوشی (مثل خواننده‌ی EPUB یا Word) باز کنید.")),
         state.kind === "pdf" && RE("div", { className: "px-3 py-1.5 text-[10px] text-center", style: { color: "var(--text-muted)", background: "var(--bg-card)" } }, "اگر PDF نمایش داده نشد، «اشتراک/دانلود» را بزنید و در برنامه‌ی PDF‌خوان باز کنید."));
 }
+function NmLibraryCollapsibleSection({ title, icon, children, defaultOpen = true }) {
+    const [open, setOpen] = useState(defaultOpen);
+    return RE("section", { className: "mb-4 rounded-2xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", direction: "rtl" } },
+        RE("button", { type: "button", onClick: () => setOpen(v => !v), className: "w-full flex items-center justify-between gap-2 mb-2", "aria-expanded": open },
+            RE("div", { className: "flex items-center gap-2 min-w-0", style: { textAlign: "right" } }, RE("span", { style: { fontSize: 18 } }, icon), RE("span", { className: "text-[14px] font-bold", style: { color: "var(--text-primary)", textAlign: "right" } }, title)),
+            open ? RE(ChevronUp, { size: 16, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 16, color: "var(--accent-gold)" })
+        ),
+        open ? RE("div", { className: "pt-2" }, children) : null
+    );
+}
+
 /* ---------------- کتاب‌های متنی ---------------- */
 function NmLibraryBooksSection({ showToast, askDeleteConfirm }) {
     const [viewing, setViewing] = useState(null);
@@ -4708,7 +4719,7 @@ function NmLibraryPodcastsSection({ showToast, askDeleteConfirm }) {
     };
     return RE("div", { className: "mb-5", style: { direction: "ltr", textAlign: "left" } },
         RE("div", { className: "flex items-center justify-between mb-2" },
-            RE("h3", { className: "text-[14px] font-bold flex items-center gap-1.5", style: { color: "var(--text-primary)" } }, RE("span", null, "🎧"), "پادکست و کتاب‌های صوتی"),
+            RE("h3", { className: "text-[14px] font-bold flex items-center gap-1.5", style: { color: "var(--text-primary)", textAlign: "right", direction: "rtl" } }, RE("span", null, "🎧"), "پادکست و کتاب‌های صوتی"),
             RE("button", { type: "button", onClick: addPodcast, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, RE(Plus, { size: 13 }), "پادکست جدید")),
         !ready ? null : podcasts.length === 0 ? RE("div", { className: "rounded-xl p-5 text-center text-[12px]", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "هنوز پادکستی اضافه نشده. یک پادکست بسازید و اپیزودهایش را اضافه کنید.")
             : podcasts.map(p => RE(NmPodcastRow, { key: p.id, podcast: p, onChange: updatePodcast, onRemove: () => removePodcast(p), onPlay: playEpisode, askDeleteConfirm })),
@@ -4832,9 +4843,9 @@ function NmMotivationalMessagesSection({ showToast, askDeleteConfirm }) {
     return RE("div", { className: "px-4 mt-4 pb-16" },
         RE(NmLayerHeading,{title:"کتابخانه",Icon:BookOpen}),
         RE("p", { className: "text-[11px] leading-5 mb-4", style: { color: "var(--text-muted)" } }, "کتاب‌های متنی و پادکست/کتاب‌های صوتی خود را اینجا نگه دارید. فایل‌ها داخل خودِ برنامه ذخیره می‌شوند؛ برای فایل‌های حجیم به فضای ذخیره‌سازی دستگاه توجه کنید (تنظیمات ← فضای ذخیره‌سازی)."),
-        RE(NmLibraryBooksSection, { showToast, askDeleteConfirm }),
-        RE(NmLibraryPodcastsSection, { showToast, askDeleteConfirm }),
-        RE(NmMotivationalMessagesSection, { showToast, askDeleteConfirm }));
+        RE(NmLibraryCollapsibleSection, { title: "کتاب‌های متنی", icon: "📖" }, RE(NmLibraryBooksSection, { showToast, askDeleteConfirm })),
+        RE(NmLibraryCollapsibleSection, { title: "پادکست و کتاب‌های صوتی", icon: "🎧" }, RE(NmLibraryPodcastsSection, { showToast, askDeleteConfirm })),
+        RE(NmLibraryCollapsibleSection, { title: "پیام انگیزشی", icon: "💡" }, RE(NmMotivationalMessagesSection, { showToast, askDeleteConfirm })) );
 }
 
 /* ---------------- تقویم معاملاتی: حساب‌های مبنا + سود دلاری هر روز ---------------- */
