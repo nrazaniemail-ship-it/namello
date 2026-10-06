@@ -4416,6 +4416,8 @@ function NmGlobalPlayer({ tab }) {
             navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: track.subtitle || "Namello", album: "Namello" });
             navigator.mediaSession.setActionHandler("play", () => { const a = audioRef.current; if (a) a.play().catch(() => { }); });
             navigator.mediaSession.setActionHandler("pause", () => { const a = audioRef.current; if (a) a.pause(); });
+            navigator.mediaSession.setActionHandler("previoustrack", () => { nmRequestCmd("previous"); });
+            navigator.mediaSession.setActionHandler("nexttrack", () => { nmRequestCmd("next"); });
             navigator.mediaSession.setActionHandler("seekbackward", () => { const a = audioRef.current; if (a) a.currentTime = Math.max(0, a.currentTime - 15); });
             navigator.mediaSession.setActionHandler("seekforward", () => { const a = audioRef.current; if (a) a.currentTime = Math.min(a.duration || 0, a.currentTime + 15); });
         } catch (e) { }
