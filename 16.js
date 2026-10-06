@@ -4995,7 +4995,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      React.createElement("button",{onClick:()=>{setSelected(null);onEditTrade&&onEditTrade(selected)},className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ویرایش معامله"))));
  const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc}); const replayModal=replay&&React.createElement(NmReplayModal,{trade:replay,onClose:()=>setReplay(null)});
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
-   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,RE(NmLayerHeading,{title:"داشبورد عملکرد",image:"icon-dashboard-logo.png"}),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`))),
+   React.createElement("div",{className:"mb-3"},RE(NmLayerHeading,{title:"داشبورد عملکرد",image:"icon-dashboard-logo.png"}),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`)),
    statisticalAnalysisSection,
    React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
      React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
@@ -7618,18 +7618,7 @@ function App() {
                     @bottom-center { content: "صفحه " counter(page) " از " counter(pages); font-size: 8.5pt; color: #999; font-family: 'Vazirmatn', sans-serif; }
                     @bottom-left { content: "Namello"; font-size: 8pt; color: #bbb; font-family: 'Vazirmatn', sans-serif; }
                 }
-            
-  .nm-news-title-group { min-width: 0; display: inline-flex; align-items: center; gap: 8px; direction: rtl; }
-  .nm-help-search-input { pointer-events: auto !important; user-select: text !important; -webkit-user-select: text !important; opacity: 1 !important; cursor: text !important; }
-  .nm-help-search-input:focus { border-color: var(--accent-gold) !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-gold) 16%, transparent); }
-  .nm-section-heading-help { display: flex; align-items: center; gap: 8px; direction: rtl; min-width: 0; }
-
-
-  .nm-settings-root .nm-header-dots + h3 { display: inline-flex !important; vertical-align: middle; margin-inline-start: 8px; }
-  .nm-settings-root .nm-header-dots { vertical-align: middle; }
-  .nm-settings-root .flex.items-center.gap-1\.5 .nm-header-dots { order: -1; }
-
-</style></head>
+            </style></head>
             <body>
                 <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.6</span></div>
                 <div class="nm-body">
@@ -8357,18 +8346,7 @@ function App() {
                     @bottom-center { content: "صفحه " counter(page) " از " counter(pages); font-size: 8.5pt; color: #999; font-family: 'Vazirmatn', sans-serif; }
                     @bottom-left { content: "Namello"; font-size: 8pt; color: #bbb; font-family: 'Vazirmatn', sans-serif; }
                 }
-            
-  .nm-news-title-group { min-width: 0; display: inline-flex; align-items: center; gap: 8px; direction: rtl; }
-  .nm-help-search-input { pointer-events: auto !important; user-select: text !important; -webkit-user-select: text !important; opacity: 1 !important; cursor: text !important; }
-  .nm-help-search-input:focus { border-color: var(--accent-gold) !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-gold) 16%, transparent); }
-  .nm-section-heading-help { display: flex; align-items: center; gap: 8px; direction: rtl; min-width: 0; }
-
-
-  .nm-settings-root .nm-header-dots + h3 { display: inline-flex !important; vertical-align: middle; margin-inline-start: 8px; }
-  .nm-settings-root .nm-header-dots { vertical-align: middle; }
-  .nm-settings-root .flex.items-center.gap-1\.5 .nm-header-dots { order: -1; }
-
-</style></head>
+            </style></head>
             <body>
                 <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.6</span></div>
                 <div class="nm-body">

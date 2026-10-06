@@ -88,30 +88,20 @@
   .nm-settings-chevron svg { width: 14px !important; height: 14px !important; color: var(--accent-gold) !important; }
   .nm-collapse-chevron { flex: 0 0 28px; }
   .nm-collapse-chevron svg { display: block; }
-  .nm-header-dots { width: 32px; height: 32px; min-width: 32px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; line-height: 1; border: 1px solid color-mix(in srgb, var(--border-2) 90%, #fff 10%); border-radius: 9px; background: color-mix(in srgb, var(--bg-card2) 88%, transparent); padding: 0; cursor: pointer; transition: background .16s ease, border-color .16s ease, transform .16s ease; }
+  .nm-header-dots { order: -1; width: 32px; height: 32px; min-width: 32px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; line-height: 1; border: 1px solid color-mix(in srgb, var(--border-2) 90%, #fff 10%); border-radius: 9px; background: color-mix(in srgb, var(--bg-card2) 88%, transparent); padding: 0; cursor: pointer; transition: background .16s ease, border-color .16s ease, transform .16s ease; }
   .nm-header-dots:hover { background: color-mix(in srgb, var(--accent-gold) 10%, var(--bg-card2)); border-color: color-mix(in srgb, var(--accent-gold) 38%, var(--border-2)); }
   .nm-header-dots:active { transform: scale(.95); }
   .nm-header-dots:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
   .nm-header-dot { width: 3px; height: 3px; border-radius: 999px; background: #fff; display: block; box-shadow: 0 0 2px rgba(255,255,255,.45); }
-  .nm-layer-heading { width: 100%; min-height: 42px; margin-bottom: 10px; padding: 5px 6px 5px 5px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; direction: rtl; border-radius: 13px; background: color-mix(in srgb, var(--bg-card) 92%, var(--accent-gold) 8%); border: 1px solid var(--border-1); }
-  .nm-layer-heading-main { min-width: 0; flex: 1; display: flex; align-items: center; justify-content: flex-start; gap: 9px; direction: rtl; }
+  .nm-layer-heading { width: 100%; min-height: 42px; margin-bottom: 10px; padding: 5px 6px 5px 5px; display: flex; align-items: center; justify-content: space-between; gap: 10px; direction: ltr; border-radius: 13px; background: color-mix(in srgb, var(--bg-card) 92%, var(--accent-gold) 8%); border: 1px solid var(--border-1); }
+  .nm-layer-heading-main { min-width: 0; flex: 1; display: flex; align-items: center; gap: 9px; direction: rtl; }
   .nm-layer-heading-icon { width: 30px; height: 30px; min-width: 30px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--bg-card2) 82%, var(--accent-gold) 18%); border: 1px solid color-mix(in srgb, var(--border-2) 75%, var(--accent-gold) 25%); }
   .nm-layer-heading-title { min-width: 0; font-size: 13px; line-height: 1.35; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .nm-collapsible-row { width: 100%; display: flex; align-items: center; gap: 8px; direction: ltr; }
+  .nm-collapsible-row { width: 100%; display: flex; align-items: center; gap: 8px; direction: rtl; }
+  .nm-layer-heading > .nm-header-dots { order: 0; }
   .nm-collapsible-toggle { min-width: 0; flex: 1; display: flex; align-items: center; gap: 9px; direction: ltr; text-align: start; }
   .nm-collapsible-copy { min-width: 0; flex: 1; direction: rtl; text-align: start; }
   .nm-collapsible-chevron { order: 0; flex: 0 0 28px; }
-
-
-  .nm-news-title-group { min-width: 0; display: inline-flex; align-items: center; gap: 8px; direction: rtl; }
-  .nm-help-search-input { pointer-events: auto !important; user-select: text !important; -webkit-user-select: text !important; opacity: 1 !important; cursor: text !important; }
-  .nm-help-search-input:focus { border-color: var(--accent-gold) !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-gold) 16%, transparent); }
-  .nm-section-heading-help { display: flex; align-items: center; gap: 8px; direction: rtl; min-width: 0; }
-
-
-  .nm-settings-root .nm-header-dots + h3 { display: inline-flex !important; vertical-align: middle; margin-inline-start: 8px; }
-  .nm-settings-root .nm-header-dots { vertical-align: middle; }
-  .nm-settings-root .flex.items-center.gap-1\.5 .nm-header-dots { order: -1; }
 
 </style>
 </head>
@@ -2641,8 +2631,8 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
         );
     return React.createElement("section", { className: "rounded-2xl mb-3", style: { background: "color-mix(in srgb, #14B8A6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #14B8A6 28%, var(--border-1))", overflow: "hidden" } },
         React.createElement("button", { type: "button", onClick: () => setShowPsychology(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #14B8A6 10%, var(--bg-card))", borderBottom: showPsychology ? "1px solid color-mix(in srgb, #14B8A6 28%, var(--border-1))" : "none" }, "aria-expanded": showPsychology },
-            React.createElement("div", { className: "nm-section-heading-help" },
-                RE(NmHeaderDots,{title:"روانشناسی ترید"}),React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "روانشناسی ترید"),
+            React.createElement("div", { className: "flex items-center gap-2 min-w-0" },
+                React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "روانشناسی ترید"),RE(NmHeaderDots,{title:"روانشناسی ترید"}),
                 React.createElement("span", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, "منبع ارزیابی، الگوهای رفتاری، نقاط قوت، ضعف، تهدیدها و فرصت‌ها")
             ),
             React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showPsychology ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))
@@ -3229,9 +3219,8 @@ function NmHelpCenter(){
   const guideEn=nmHelpEnglish(guide);
   const isEn=typeof document!=="undefined" && document.documentElement.lang==="en";
   const searchBase=isEn?guideEn:guide;
-  const normalizeHelpSearch=v=>String(v||"").replace(/[يى]/g,"ی").replace(/[ك]/g,"ک").replace(/‌/g," ").replace(/\s+/g," ").toLowerCase();
-  const searchText=normalizeHelpSearch(guide.key+" "+searchBase.purpose+" "+searchBase.steps.join(" ")+guide.terms.map(x=>x.join(" ")).join(" ")+searchBase.tips.join(" ")+((searchBase.before||[]).join(" "))+((searchBase.mistakes||[]).join(" "))+((searchBase.read||[]).join(" "))).toLowerCase();
-  const q=normalizeHelpSearch(searchQuery.trim());
+  const searchText=(guide.key+" "+searchBase.purpose+" "+searchBase.steps.join(" ")+guide.terms.map(x=>x.join(" ")).join(" ")+searchBase.tips.join(" ")+((searchBase.before||[]).join(" "))+((searchBase.mistakes||[]).join(" "))+((searchBase.read||[]).join(" "))).toLowerCase();
+  const q=searchQuery.trim().toLowerCase();
   const title=isEn?(NM_HELP_ALIASES[guide.key]||guide.key):guide.key;
   const close=()=>setState(null);
   const panelStyle={background:"var(--bg-card)",border:"1px solid var(--border-1)"};
@@ -3243,7 +3232,7 @@ function NmHelpCenter(){
         RE("div",{className:"flex items-center justify-between gap-3 mb-4"},
           RE("div",{className:"flex items-center gap-2 min-w-0"},RE("span",{style:{fontSize:20}},guide.icon),RE("h3",{className:"text-[15px] font-bold truncate",style:{color:"var(--text-primary)"}},title)),
           RE("button",{type:"button",onClick:close,className:"p-1.5 rounded-lg",style:{background:"var(--bg-card2)"}},RE(X,{size:16,color:"var(--text-muted)"}))),
-        RE("div",{className:"flex gap-2 mb-3"},RE("input",{value:query,onChange:e=>{setQuery(e.target.value);setSearchQuery(e.target.value)},onKeyDown:e=>{if(e.key==="Enter")runSearch();},placeholder:isEn?"Search guide...":"جست‌وجو در این راهنما...",className:"flex-1 min-w-0 rounded-xl px-3 py-2.5 text-[11px] outline-none nm-help-search-input",autoComplete:"off",autoCorrect:"off",spellCheck:false,style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)",color:"var(--text-primary)"}}),searchButton),
+        RE("div",{className:"flex gap-2 mb-3"},RE("input",{value:query,onChange:e=>setQuery(e.target.value),onKeyDown:e=>{if(e.key==="Enter")runSearch();},placeholder:isEn?"Search guide...":"جست‌وجو در این راهنما...",className:"flex-1 min-w-0 rounded-xl px-3 py-2.5 text-[11px] outline-none",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)",color:"var(--text-primary)"}}),searchButton),
         RE("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)"}},
           RE("div",{className:"text-[12px] font-bold mb-1",style:{color:"var(--accent-gold)"}},isEn?"No matching text":"نتیجه‌ای برای عبارت جست‌وجو پیدا نشد."),
           RE("div",{className:"text-[11px] leading-6",style:{color:"var(--text-secondary)"}},isEn?"Try a shorter term or clear the search.":"عبارت کوتاه‌تری امتحان کن یا جست‌وجو را پاک کن.")),
@@ -3265,7 +3254,7 @@ function NmHelpCenter(){
       RE("div",{className:"flex items-center justify-between gap-3 mb-3"},
         RE("div",{className:"flex items-center gap-2 min-w-0"},RE("span",{style:{fontSize:20}},guide.icon),RE("div",{className:"min-w-0"},RE("div",{className:"text-[10px] mb-0.5",style:{color:"var(--text-muted)"}},isEn?"Feature Guide":"راهنمای قابلیت"),RE("h3",{className:"text-[15px] font-bold truncate",style:{color:"var(--text-primary)"}},title))),
         RE("button",{type:"button",onClick:close,className:"p-1.5 rounded-lg",style:{background:"var(--bg-card2)"}},RE(X,{size:16,color:"var(--text-muted)"}))),
-      RE("div",{className:"flex gap-2 mb-4"},RE("input",{value:query,onChange:e=>{setQuery(e.target.value);setSearchQuery(e.target.value)},onKeyDown:e=>{if(e.key==="Enter")runSearch();},placeholder:isEn?"Search guide...":"جست‌وجو در این راهنما...",className:"flex-1 min-w-0 rounded-xl px-3 py-2.5 text-[11px] outline-none nm-help-search-input",autoComplete:"off",autoCorrect:"off",spellCheck:false,style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)",color:"var(--text-primary)"}}),searchButton),
+      RE("div",{className:"flex gap-2 mb-4"},RE("input",{value:query,onChange:e=>setQuery(e.target.value),onKeyDown:e=>{if(e.key==="Enter")runSearch();},placeholder:isEn?"Search guide...":"جست‌وجو در این راهنما...",className:"flex-1 min-w-0 rounded-xl px-3 py-2.5 text-[11px] outline-none",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)",color:"var(--text-primary)"}}),searchButton),
       RE("section",{className:"mb-4"},RE("h4",{className:"text-[11px] font-bold mb-1.5",style:{color:"var(--accent-gold)"}},isEn?"Purpose":"کاربرد این بخش"),RE("p",{className:"text-[11px] leading-6",style:{color:"var(--text-secondary)"}},purpose)),
       RE("section",{className:"mb-4"},RE("h4",{className:"text-[11px] font-bold mb-1.5",style:{color:"var(--accent-gold)"}},isEn?"How to use":"روش کار"),RE("ol",{className:"text-[11px] leading-6",style:{color:"var(--text-secondary)",paddingInlineStart:18}},stepNodes)),
       before.length?RE("section",{className:"mb-4"},RE("h4",{className:"text-[11px] font-bold mb-1.5",style:{color:"var(--accent-gold)"}},isEn?"Before you start":"قبل از شروع"),RE("ul",{className:"text-[11px] leading-6",style:{color:"var(--text-secondary)",paddingInlineStart:18}},before.map((x,i)=>RE("li",{key:i,className:"mb-1"},x)))):null,
@@ -4604,12 +4593,11 @@ const NM_DEFAULT_NAV_ORDER = ["dashboard","live","news","journal","marketeval","
 
 function NmLayerHeading({ title, Icon, image, helpKey, hideHelp=false }) {
     return React.createElement("div", { className: "nm-layer-heading" },
-        !hideHelp && React.createElement(NmHeaderDots, { title: helpKey || title }),
         React.createElement("div", { className: "nm-layer-heading-main" },
-            React.createElement("span", { className: "nm-layer-heading-title" }, title),
             image ? React.createElement("span", { className: "nm-layer-heading-icon" }, React.createElement("img", { src: image, alt: title, loading: "lazy", decoding: "async", style: { width: 26, height: 26, borderRadius: 7, objectFit: "contain" } })) :
-            Icon ? React.createElement("span", { className: "nm-layer-heading-icon" }, React.createElement(Icon, { size: 17, color: "var(--accent-gold)" })) : null
-        )
+            Icon ? React.createElement("span", { className: "nm-layer-heading-icon" }, React.createElement(Icon, { size: 17, color: "var(--accent-gold)" })) : null,
+            React.createElement("span", { className: "nm-layer-heading-title" }, title)),
+        !hideHelp && React.createElement(NmHeaderDots, { title: helpKey || title })
     );
 }
 
@@ -5988,11 +5976,11 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
      React.createElement("button",{onClick:()=>{setSelected(null);onEditTrade&&onEditTrade(selected)},className:"py-2.5 rounded-xl text-[10px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},"ویرایش معامله"))));
  const excursionModal=excursion&&React.createElement(NmExcursionModal,{trade:excursion,onClose:()=>setExcursion(null),onSave:saveExc}); const replayModal=replay&&React.createElement(NmReplayModal,{trade:replay,onClose:()=>setReplay(null)});
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
-   React.createElement("div",{className:"flex items-center justify-between mb-3"},React.createElement("div",null,RE(NmLayerHeading,{title:"داشبورد عملکرد",image:"icon-dashboard-logo.png"}),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`))),
+   React.createElement("div",{className:"mb-3"},RE(NmLayerHeading,{title:"داشبورد عملکرد",image:"icon-dashboard-logo.png"}),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`)),
    statisticalAnalysisSection,
    React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
      React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
-       React.createElement("div",{className:"nm-section-heading-help"},RE(NmHeaderDots,{title:"ارزیابی پیشرفته"}),React.createElement("span",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")), 
+       React.createElement("div",{className:"flex items-center gap-2 min-w-0"},React.createElement("span",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),RE(NmHeaderDots,{title:"ارزیابی پیشرفته"}),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")), 
        React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},showAdvanced?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))),
      showAdvanced&&React.createElement("div",{className:"pt-2"},
        React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},window.nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
@@ -8630,18 +8618,7 @@ function App() {
                     @bottom-center { content: "صفحه " counter(page) " از " counter(pages); font-size: 8.5pt; color: #999; font-family: 'Vazirmatn', sans-serif; }
                     @bottom-left { content: "Namello"; font-size: 8pt; color: #bbb; font-family: 'Vazirmatn', sans-serif; }
                 }
-            
-  .nm-news-title-group { min-width: 0; display: inline-flex; align-items: center; gap: 8px; direction: rtl; }
-  .nm-help-search-input { pointer-events: auto !important; user-select: text !important; -webkit-user-select: text !important; opacity: 1 !important; cursor: text !important; }
-  .nm-help-search-input:focus { border-color: var(--accent-gold) !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-gold) 16%, transparent); }
-  .nm-section-heading-help { display: flex; align-items: center; gap: 8px; direction: rtl; min-width: 0; }
-
-
-  .nm-settings-root .nm-header-dots + h3 { display: inline-flex !important; vertical-align: middle; margin-inline-start: 8px; }
-  .nm-settings-root .nm-header-dots { vertical-align: middle; }
-  .nm-settings-root .flex.items-center.gap-1\.5 .nm-header-dots { order: -1; }
-
-</style></head>
+            </style></head>
             <body>
                 <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.6</span></div>
                 <div class="nm-body">
@@ -9371,18 +9348,7 @@ function App() {
                     @bottom-center { content: "صفحه " counter(page) " از " counter(pages); font-size: 8.5pt; color: #999; font-family: 'Vazirmatn', sans-serif; }
                     @bottom-left { content: "Namello"; font-size: 8pt; color: #bbb; font-family: 'Vazirmatn', sans-serif; }
                 }
-            
-  .nm-news-title-group { min-width: 0; display: inline-flex; align-items: center; gap: 8px; direction: rtl; }
-  .nm-help-search-input { pointer-events: auto !important; user-select: text !important; -webkit-user-select: text !important; opacity: 1 !important; cursor: text !important; }
-  .nm-help-search-input:focus { border-color: var(--accent-gold) !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-gold) 16%, transparent); }
-  .nm-section-heading-help { display: flex; align-items: center; gap: 8px; direction: rtl; min-width: 0; }
-
-
-  .nm-settings-root .nm-header-dots + h3 { display: inline-flex !important; vertical-align: middle; margin-inline-start: 8px; }
-  .nm-settings-root .nm-header-dots { vertical-align: middle; }
-  .nm-settings-root .flex.items-center.gap-1\.5 .nm-header-dots { order: -1; }
-
-</style></head>
+            </style></head>
             <body>
                 <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.6</span></div>
                 <div class="nm-body">
@@ -9572,7 +9538,7 @@ function App() {
         const { byLot, byWeekday, bySystem, bySession, byTrend, byRR, byBias, byFractal, byMainTrend, byDailyTrend, byDailyCandle, bySystemsMulti, byEntryTimeSystemsMulti, byMainGuideLevelsMulti, byEntryGuideLevelsMulti, byCondition, byWave, byTrig, byTarget, byStop, byNews, bySystemWeekday, bySessionLot, byReversalPattern, bySuccessProb, byPsychology, byDuration, bySetupReadiness, byChartReadiness, byDayPlanReadiness, byRiskDollar, bySubjectiveSuccessProb, byCalculatedSuccessProb, byDirection, byPair, byDivergenceMain, byDivergenceEntry, rows3d } = nmBuildDashboardStatisticalData(dashboardStatisticalSelectedTrades, param3dX, param3dY);
         return React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
         React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #3B82F6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))" }, "aria-expanded": showStatisticalAnalysis },
-            React.createElement("div", { className: "flex items-center gap-2 min-w-0" },RE(NmHeaderDots,{title:"تحلیل آماری"}),React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری")),
+            React.createElement("div", { className: "flex items-center gap-2 min-w-0" },React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),RE(NmHeaderDots,{title:"تحلیل آماری"})),
             React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-2" },
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
@@ -10668,7 +10634,7 @@ function App() {
             RE(NmSettingsAutoCollapse, null,
             React.createElement("div", { className: "rounded-2xl p-3 mb-2 nm-profile-card", style: { background: "color-mix(in srgb, #3B82F6 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", width: "100%" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "profile" ? "" : "profile"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
-                    RE(NmHeaderDots,{title:"پروفایل"}), React.createElement("span", { className: "text-[13px] font-semibold" }, "پروفایل"), RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, settingsProfileSection === "profile" ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })))
+                    React.createElement("span", { className: "text-[13px] font-semibold" }, "پروفایل"), RE(NmHeaderDots,{title:"پروفایل"}), RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, settingsProfileSection === "profile" ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })))
             ),
             settingsProfileSection === "profile" && React.createElement("div", { className: "nm-profile-content rounded-2xl p-3 mb-3", style: { background: "color-mix(in srgb, #3B82F6 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 22%, var(--border-1))", width: "100%" } },
             React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } }, "\u067E\u0631\u0648\u0641\u0627\u06CC\u0644"),
@@ -10685,7 +10651,7 @@ function App() {
             ),
             React.createElement("div", { className: "rounded-2xl p-3 mb-3 nm-template-card", style: { background: "color-mix(in srgb, #8B5CF6 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))", width: "100%" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "template" ? "" : "template"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
-                    RE(NmHeaderDots,{title:"تمپلت"}), React.createElement("span", { className: "text-[13px] font-semibold" }, "تمپلت"), RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, settingsProfileSection === "template" ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })))
+                    React.createElement("span", { className: "text-[13px] font-semibold" }, "تمپلت"), RE(NmHeaderDots,{title:"تمپلت"}), RE("span", { className: "nm-settings-chevron", "aria-hidden": true }, settingsProfileSection === "template" ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })))
             ),
             !activeUserId ? (React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u06CC\u06A9 \u06A9\u0627\u0631\u0628\u0631 \u0631\u0648 \u0627\u0632 \u0628\u0627\u0644\u0627 \u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646 \u062A\u0627 \u062A\u0645\u067E\u0644\u06CC\u062A\u200C\u0647\u0627\u0634 \u0631\u0648 \u0628\u0628\u06CC\u0646\u06CC.")) : (settingsProfileSection === "template" && React.createElement("div", { className: "nm-template-content rounded-2xl p-3 mb-3", style: { background: "color-mix(in srgb, #8B5CF6 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, #8B5CF6 22%, var(--border-1))", width: "100%" } },
                 React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } },
@@ -10710,7 +10676,7 @@ function App() {
                         React.createElement(Plus, { size: 14 }),
                         " \u0630\u062E\u06CC\u0631\u0647 \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0641\u0639\u0644\u06CC"))))),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                RE(NmHeaderDots,{title:"تنظیمات ظاهری"}),React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_theme")),
+                React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_theme")),RE(NmHeaderDots,{title:"تنظیمات ظاهری"}),
                 React.createElement("div", { className: "flex gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode("dark"), className: "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[12px] font-medium", style: { background: themeMode === "dark" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: themeMode === "dark" ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${themeMode === "dark" ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}` } },
                         React.createElement(Moon, { size: 13 }),
@@ -10725,7 +10691,7 @@ function App() {
             RE(NmLibrarySettingsCard, { open: !!openSettingsSection.library, onToggle: () => toggleSettingsSection("library") }),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("button", { onClick: () => toggleSettingsSection("language"), className: "w-full flex items-center justify-between mb-2" },
-                    RE(NmHeaderDots,{title:"زبان برنامه"}),React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, t("settings_language")),
+                    React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, t("settings_language")),RE(NmHeaderDots,{title:"زبان برنامه"}),
                     React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, openSettingsSection.language ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
                 React.createElement("div", { className: "flex gap-2" },
                     React.createElement("button", { onClick: () => persistAppLanguage("fa"), className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: appLanguage === "fa" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: appLanguage === "fa" ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${appLanguage === "fa" ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}` } }, "فارسی"),
@@ -10743,13 +10709,13 @@ function App() {
             RE(NmCustomFieldsManager, null),
             RE(NmCollapsible, { title: "فونت برنامه", subtitle: "برای جمع/باز کردن این بخش کلیک کنید", icon: "🔤", defaultOpen: false },
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                RE(NmHeaderDots,{title:"فونت برنامه"}),React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, "فونت برنامه"),
+                React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, "فونت برنامه"),RE(NmHeaderDots,{title:"فونت برنامه"}),
                 React.createElement("div", { className: "flex flex-wrap gap-1.5" }, FONT_OPTIONS.map(f => (React.createElement("button", { key: f.key, onClick: () => changeAppFont(f.key), className: "px-3 py-2 rounded-lg text-[12px]", style: { background: appFont === f.key ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: appFont === f.key ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${appFont === f.key ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}`, fontFamily: f.css } }, f.label))))),
             ),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("button", { onClick: () => toggleSettingsSection("quickLaunch"), className: "flex items-center gap-1.5" },
-                        RE(NmHeaderDots,{title:"اجرای سریع MT5/TradingView"}),React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "\u062F\u06A9\u0645\u0647\u200C\u06CC \u0634\u0646\u0627\u0648\u0631 \u0627\u062C\u0631\u0627\u06CC \u0633\u0631\u06CC\u0639 MT5/\u062A\u0631\u06CC\u062F\u06CC\u0646\u06AF\u200C\u0648\u06CC\u0648"),
+                        React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "\u062F\u06A9\u0645\u0647\u200C\u06CC \u0634\u0646\u0627\u0648\u0631 \u0627\u062C\u0631\u0627\u06CC \u0633\u0631\u06CC\u0639 MT5/\u062A\u0631\u06CC\u062F\u06CC\u0646\u06AF\u200C\u0648\u06CC\u0648"),RE(NmHeaderDots,{title:"اجرای سریع MT5/TradingView"}),
                         React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, openSettingsSection.quickLaunch ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),),
                 openSettingsSection.quickLaunch && React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "دو دکمه‌ی شناور جدا روی صفحه ظاهر می‌شن: یکی برای MT5 و یکی برای TradingView (بدون منوی واسط). با لمس و نگه‌داشتنِ هرکدوم می‌تونی جاش رو هر جای صفحه ببری؛ جایگاه هرکدوم جدا ذخیره می‌شه. با یک ضربه‌ی ساده (بدون کشیدن)، همون اپ باز می‌شه."),
                 React.createElement("div", { className: "rounded-lg p-2.5 mb-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
@@ -10774,7 +10740,7 @@ function App() {
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("button", { onClick: () => toggleSettingsSection("namelloReturn"), className: "flex items-center gap-1.5" },
-                        RE(NmHeaderDots,{title:"نوتیفیکیشن بازگشت به Namello"}),React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "نوتیفیکیشن بازگشت به Namello"),
+                        React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "نوتیفیکیشن بازگشت به Namello"),RE(NmHeaderDots,{title:"نوتیفیکیشن بازگشت به Namello"}),
                         React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, openSettingsSection.namelloReturn ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
                     React.createElement("button", { onClick: () => { if (namelloReturnSettings.enabled) { if (window.NamelloNative && typeof window.NamelloNative.disableFloatingReturn === "function") window.NamelloNative.disableFloatingReturn(); persistNamelloReturnSettings({ ...namelloReturnSettings, enabled: false }); } else enableNamelloReturn(); }, className: "px-3 py-1 rounded-full text-[11px] font-medium", style: { background: namelloReturnSettings.enabled ? "#34D39922" : "var(--bg-card2)", color: namelloReturnSettings.enabled ? "#34D399" : "var(--text-muted)" } }, namelloReturnSettings.enabled ? "فعال" : "غیرفعال")),
                 openSettingsSection.namelloReturn && React.createElement("p", { className: "text-[11px] leading-6", style: { color: "var(--text-muted)" } },
@@ -10785,7 +10751,7 @@ function App() {
             RE(NmCollapsible, { title: "MT5 · دریافت خودکار OHLC و MFE/MAE", subtitle: "برای جمع/باز کردن این بخش کلیک کنید", icon: "📊", defaultOpen: false },
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                    RE(NmHeaderDots,{title:"MT5 · دریافت خودکار OHLC و MFE/MAE"}),React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "MT5 · دریافت خودکار OHLC و MFE/MAE"),
+                    React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "MT5 · دریافت خودکار OHLC و MFE/MAE"),RE(NmHeaderDots,{title:"MT5 · دریافت خودکار OHLC و MFE/MAE"}),
                     React.createElement("button", { onClick: () => persistMt5BridgeSettings({ ...mt5BridgeSettings, enabled: !mt5BridgeSettings.enabled }), className: "rounded-full px-3 py-1 text-[11px]", style: { background: mt5BridgeSettings.enabled ? "#34D39922" : "var(--bg-card2)", color: mt5BridgeSettings.enabled ? "#34D399" : "var(--text-muted)" } }, mt5BridgeSettings.enabled ? "فعال" : "غیرفعال")),
                 React.createElement("p", { className: "text-[10px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "MT5 مستقیماً از داخل مرورگر قابل خواندن نیست. EA/Bridge متاتریدر داده‌ی معامله و OHLC را به آدرس HTTPS می‌فرستد و Namello آن را دوره‌ای دریافت می‌کند؛ سپس MFE، MAE، Best Exit و Exit Efficiency خودکار محاسبه و ذخیره می‌شود."),
                 React.createElement("input", { value: mt5BridgeSettings.url, onChange: e => persistMt5BridgeSettings({ ...mt5BridgeSettings, url: e.target.value }), placeholder: "https://example.com/namello/mt5", className: "w-full rounded-lg px-3 py-2 text-[11px] bg-transparent outline-none mb-2", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
