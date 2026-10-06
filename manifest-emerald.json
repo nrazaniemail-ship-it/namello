@@ -1,9 +1,9 @@
 {
   "id": "./",
-  "name": "Namello 1.0.14",
-  "short_name": "Namello 1.0.14",
+  "name": "Namello 1.0.15",
+  "short_name": "Namello 1.0.15",
   "description": "ساعت زنده سشن‌ها و کیل‌زون‌های ICT به‌وقت نیویورک، همراه با ژورنال معاملات، مدیریت مالی و تحلیل آماری",
-  "start_url": "./index.html?v=1014",
+  "start_url": "./index.html?v=1015",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
