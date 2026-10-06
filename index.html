@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.0</title>
+<title>Namello 1.0.2</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -91,7 +91,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.0…</div>
+<div id="boot-status">Loading Namello 1.0.2…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -690,6 +690,205 @@ const I18N = {
         journal_pick_account_first: "First create an account from the Profile tab.",
     },
 };
+
+/* ---------------- ترجمهٔ کامل رابط کاربری در حالت English ----------------
+   این لایه برای پوشش رشته‌های قدیمیِ فارسی که هنوز مستقیماً داخل JSX نوشته شده‌اند
+   اضافه شده است. ترجمه‌ها بر پایهٔ واژگان رایج Trading/ICT/Performance Journal
+   انتخاب شده‌اند و قبل از جایگزینی واژه‌ای، عبارت‌های تخصصیِ طولانی‌تر ترجمه می‌شوند. */
+const EN_UI_PHRASES = {
+  "ثبت نتیجه معامله":"Log Trade Result","ثبت نهایی":"Save Trade","ثبت ورود":"Log Entry","ویرایش معامله":"Edit Trade","معاملات باز":"Open Trades","معاملات بسته‌شده":"Closed Trades",
+  "ارزیابی رفتار بازار":"Market Behavior Evaluation","ارزیابی پیشرفته":"Advanced Evaluation","ارزیابی استیتمنت":"Statement Review","داشبورد عملکرد":"Performance Dashboard","تقویم معاملاتی":"Trading Calendar",
+  "مدیریت مالی":"Financial Management","سیستم‌های معاملاتی":"Trading Systems","سیستم‌های معاملاتی تایم اصلی":"Main-Timeframe Trading Systems","سیستم‌های معاملاتی تایم ورود":"Entry-Timeframe Trading Systems",
+  "استراتژی معاملاتی و مالی":"Trading & Financial Strategy","اهداف معامله گری":"Trading Goals","اهداف زندگی":"Life Goals","شکر گزاری":"Gratitude","روانشناسی ترید":"Trading Psychology",
+  "خروجی کل":"Full Export","کتابخانه":"Library","تنظیمات":"Settings","درباره برنامه":"About Namello","بروزرسانی برنامه":"App Update","پیام انگیزشی":"Motivational Messages",
+  "کتاب‌های متنی":"Text Books","پادکست و کتاب‌های صوتی":"Podcasts & Audiobooks","پادکست جدید":"New Podcast","کتاب صوتی":"Audiobook","کتاب متنی":"Text Book",
+  "ثبت نتیجه":"Save Result","ثبت تغییرات":"Save Changes","ذخیره تنظیمات فعلی":"Save Current Settings","تنظیمات فعلی":"Current Settings",
+  "منبع ارزیابی":"Evaluation Source","منبع ارزیابی مالی":"Financial Evaluation Source","حساب‌های مبنا":"Base Accounts","همه‌ی حساب‌ها":"All Accounts","همه حساب‌ها":"All Accounts",
+  "فقط واقعی‌ها":"Real Only","فقط آزمایشی‌ها":"Demo Only","فقط واقعی":"Real Only","فقط آزمایشی":"Demo Only","حساب واقعی":"Real Account","حساب آزمایشی":"Demo Account",
+  "جهت روند روزانه":"Daily Trend Direction","جهت کندل روزانه":"Daily Candle Direction","جهت روند اصلی":"Main-Timeframe Trend Direction","جهت روند تایم ورود":"Entry-Timeframe Trend Direction",
+  "هم جهت با روند اصلی":"Aligned with Main Trend","خلاف جهت روند اصلی":"Against Main Trend","هم راستایی معامله با روند اصلی":"Trade Alignment with Main Trend",
+  "بازار تایم ورود":"Entry-Timeframe Market","شماره موج تایم ورود":"Entry-Timeframe Wave Number","الگوی کندل برگشتی تایم ورود":"Entry-Timeframe Reversal Candle Pattern",
+  "نقطه ورود":"Entry Price","حجم (لات)":"Position Size (Lots)","حجم معامله":"Position Size","ریسک دلاری":"Dollar Risk","ریسک درصدی":"Risk (%)","حد سود (TP)":"Take Profit (TP)","حد ضرر (SL)":"Stop Loss (SL)",
+  "موجودی اولیه":"Initial Balance","موجودی نهایی":"Final Balance","موجودی لحظه‌ای":"Current Balance","سود/زیان خالص":"Net Profit/Loss","سود خالص":"Net Profit","زیان خالص":"Net Loss",
+  "میانگین سود":"Average Profit","میانگین ضرر":"Average Loss","بزرگ‌ترین سود":"Largest Profit","بزرگ‌ترین ضرر":"Largest Loss","بیشترین برد متوالی":"Longest Winning Streak","بیشترین باخت متوالی":"Longest Losing Streak",
+  "حداکثر افت سرمایه (٪)":"Maximum Drawdown (%)","احتمال موفقیت ذهنی":"Subjective Probability of Success","احتمال موفقیت محاسباتی":"Calculated Probability of Success",
+  "آمادگی ستاپ":"Setup Readiness","آمادگی ستاپ (%)":"Setup Readiness (%)","ارزیابی چارت":"Chart Assessment","ارزیابی چارت (%)":"Chart Assessment (%)",
+  "آمادگی برنامه روزانه":"Daily Plan Readiness","آمادگی برنامه روزانه (%)":"Daily Plan Readiness (%)","پیشرفت (%)":"Progress (%)",
+  "تعداد معاملات":"Number of Trades","تعداد شروط":"Number of Conditions","تعداد":"Count","تاریخ ثبت":"Entry Date","روز هفته":"Day of Week","تاریخ":"Date","ساعت":"Time","نام":"Name","نام سیستم":"System Name","نماد":"Symbol","جفت‌ارز":"Currency Pair","جفت ارز":"Currency Pair",
+  "پارامتر":"Parameter","مقدار":"Value","هدف":"Target","توضیحات":"Description","دسته":"Category","ردیف":"Row","مورد":"Item","عدد":"Number","شرط جدید":"New Condition",
+  "در حال پردازش…":"Processing…","در حال بارگذاری...":"Loading...","ابتدا یک حساب را فعال کن":"Activate an account first","فایل پیدا نشد.":"File not found.","باز کردن فایل ناموفق بود.":"Failed to open the file.",
+  "تغییر نام":"Rename","حذف":"Delete","ویرایش":"Edit","افزودن":"Add","بستن":"Close","انصراف":"Cancel","ذخیره":"Save","تلاش دوباره":"Retry","شروع":"Start","خروج":"Exit","ورود":"Entry","خرید":"Buy","فروش":"Sell",
+  "فعال":"Active","غیرفعال":"Inactive","روشن":"On","خاموش":"Off","بله":"Yes","خیر":"No","دستی":"Manual","آزمایشی":"Demo","واقعی":"Live","همه":"All","خبر":"News","بدون خبر":"No News",
+  "خطا":"Error","اشتباه":"Mistake","رعایت":"Followed","نقض":"Violated","انضباط/اشتباهات":"Discipline / Mistakes","انضباط":"Discipline","اشتباهات":"Mistakes",
+  "خروج زودهنگام":"Early Exit","معامله‌گری بیش‌ازحد":"Overtrading","معامله بیش‌ازحد":"Overtrading","عدم رعایت ستاپ":"Setup Violation","عدم آماده‌سازی":"Insufficient Preparation","ورود زودهنگام":"Premature Entry",
+  "حد ضرر اشتباه":"Incorrect Stop Loss","حد سود اشتباه":"Incorrect Take Profit","عدم آمادگی":"Unprepared","معامله پرریسک":"High-Risk Trade","رویداد نامناسب":"Inappropriate Event","نشست/رویداد نامناسب":"Inappropriate Session/Event",
+  "رونددار":"Trending","رنج":"Ranging","پرنوسان":"Volatile","خنثی":"Neutral","صعودی":"Bullish","نزولی":"Bearish","نامشخص":"Unclear","جهت":"Direction","شاخص":"Index",
+  "سودآوری":"Profitability","سودآوری بر اساس نماد":"Profitability by Symbol","سودآوری بر اساس روز هفته":"Profitability by Day of Week","سودآوری بر اساس آمادگی ستاپ":"Profitability by Setup Readiness","سودآوری بر اساس ارزیابی چارت":"Profitability by Chart Assessment","سودآوری بر اساس آمادگی برنامه روزانه":"Profitability by Daily Plan Readiness",
+  "سودآوری بر اساس فراکتال":"Profitability by Fractal","سودآوری بر اساس مدت معامله":"Profitability by Trade Duration","میانگین مدت معامله":"Average Trade Duration","سودآوری-لات":"Profitability by Lot","سودآوری-روزهفته":"Profitability by Weekday","سودآوری-سیستم":"Profitability by System","سودآوری-نشست":"Profitability by Session","سودآوری-روند":"Profitability by Trend","سودآوری-RR":"Profitability by R:R",
+  "سودآوری-آمادگی-ستاپ":"Profitability by Setup Readiness","سودآوری-ارزیابی-چارت":"Profitability by Chart Assessment","سودآوری-برنامه-روزانه":"Profitability by Daily Plan","سودآوری-بایاس":"Profitability by Bias","سودآوری-فراکتال":"Profitability by Fractal","سودآوری-Trig":"Profitability by Trigger","سودآوری-Target":"Profitability by Target","سودآوری-Stop":"Profitability by Stop","سودآوری-خبر":"Profitability by News",
+  "ترکیب-سیستم-روز":"System-Day Combination","ترکیب-نشست-لات":"Session-Lot Combination","تحلیل-سیستم":"System Analysis","تحلیل-نشست":"Session Analysis","تحلیل-روند":"Trend Analysis",
+  "بایاس":"Bias","تریگر":"Trigger","استاپ":"Stop","ریوارد":"Reward","ریسک":"Risk","نسبت ریسک به بازده":"Risk/Reward Ratio","نسبت ریسک به ریوارد":"Risk/Reward Ratio","برد":"Win","باخت":"Loss","درصد برد":"Win Rate","انتظار ریاضی":"Expectancy",
+  "فراکتال":"Fractal","الگو":"Pattern","ستاپ":"Setup","تایم ورود":"Entry Timeframe","تایم اصلی":"Main Timeframe","تایم روزانه":"Daily Timeframe","کندل":"Candle","کندل روزانه":"Daily Candle","روند":"Trend","خبر اقتصادی":"Economic News",
+  "تاریخ (میلادی)":"Date (Gregorian)","تاریخ شمسی":"Jalali Date","شمسی":"Jalali (Shamsi)","میلادی":"Gregorian","نوع تقویم":"Calendar Type",
+  "نشست‌ها":"Sessions","نشست":"Session","نشست سیدنی":"Sydney Session","نشست توکیو (آسیا)":"Tokyo Session (Asia)","نشست لندن":"London Session","نشست نیویورک":"New York Session",
+  "کیل‌زون آسیا":"Asia Kill Zone","کیل‌زون لندن":"London Kill Zone","کیل‌زون نیویورک":"New York Kill Zone","کیل‌زون بسته‌شدن لندن":"London Close Kill Zone","سیلور بولت":"Silver Bullet","سیلور بولت (اول)":"Silver Bullet (1st)","سیلور بولت (دوم)":"Silver Bullet (2nd)","سیلور بولت (سوم)":"Silver Bullet (3rd)","الگوی نقطه بهینه ورود":"Optimal Trade Entry (OTE) Pattern","پترن":"Pattern",
+  "فعال‌سازی اعلان‌های آلارم نشست‌ها":"Enable Session Alarm Notifications","تنظیمات نشست‌ها":"Session Settings","اشتراک نشست‌ها":"Session Overlap","آلارم شروع":"Start Alarm","آلارم پایان":"End Alarm","تا پایان":"until end","تا شروع":"until start","بدون نشست":"No Session",
+  "همین الان فعال هستند":"Active Right Now","در حال حاضر هیچ نشست یا کیل‌زونی فعال نیست":"No session or kill zone is currently active",
+  "پروفایل":"Profile","داشبورد":"Dashboard","اخبار":"News","ژورنال":"Journal","سیستم‌ها":"Systems","استراتژی":"Strategy","مالی":"Finance","تحلیل":"Analysis","ارزیابی استیتمنت":"Statement Review","ارزیابی رفتار بازار":"Market Behavior Evaluation","اهداف معامله گری":"Trading Goals","اهداف معامله‌گری":"Trading Goals","اهداف زندگی":"Life Goals","شکر گزاری":"Gratitude","روانشناسی":"Psychology","خروجی کل":"Full Export",
+  "رنگ زمینه برنامه":"App Background","فونت برنامه":"App Font","زبان برنامه":"App Language","منبع ذخیره‌سازی و بکاپ":"Storage & Backup Source","امنیت، پشتیبان، ذخیره ابری و Namello Backend":"Security, Backup, Cloud Storage & Namello Backend","تغییر پوشه":"Change Folder","پشتیبان‌گیری خودکار":"Automatic Backup","حافظه‌ی داخلی برنامه":"App Internal Storage","ادغام با داده‌های فعلی":"Merge with Existing Data","جایگزینی کامل داده‌ها":"Replace All Data",
+  "بخش":"Section","جمع/باز کردن":"Expand/Collapse","برای جمع/باز کردن این بخش کلیک کنید":"Click to expand/collapse this section","نسخه":"Version","نسخه‌ی برنامه":"App Version","نسخهٔ پایه و بازطراحی‌شده":"Base and redesigned release","آخرین تغییرات نسخه‌ی":"Latest changes in version","نسخه شما آخرین نسخه است":"Your app is up to date",
+  "اپیزود قبلی":"Previous Episode","اپیزود بعدی":"Next Episode","پخش/توقف":"Play/Pause","پخش":"Play","توقف":"Pause","تغییر سرعت پخش":"Playback Speed","Loop خاموش":"Loop Off",
+  "پخش صوتی":"Audio Playback","آپلود عکس":"Upload Image","آپلود فایل":"Upload File","آدرس":"Address","مسیر":"Path","ذخیره فایل":"Save File",
+  "یک حساب ایجاد کن":"Create an account","اول با گوگل وارد شو.":"Sign in with Google first.","گذرواژه":"Password","گذرواژه Sync را وارد کن":"Enter the Sync password","بازیابی":"Restore","پشتیبان":"Backup","ذخیره ابری":"Cloud Storage","Sync":"Sync","بازیابی Sync ناموفق بود؛ گذرواژه یا فایل را بررسی کن.":"Sync restore failed; check the password or file.",
+  "پیام انگیزشی":"Motivational Message","افزودن پیام":"Add Message","ویرایش پیام":"Edit Message","حذف پیام":"Delete Message","اعلان":"Notification","اعلان‌ها":"Notifications","فعال‌سازی اعلان":"Enable Notifications",
+  "حساب‌های مبنا":"Base Accounts","حساب مبنا":"Base Account","منبع ارزیابی مالی":"Financial Evaluation Source","خروجی ارزیابی پیشرفته":"Advanced Evaluation Export","ارزیابی پیشرفته":"Advanced Evaluation",
+  "Excel":"Excel","PDF":"PDF","خروجی":"Export","خروجی خام برای توسعه‌دهندگان":"Raw Export for Developers",
+  "مقدار جدید":"New Value","مقدار قبلی":"Previous Value","مقدار دقیق":"Exact Value","مقدار جدید...":"New Value...",
+  "خطر":"Risk","سرمایه":"Capital","سرمایه اولیه":"Initial Capital","افت سرمایه":"Drawdown","بازده":"Return","بازدهی":"Return","درصد":"Percent","میانگین":"Average","بیشینه":"Maximum","کمینه":"Minimum",
+  "۱ ساعت":"1 hour","روزانه":"Daily","هفتگی":"Weekly","ماهانه":"Monthly","فصلی":"Quarterly","سالانه":"Yearly","در روزهای":"on days","امروز":"Today","دیروز":"Yesterday","فردا":"Tomorrow",
+  "دوشنبه":"Monday","سه‌شنبه":"Tuesday","چهارشنبه":"Wednesday","پنجشنبه":"Thursday","جمعه":"Friday","شنبه":"Saturday","یکشنبه":"Sunday",
+  "ژانویه":"January","فوریه":"February","مارس":"March","آوریل":"April","مه":"May","ژوئن":"June","ژوئیه":"July","اوت":"August","سپتامبر":"September","اکتبر":"October","نوامبر":"November","دسامبر":"December",
+  "فروردین":"Farvardin","اردیبهشت":"Ordibehesht","خرداد":"Khordad","تیر":"Tir","مرداد":"Mordad","شهریور":"Shahrivar","مهر":"Mehr","آبان":"Aban","آذر":"Azar","دی":"Dey","بهمن":"Bahman","اسفند":"Esfand"
+};
+const EN_UI_WORDS = {
+  "معامله":"trade","معاملات":"trades","معامله‌گری":"trading","ترید":"trading","ورود":"entry","خروج":"exit","خرید":"buy","فروش":"sell","ریسک":"risk","سود":"profit","ضرر":"loss","سودآوری":"profitability","بازده":"return","سرمایه":"capital","موجودی":"balance","حساب":"account","حساب‌ها":"accounts","نماد":"symbol","لات":"lot","پیپ":"pip","درصد":"percent","تعداد":"count","نام":"name","تاریخ":"date","زمان":"time","ساعت":"time","دقیقه":"minute","ثانیه":"second",
+  "حد":"limit","سود":"profit","ضرر":"loss","شرط":"condition","شروط":"conditions","جهت":"direction","روند":"trend","صعودی":"bullish","نزولی":"bearish","خنثی":"neutral","رونددار":"trending","رنج":"ranging","پرنوسان":"volatile","نامشخص":"unclear",
+  "سیستم":"system","استراتژی":"strategy","هدف":"target","اهداف":"goals","ارزیابی":"evaluation","تحلیل":"analysis","منبع":"source","نتیجه":"result","ثبت":"log","ویرایش":"edit","حذف":"delete","افزودن":"add","ذخیره":"save","بستن":"close","انصراف":"cancel","فعال":"active","غیرفعال":"inactive","روشن":"on","خاموش":"off","دستی":"manual","واقعی":"live","آزمایشی":"demo",
+  "آمادگی":"readiness","چارت":"chart","برنامه":"plan","روزانه":"daily","هفتگی":"weekly","ماهانه":"monthly","سالانه":"yearly","روز":"day","هفته":"week","ماه":"month","سال":"year","فراکتال":"fractal","الگو":"pattern","کندل":"candle","خبر":"news","بدون":"no","همه":"all","فقط":"only","قبلی":"previous","بعدی":"next","جدید":"new","قدیمی":"previous","بزرگ‌ترین":"largest","بیشترین":"maximum","میانگین":"average","حداکثر":"maximum","حداقل":"minimum",
+  "روانشناسی":"psychology","انضباط":"discipline","اشتباه":"mistake","اشتباهات":"mistakes","احتمال":"probability","ذهنی":"subjective","محاسباتی":"calculated","واقعی":"real","داده":"data","اطلاعات":"information","توضیحات":"description","دسته":"category","مورد":"item","ردیف":"row","مقدار":"value","پارامتر":"parameter","پیشرفت":"progress",
+  "امنیت":"security","پشتیبان":"backup","ذخیره":"storage","ابری":"cloud","حافظه":"storage","داخلی":"internal","تغییر":"change","مسیر":"path","پوشه":"folder","فایل":"file","بارگذاری":"loading","پردازش":"processing","خطا":"error","موفق":"successful","ناموفق":"failed","اجازه":"permission","اعلان":"notification","اعلان‌ها":"notifications","زبان":"language","فونت":"font","رنگ":"color","زمینه":"background","تیره":"dark","روشن":"light"
+};
+
+/* ---------------- خروجی‌های دوزبانه فارسی / English ----------------
+   تمام گزارش‌های PDF و Excel، علاوه بر داده‌های کاربر، برچسب‌ها و عناوین تخصصی
+   معامله‌گری را به‌صورت «فارسی / English» صادر می‌کنند. متن آزاد کاربر ترجمه نمی‌شود. */
+const NM_EXPORT_EXTRA_BI = {
+  "P&L":"سود/زیان / P&L", "Win Rate":"درصد برد / Win Rate", "Profit Factor":"ضریب سود / Profit Factor",
+  "Expectancy":"امید ریاضی / Expectancy", "Avg R":"میانگین R / Avg R", "Max DD":"حداکثر افت سرمایه / Max DD",
+  "Sharpe":"شارپ / Sharpe", "Sortino":"سورتینو / Sortino", "Calmar":"کالمار / Calmar", "Recovery":"بازیابی / Recovery",
+  "Ulcer":"شاخص اولسر / Ulcer", "Avg Hold (min)":"میانگین زمان نگهداری (دقیقه) / Avg Hold (min)",
+  "Avg MFE":"میانگین MFE / Avg MFE", "Avg MAE":"میانگین MAE / Avg MAE", "Avg Exit Efficiency":"میانگین کارایی خروج / Avg Exit Efficiency",
+  "MFE":"حداکثر حرکت مطلوب / MFE", "MAE":"حداکثر حرکت نامطلوب / MAE", "Exit Efficiency":"کارایی خروج / Exit Efficiency",
+  "Session":"نشست / Session", "Setup":"ستاپ / Setup", "Discipline":"انضباط / Discipline", "Trade Plans":"برنامه‌های معامله / Trade Plans",
+  "Chart Plans":"برنامه‌های چارت / Chart Plans", "Day Plans":"برنامه‌های روزانه / Day Plans", "Plan":"برنامه / Plan", "Chart Plan":"برنامه چارت / Chart Plan",
+  "Early Exit":"خروج زودهنگام / Early Exit", "Round-trip":"رفت‌وبرگشت / Round-trip", "Edge":"مزیت آماری / Edge",
+  "Base Accounts":"حساب‌های مبنا / Base Accounts", "Account":"حساب / Account", "Date":"تاریخ / Date", "Symbol":"نماد / Symbol",
+  "Direction":"جهت / Direction", "Lot":"لات / Lot", "Entry":"ورود / Entry", "Exit":"خروج / Exit", "Risk":"ریسک / Risk",
+  "Target":"هدف / Target", "Stop":"استاپ / Stop", "News":"خبر / News", "Trend":"روند / Trend", "Bias":"بایاس / Bias",
+  "Fractal":"فراکتال / Fractal", "Condition":"شرایط / Condition", "Duration":"مدت / Duration", "System":"سیستم / System",
+  "Count":"تعداد / Count", "Name":"نام / Name", "Value":"مقدار / Value", "Parameter":"پارامتر / Parameter",
+  "Description":"توضیحات / Description", "Category":"دسته / Category", "Item":"مورد / Item", "Row":"ردیف / Row",
+  "Progress (%)":"پیشرفت (%) / Progress (%)", "Real":"واقعی / Live", "Demo":"آزمایشی / Demo", "Buy":"خرید / Buy", "Sell":"فروش / Sell",
+  "Jalali Date":"تاریخ شمسی / Jalali Date", "Gregorian Date":"تاریخ میلادی / Gregorian Date",
+  "Risk of Ruin (%)":"ریسک نابودی سرمایه (%) / Risk of Ruin (%)", "Expectancy (به ازای هر ترید)":"امید ریاضی (به ازای هر معامله) / Expectancy (per trade)",
+  "Session Edge":"مزیت آماری نشست / Session Edge", "Setup Edge":"مزیت آماری ستاپ / Setup Edge", "Full Export":"خروجی کامل / Full Export",
+  "Statistical Analysis":"تحلیل آماری / Statistical Analysis", "Advanced Evaluation":"ارزیابی پیشرفته / Advanced Evaluation",
+  "Comprehensive Dashboard":"داشبورد جامع / Comprehensive Dashboard", "Dashboard":"داشبورد / Dashboard", "Journal":"ژورنال / Journal",
+  "Financial Management":"مدیریت مالی / Financial Management", "Trading Systems":"سیستم‌های معاملاتی / Trading Systems",
+  "Trading Strategy":"استراتژی معاملاتی / Trading Strategy", "Trading Goals":"اهداف معامله‌گری / Trading Goals", "Life Goals":"اهداف زندگی / Life Goals",
+  "Gratitude":"شکرگزاری / Gratitude", "Psychology":"روانشناسی / Psychology", "Statement Review":"ارزیابی استیتمنت / Statement Review",
+  "Market Behavior":"رفتار بازار / Market Behavior", "Chart Assessment":"ارزیابی چارت / Chart Assessment",
+  "Daily Plan Readiness":"آمادگی برنامه روزانه / Daily Plan Readiness", "Setup Readiness":"آمادگی ستاپ / Setup Readiness",
+  "Profitability":"سودآوری / Profitability", "R:R":"نسبت ریسک به بازده / R:R", "Trigger":"تریگر / Trigger",
+  "Take Profit (TP)":"حد سود (TP) / Take Profit (TP)", "Stop Loss (SL)":"حد ضرر (SL) / Stop Loss (SL)",
+  "Position Size (Lots)":"حجم معامله (لات) / Position Size (Lots)", "Dollar Risk":"ریسک دلاری / Dollar Risk", "Risk (%)":"ریسک (%) / Risk (%)",
+  "Entry Price":"قیمت ورود / Entry Price", "Exit Price":"قیمت خروج / Exit Price", "Trade Duration":"مدت معامله / Trade Duration",
+  "Average Profit":"میانگین سود / Average Profit", "Average Loss":"میانگین ضرر / Average Loss", "Net Profit/Loss":"سود/زیان خالص / Net Profit/Loss",
+  "Final Balance":"موجودی نهایی / Final Balance", "Initial Balance":"موجودی اولیه / Initial Balance", "Current Balance":"موجودی فعلی / Current Balance",
+  "Maximum Drawdown":"حداکثر افت سرمایه / Maximum Drawdown", "Maximum Drawdown (%)":"حداکثر افت سرمایه (%) / Maximum Drawdown (%)",
+  "Longest Winning Streak":"بیشترین برد متوالی / Longest Winning Streak", "Longest Losing Streak":"بیشترین باخت متوالی / Longest Losing Streak",
+  "Largest Profit":"بزرگ‌ترین سود / Largest Profit", "Largest Loss":"بزرگ‌ترین ضرر / Largest Loss", "Number of Trades":"تعداد معاملات / Number of Trades",
+  "Number of Conditions":"تعداد شروط / Number of Conditions", "Current":"فعلی / Current", "Broker":"بروکر / Broker",
+  "Record Date":"تاریخ ثبت / Record Date", "Strategy":"استراتژی / Strategy", "Goal":"هدف / Goal", "Date":"تاریخ / Date",
+  "Weekly Market Behavior":"رفتار بازار هفتگی / Weekly Market Behavior", "Daily Market Behavior":"رفتار بازار روزانه / Daily Market Behavior",
+  "ژورنال معاملات":"ژورنال معاملات / Trading Journal", "مدیریت مالی":"مدیریت مالی / Financial Management", "سیستم‌های معاملاتی":"سیستم‌های معاملاتی / Trading Systems",
+  "استراتژی معاملاتی و مالی":"استراتژی معاملاتی و مالی / Trading & Financial Strategy", "اهداف":"اهداف / Goals", "اهداف زندگی":"اهداف زندگی / Life Goals",
+  "شکر گزاری":"شکرگزاری / Gratitude", "روانشناسی":"روانشناسی / Psychology", "ارزیابی استیتمنت":"ارزیابی استیتمنت / Statement Review",
+  "ارزیابی چارت":"ارزیابی چارت / Chart Assessment", "نشست‌ها":"نشست‌ها / Sessions", "حساب‌های مبنا":"حساب‌های مبنا / Base Accounts",
+  "تاریخ تهیه":"تاریخ تهیه / Prepared Date", "خروجی تحلیل آماری":"خروجی تحلیل آماری / Statistical Analysis Export", "خروجی ارزیابی پیشرفته":"خروجی ارزیابی پیشرفته / Advanced Evaluation Export",
+  "خروجی جامع داشبورد":"خروجی جامع داشبورد / Comprehensive Dashboard Export", "خلاصه داشبورد":"خلاصه داشبورد / Dashboard Summary", "معاملات ارزیابی":"معاملات ارزیابی / Evaluation Trades",
+  "معاملات داشبورد":"معاملات داشبورد / Dashboard Trades", "ارزیابی چارت":"ارزیابی چارت / Chart Assessment", "ژورنال":"ژورنال / Journal",
+  "نشست‌ها":"نشست‌ها / Sessions", "مدیریت مالی":"مدیریت مالی / Financial Management", "روانشناسی":"روانشناسی / Psychology",
+  "High":"سقف / High", "Low":"کف / Low", "Start of Week":"شروع هفته / Start of Week", "Weekly High Day":"روز سقف هفتگی / Weekly High Day", "Weekly Low Day":"روز کف هفتگی / Weekly Low Day"
+};
+function nmExportBilingualText(value) {
+  if (value === null || value === undefined) return value;
+  const s = String(value);
+  if (!s.trim() || s.includes(" / ")) return s;
+  const direct = NM_EXPORT_EXTRA_BI[s];
+  if (direct) return direct;
+  if (typeof EN_UI_PHRASES !== "undefined" && EN_UI_PHRASES[s]) return `${s} / ${EN_UI_PHRASES[s]}`;
+  for (const [fa,en] of Object.entries(EN_UI_PHRASES || {})) {
+    if (en === s) return `${fa} / ${en}`;
+  }
+  return s;
+}
+function nmExportBilingualAoa(aoa) {
+  return (aoa || []).map(row => Array.isArray(row) ? row.map(nmExportBilingualText) : row);
+}
+function nmExportBilingualSheetName(name) {
+  const n = nmExportBilingualText(name);
+  return String(n).slice(0, 31);
+}
+function nmPatchExportEngine() {
+  if (window.__nmBilingualExportPatched || typeof XLSX === "undefined") return;
+  window.__nmBilingualExportPatched = true;
+  const oldAoa = XLSX.utils.aoa_to_sheet;
+  XLSX.utils.aoa_to_sheet = function(aoa, opts) { return oldAoa.call(this, nmExportBilingualAoa(aoa), opts); };
+  const oldAppend = XLSX.utils.book_append_sheet;
+  XLSX.utils.book_append_sheet = function(wb, ws, name, roll) { return oldAppend.call(this, wb, ws, nmExportBilingualSheetName(name), roll); };
+}
+
+
+try { if (typeof window !== "undefined") window.addEventListener("load", nmPatchExportEngine); } catch (e) {}
+const EN_FA_DIGITS = {"۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9"};
+function nmEnglishTranslateText(input) {
+  let s = String(input == null ? "" : input);
+  if (!/[\u0600-\u06ff]/.test(s)) return s;
+  Object.keys(EN_UI_PHRASES).sort((a,b)=>b.length-a.length).forEach(k=>{ s=s.split(k).join(EN_UI_PHRASES[k]); });
+  Object.keys(EN_UI_WORDS).sort((a,b)=>b.length-a.length).forEach(k=>{
+    const re = new RegExp("(^|[^\\u0600-\\u06ff])" + k.replace(/[.*+?^${}()|[\\]\\\\]/g,"\\$&") + "(?=$|[^\\u0600-\\u06ff])", "g");
+    s=s.replace(re, "$1"+EN_UI_WORDS[k]);
+  });
+  s=s.replace(/[۰-۹]/g,d=>EN_FA_DIGITS[d]||d);
+  return s;
+}
+function nmTranslatePageToEnglish(lang) {
+  const root=document.documentElement;
+  root.dataset.appLanguage=lang;
+  const walker=document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes=[]; let n; while((n=walker.nextNode())) nodes.push(n);
+  nodes.forEach(node=>{
+    if(!node.parentElement || /^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA)$/i.test(node.parentElement.tagName)) return;
+    const current=node.nodeValue || "";
+    if(lang === "en") {
+      if(/[\u0600-\u06ff]/.test(current)) {
+        if(!node.hasAttribute?.("data-nm-fa")) node.parentElement?.setAttribute("data-nm-owner","1");
+        const holder=node.parentElement;
+        if(!node.__nmFaOriginal) node.__nmFaOriginal=current;
+        node.nodeValue=nmEnglishTranslateText(current);
+      }
+    } else if(node.__nmFaOriginal) { node.nodeValue=node.__nmFaOriginal; node.__nmFaOriginal=null; }
+  });
+  document.querySelectorAll("input[placeholder],textarea[placeholder],[title],[aria-label]").forEach(el=>{
+    ["placeholder","title","aria-label"].forEach(a=>{
+      if(!el.hasAttribute(a)) return;
+      const cur=el.getAttribute(a)||"";
+      if(lang === "en") { if(!el.dataset["nmFa"+a.replace(/[^a-z]/gi,"")]) el.dataset["nmFa"+a.replace(/[^a-z]/gi,"")]=cur; el.setAttribute(a,nmEnglishTranslateText(cur)); }
+      else { const key="nmFa"+a.replace(/[^a-z]/gi,""); if(el.dataset[key]) el.setAttribute(a,el.dataset[key]); }
+    });
+  });
+}
+let nmI18nObserver=null;
+function nmInstallEnglishTranslator(lang){
+  if(nmI18nObserver){nmI18nObserver.disconnect();nmI18nObserver=null;}
+  nmTranslatePageToEnglish(lang);
+  if(lang === "en") {
+    nmI18nObserver=new MutationObserver(()=>{ if(!nmI18nObserver) return; nmI18nObserver.disconnect(); nmTranslatePageToEnglish("en"); nmI18nObserver.observe(document.body,{subtree:true,childList:true,characterData:true}); });
+    nmI18nObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+  }
+}
+
 function translate(lang, key) { return (I18N[lang] && I18N[lang][key]) || I18N.fa[key] || key; }
 function translateEventName(lang, ev) { return (I18N[lang] && I18N[lang]["ev_name_" + ev.key]) || ev.name; }
 /* ---------------- پشتیبان‌گیری ابری (گوگل‌درایو - پوشه‌ی appData) ----------------
@@ -2716,14 +2915,14 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.0";
-const NM_VERSION_CODE = 1;
+const NM_VERSION_NAME = "1.0.2";
+const NM_VERSION_CODE = 3;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "نسخهٔ پایه و بازطراحی‌شده";
+const NM_VERSION_DATE = "نسخهٔ ترجمهٔ کامل انگلیسی";
 const NM_CHANGELOG = [
-    "نسخه 1.0.0: بازطراحی و یکپارچه‌سازی بخش‌های برنامه، جمع‌شدن پیش‌فرض سربرگ‌ها، بازطراحی بخش «درباره برنامه» و «بروزرسانی»، و بهبود ساختار لایه کتابخانه.",
-    "نسخه 1.0.0: بخش‌های کتابخانه به‌صورت مستقل و جمع‌شونده سازمان‌دهی شدند و کنترل‌های مرتبط با پادکست و کتاب‌های صوتی مرتب‌تر شدند.",
-    "نسخه 1.0.0: ساختار توضیحات نسخه و تغییرات برنامه از نو تنظیم شد تا از این پس تغییرات هر نسخه به‌صورت شفاف در بخش بروزرسانی نمایش داده شود."
+    "نسخه 1.0.2: خروجی‌های PDF و Excel به‌صورت دوزبانه فارسی/English برای گزارش‌های معاملاتی، تحلیل‌ها و ارزیابی‌ها توسعه داده شدند.",
+    "نسخه 1.0.2: برچسب‌ها و شاخص‌های تخصصی Trading، Risk Management، Performance و ICT در گزارش‌های خروجی استانداردسازی شدند.",
+    "نسخه 1.0.2: متن آزاد کاربر بدون تغییر باقی می‌ماند و عناوین و برچسب‌های گزارش‌ها به‌صورت فارسی/English نمایش داده می‌شوند."
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -6761,12 +6960,10 @@ function App() {
     }
     const t = useCallback((key) => translate(appLanguage, key), [appLanguage]);
     const tI18n = t; // alias: داخل map معاملات، پارامتر t (معامله) روی t() سایه می‌اندازد
-    // چون خودِ رشته‌های محتوای برنامه (ژورنال، تحلیل و ...) فعلاً فقط فارسی‌ان، وقتی زبان روی
-    // انگلیسی باشه فقط جهتِ صفحه/نوار پایین/تنظیمات LTR می‌شه، نه کل محتوا — این محدودیتِ همین
-    // مرحله از پوششِ ترجمه‌ست، نه باگ.
     useEffect(() => {
         document.documentElement.dir = appLanguage === "en" ? "ltr" : "rtl";
         document.documentElement.lang = appLanguage;
+        nmInstallEnglishTranslator(appLanguage);
     }, [appLanguage]);
     // چه رنگ زمینه (تیره/روشن) و چه فونت انتخابی رو روی خودِ <html> اعمال می‌کنیم؛ چون همه‌ی
     // رنگ‌های اصلیِ اپ از var(--bg-page) و مشابه‌ها استفاده می‌کنن (به‌جای هگزِ ثابت)، همین یک
@@ -8058,6 +8255,10 @@ function App() {
        مرورگر استفاده می‌کنه، متن فارسی همیشه درست و خوانا در میاد.
     */
     function exportAoaAsPdf(title, header, rows, extraLines) {
+        title = nmExportBilingualText(title);
+        header = (header || []).map(nmExportBilingualText);
+        rows = (rows || []).map(r => (r || []).map(nmExportBilingualText));
+        extraLines = (extraLines || []).map(nmExportBilingualText);
         const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const theadHtml = `<tr>${header.map(h => `<th>${esc(h)}</th>`).join("")}</tr>`;
         const tbodyHtml = rows.map(r => `<tr>${header.map((_, i) => `<td>${esc(r[i])}</td>`).join("")}</tr>`).join("");
@@ -8087,10 +8288,10 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.0</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.2</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
-                    <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
+                    <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
                     ${extraHtml}
                     <table><thead>${theadHtml}</thead><tbody>${tbodyHtml}</tbody></table>
                 </div>
@@ -8157,7 +8358,7 @@ function App() {
         ];
     }
     function buildJournalAoa(list) { return { header: journalHeader, rows: list.map(journalRow) }; }
-    function doExport(range) {
+    function doExport(range) { nmPatchExportEngine();
         const filtered = rangeFilterTrades(closedTrades, range, todayStr, now);
         if (!filtered.length) {
             showToast("در این بازه معامله‌ی بسته‌شده‌ای ثبت نشده.");
@@ -8339,7 +8540,7 @@ function App() {
         [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
         persistGratitude(next);
     }
-    function exportSystems() {
+    function exportSystems() { nmPatchExportEngine();
         const aoa = [["نام سیستم", "توضیحات"], ...tradingSystemsCatalog.map(s => [s.name, s.description || ""])];
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         const wb = XLSX.utils.book_new();
@@ -8349,7 +8550,7 @@ function App() {
     function exportSystemsPdf() {
         exportAoaAsPdf("سیستم‌های معاملاتی", ["نام سیستم", "توضیحات"], tradingSystemsCatalog.map(s => [s.name, s.description || ""]));
     }
-    function exportStrategies() {
+    function exportStrategies() { nmPatchExportEngine();
         const aoa = [["تاریخ ثبت", "استراتژی"], ...strategies.map(s => [s.date, s.text])];
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         const wb = XLSX.utils.book_new();
@@ -8359,7 +8560,7 @@ function App() {
     function exportStrategiesPdf() {
         exportAoaAsPdf("استراتژی معاملاتی و مالی", ["تاریخ ثبت", "استراتژی"], strategies.map(s => [s.date, s.text]));
     }
-    function exportGoals() {
+    function exportGoals() { nmPatchExportEngine();
         const aoa = [["تاریخ ثبت", "هدف", "پیشرفت (%)"], ...goals.map(g => [g.date, g.text, g.progress || 0])];
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         const wb = XLSX.utils.book_new();
@@ -8369,7 +8570,7 @@ function App() {
     function exportGoalsPdf() {
         exportAoaAsPdf("اهداف", ["تاریخ ثبت", "هدف", "پیشرفت (%)"], goals.map(g => [g.date, g.text, g.progress || 0]));
     }
-    function exportLifeGoals() {
+    function exportLifeGoals() { nmPatchExportEngine();
         const aoa = [["تاریخ ثبت", "هدف", "پیشرفت (%)"], ...lifeGoals.map(g => [g.date, g.text, g.progress || 0])];
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         const wb = XLSX.utils.book_new();
@@ -8379,7 +8580,7 @@ function App() {
     function exportLifeGoalsPdf() {
         exportAoaAsPdf("اهداف زندگی", ["تاریخ ثبت", "هدف", "پیشرفت (%)"], lifeGoals.map(g => [g.date, g.text, g.progress || 0]));
     }
-    function exportGratitude() {
+    function exportGratitude() { nmPatchExportEngine();
         const aoa = [["تاریخ ثبت", "مورد", "پیشرفت (%)"], ...gratitude.map(g => [g.date, g.text, g.progress || 0])];
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         const wb = XLSX.utils.book_new();
@@ -8692,7 +8893,7 @@ function App() {
         persistCapitalMgmtRows([...capitalMgmtRows, row]);
     }
     function deleteCapitalMgmtRow(id) { persistCapitalMgmtRows(capitalMgmtRows.filter(r => r.id !== id)); }
-    function exportFinancial() {
+    function exportFinancial() { nmPatchExportEngine();
         const m = finMetrics;
         const aoa = [
             ["پارامتر", "مقدار"],
@@ -8778,6 +8979,8 @@ function App() {
     const [param3dY, setParam3dY] = useState("weekday");
     const rows3d = useMemo(() => get3DRows(statisticalClosedTrades, param3dX, param3dY), [trades, param3dX, param3dY]);
     function exportMultiTablesAsPdf(title, sections) {
+        title = nmExportBilingualText(title);
+        sections = (sections || []).map(s => ({ ...s, name: nmExportBilingualText(s.name), header: (s.header || []).map(nmExportBilingualText), rows: (s.rows || []).map(r => (r || []).map(nmExportBilingualText)) }));
         const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const NM_PDF_PALETTE = [
             ["#D4A64A", "#1a1610"], ["#3B82F6", "#ffffff"], ["#10B981", "#ffffff"], ["#8B5CF6", "#ffffff"],
@@ -8815,10 +9018,10 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.0</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.2</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
-                    <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
+                    <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
                     ${sectionsHtml}
                 </div>
             </body></html>`;
@@ -8891,12 +9094,12 @@ function App() {
         const multi = fn => groupProfitabilityMulti(src, fn);
         return {byLot:groupProfitability(src,t=>t.lot),byRiskDollar:groupProfitability(src,PARAM_DEFS.riskDollar.get),bySubjectiveSuccessProb:groupProfitability(src,PARAM_DEFS.successProb.get),byCalculatedSuccessProb:groupProfitability(src,PARAM_DEFS.calcSuccessProb.get),byDirection:groupProfitability(src,PARAM_DEFS.direction.get),byPair:groupProfitability(src,PARAM_DEFS.pair.get),byDivergenceMain:multi(t=>t.divergenceMain||[]),byDivergenceEntry:multi(t=>t.divergenceEntry||[]),byWeekday:groupProfitability(src,t=>weekdayFromDateStr(t.date)),bySystem:groupProfitability(src,t=>t.system),bySession:groupProfitability(src,sessionLabelOf),byTrend:groupProfitability(src,PARAM_DEFS.trend.get),byRR:groupProfitability(src,PARAM_DEFS.rr.get),byBias:groupProfitability(src,PARAM_DEFS.bias.get),byFractal:groupProfitability(src,PARAM_DEFS.fractal.get),byMainTrend:groupProfitability(src,PARAM_DEFS.mainTrend.get),byCondition:groupProfitability(src,PARAM_DEFS.condition.get),byTrig:multi(t=>(t.trigs&&t.trigs.length)?t.trigs:(t.trig?[t.trig]:[])),byTarget:multi(t=>(t.targets&&t.targets.length)?t.targets:(t.target?[t.target]:[])),byStop:multi(t=>(t.stops&&t.stops.length)?t.stops:(t.stop?[t.stop]:[])),byNews:groupProfitability(src,PARAM_DEFS.news.get),byDuration:groupProfitability(src,t=>durationBucketFa(t.durationMinutes)),bySetupReadiness:groupProfitability(src,PARAM_DEFS.setupReadiness.get),byChartReadiness:groupProfitability(src,PARAM_DEFS.chartReadiness.get),byDayPlanReadiness:groupProfitability(src,PARAM_DEFS.dayPlanReadiness.get),bySystemWeekday:groupProfitability(src,t=>`${t.system||"-"} | ${weekdayFromDateStr(t.date)}`).slice(0,8),bySessionLot:groupProfitability(src,t=>`${sessionLabelOf(t)} | لات ${t.lot}`).slice(0,8),source:src};
     }
-    function exportDashboardStatisticalExcel(){const d=dashboardStatExportData(),wb=XLSX.utils.book_new(),mk=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["پارامتر","سودآوری"],...a.map(x=>[x.name,x.value])]),n.slice(0,31));[["سودآوری-لات",d.byLot],["سودآوری-ریسک-دلاری",d.byRiskDollar],["سودآوری-احتمال-ذهنی",d.bySubjectiveSuccessProb],["سودآوری-احتمال-محاسباتی",d.byCalculatedSuccessProb],["سودآوری-جهت",d.byDirection],["سودآوری-نماد",d.byPair],["سودآوری-واگرایی-اصلی",d.byDivergenceMain],["سودآوری-واگرایی-ورود",d.byDivergenceEntry],["سودآوری-روزهفته",d.byWeekday],["سودآوری-سیستم",d.bySystem],["سودآوری-نشست",d.bySession],["سودآوری-روند",d.byTrend],["سودآوری-RR",d.byRR],["سودآوری-آمادگی-ستاپ",d.bySetupReadiness],["سودآوری-ارزیابی-چارت",d.byChartReadiness],["سودآوری-برنامه-روزانه",d.byDayPlanReadiness],["سودآوری-بایاس",d.byBias],["سودآوری-فراکتال",d.byFractal],["سودآوری-شرایط",d.byCondition],["سودآوری-Trig",d.byTrig],["سودآوری-Target",d.byTarget],["سودآوری-Stop",d.byStop],["سودآوری-خبر",d.byNews],["سودآوری-مدت",d.byDuration],["ترکیب-سیستم-روز",d.bySystemWeekday],["ترکیب-نشست-لات",d.bySessionLot]].forEach(x=>mk(x[0],x[1]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["حساب‌های مبنا"],...(dashboardSelectedAccounts||[]).map(c=>[c])]),"حساب‌های مبنا");XLSX.writeFile(wb,`namello-statistical-dashboard-${activeAccount}-${todayStr}.xlsx`)}
+    function exportDashboardStatisticalExcel(){ nmPatchExportEngine();const d=dashboardStatExportData(),wb=XLSX.utils.book_new(),mk=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["پارامتر","سودآوری"],...a.map(x=>[x.name,x.value])]),n.slice(0,31));[["سودآوری-لات",d.byLot],["سودآوری-ریسک-دلاری",d.byRiskDollar],["سودآوری-احتمال-ذهنی",d.bySubjectiveSuccessProb],["سودآوری-احتمال-محاسباتی",d.byCalculatedSuccessProb],["سودآوری-جهت",d.byDirection],["سودآوری-نماد",d.byPair],["سودآوری-واگرایی-اصلی",d.byDivergenceMain],["سودآوری-واگرایی-ورود",d.byDivergenceEntry],["سودآوری-روزهفته",d.byWeekday],["سودآوری-سیستم",d.bySystem],["سودآوری-نشست",d.bySession],["سودآوری-روند",d.byTrend],["سودآوری-RR",d.byRR],["سودآوری-آمادگی-ستاپ",d.bySetupReadiness],["سودآوری-ارزیابی-چارت",d.byChartReadiness],["سودآوری-برنامه-روزانه",d.byDayPlanReadiness],["سودآوری-بایاس",d.byBias],["سودآوری-فراکتال",d.byFractal],["سودآوری-شرایط",d.byCondition],["سودآوری-Trig",d.byTrig],["سودآوری-Target",d.byTarget],["سودآوری-Stop",d.byStop],["سودآوری-خبر",d.byNews],["سودآوری-مدت",d.byDuration],["ترکیب-سیستم-روز",d.bySystemWeekday],["ترکیب-نشست-لات",d.bySessionLot]].forEach(x=>mk(x[0],x[1]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["حساب‌های مبنا"],...(dashboardSelectedAccounts||[]).map(c=>[c])]),"حساب‌های مبنا");XLSX.writeFile(wb,`namello-statistical-dashboard-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardStatisticalPdf(){const d=dashboardStatExportData(),sec=(n,a)=>({name:n,header:["پارامتر","سودآوری"],rows:a.map(x=>[x.name,x.value])});exportMultiTablesAsPdf("خروجی تحلیل آماری",[{name:"حساب‌های مبنا",header:["حساب"],rows:(dashboardSelectedAccounts||[]).map(c=>[c])},sec("سودآوری بر اساس لات",d.byLot),sec("سودآوری بر اساس ریسک دلاری",d.byRiskDollar),sec("سودآوری بر اساس احتمال موفقیت ذهنی",d.bySubjectiveSuccessProb),sec("سودآوری بر اساس احتمال موفقیت محاسباتی",d.byCalculatedSuccessProb),sec("سودآوری بر اساس جهت معامله",d.byDirection),sec("سودآوری بر اساس نماد",d.byPair),sec("سودآوری بر اساس واگرایی تایم اصلی",d.byDivergenceMain),sec("سودآوری بر اساس واگرایی تایم ورود",d.byDivergenceEntry),sec("سودآوری بر اساس روز هفته",d.byWeekday),sec("سودآوری بر اساس سیستم",d.bySystem),sec("سودآوری بر اساس نشست",d.bySession),sec("سودآوری بر اساس روند",d.byTrend),sec("سودآوری بر اساس R:R",d.byRR),sec("سودآوری بر اساس آمادگی ستاپ",d.bySetupReadiness),sec("سودآوری بر اساس ارزیابی چارت",d.byChartReadiness),sec("سودآوری بر اساس آمادگی برنامه روزانه",d.byDayPlanReadiness),sec("سودآوری بر اساس بایاس",d.byBias),sec("سودآوری بر اساس فراکتال",d.byFractal),sec("سودآوری بر اساس شرایط بازار",d.byCondition),sec("سودآوری بر اساس ورود/TP/SL",d.byTrig.concat(d.byTarget,d.byStop)),sec("سودآوری بر اساس خبر",d.byNews),sec("سودآوری بر اساس مدت معامله",d.byDuration)])}
     function dashboardAdvancedExportData(){const src=(dashboardSelectedTrades||[]).filter(t=>t.status==="closed"),m=nmDashMetrics(src,dashboardStartingBalance),a=nmAdvancedStats(src,dashboardStartingBalance),x=src.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae))),eff=src.filter(t=>Number.isFinite(Number(t.exitEfficiency))),mistakes={};src.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>mistakes[k]=(mistakes[k]||0)+1));const edge=fn=>{const map={};src.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return[name,ts.length,mm.pnl,mm.winRate,mm.expectancy]})};return{src,m,a,avgM:x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA:x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null,mistakes,session:edge(nmDashSession),setup:edge(nmDashSetup)}}
-    function exportDashboardAdvancedExcel(){const d=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("شاخص‌های ارزیابی",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Ulcer",d.a.ulcer],["Avg Hold (min)",d.a.avgHold??"—"],["میانگین آمادگی ستاپ (%)",d.a.avgSetupReadiness??"—"],["میانگین ارزیابی چارت (%)",d.a.avgChartReadiness??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"],["Early Exit",d.a.exits.early],["Round-trip",d.a.exits.roundTrip],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]);add("Session Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.session]);add("Setup Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(d.mistakes)]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Chart Plans",[["Chart Plan","تعداد شروط"],...(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات ارزیابی",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...d.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-advanced-evaluation-${activeAccount}-${todayStr}.xlsx`)}
+    function exportDashboardAdvancedExcel(){ nmPatchExportEngine();const d=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("شاخص‌های ارزیابی",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Ulcer",d.a.ulcer],["Avg Hold (min)",d.a.avgHold??"—"],["میانگین آمادگی ستاپ (%)",d.a.avgSetupReadiness??"—"],["میانگین ارزیابی چارت (%)",d.a.avgChartReadiness??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"],["Early Exit",d.a.exits.early],["Round-trip",d.a.exits.roundTrip],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]);add("Session Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.session]);add("Setup Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(d.mistakes)]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Chart Plans",[["Chart Plan","تعداد شروط"],...(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات ارزیابی",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...d.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-advanced-evaluation-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardAdvancedPdf(){const d=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی ارزیابی پیشرفته",[{name:"شاخص‌های ریسک و خروج",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"]]},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(d.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
-    function exportDashboardComprehensiveExcel(){const st=dashboardStatExportData(),ad=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("خلاصه داشبورد",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"]]);add("ارزیابی پیشرفته",[["Session","تعداد","P&L","Win Rate","Expectancy"],...ad.session]);add("Edge Setup",[["Setup","تعداد","P&L","Win Rate","Expectancy"],...ad.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(ad.mistakes)]);add("تحلیل-سیستم",[["پارامتر","سودآوری"],...st.bySystem.map(x=>[x.name,x.value])]);add("تحلیل-نشست",[["پارامتر","سودآوری"],...st.bySession.map(x=>[x.name,x.value])]);add("تحلیل-RR",[["پارامتر","سودآوری"],...st.byRR.map(x=>[x.name,x.value])]);add("تحلیل-آمادگی-ستاپ",[["پارامتر","سودآوری"],...st.bySetupReadiness.map(x=>[x.name,x.value])]);add("تحلیل-ارزیابی-چارت",[["پارامتر","سودآوری"],...st.byChartReadiness.map(x=>[x.name,x.value])]);add("تحلیل-روند",[["پارامتر","سودآوری"],...st.byTrend.map(x=>[x.name,x.value])]);add("تحلیل-لات",[["پارامتر","سودآوری"],...st.byLot.map(x=>[x.name,x.value])]);add("تحلیل-روز",[["پارامتر","سودآوری"],...st.byWeekday.map(x=>[x.name,x.value])]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات داشبورد",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...ad.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-comprehensive-dashboard-${activeAccount}-${todayStr}.xlsx`)}
+    function exportDashboardComprehensiveExcel(){ nmPatchExportEngine();const st=dashboardStatExportData(),ad=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("خلاصه داشبورد",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"]]);add("ارزیابی پیشرفته",[["Session","تعداد","P&L","Win Rate","Expectancy"],...ad.session]);add("Edge Setup",[["Setup","تعداد","P&L","Win Rate","Expectancy"],...ad.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(ad.mistakes)]);add("تحلیل-سیستم",[["پارامتر","سودآوری"],...st.bySystem.map(x=>[x.name,x.value])]);add("تحلیل-نشست",[["پارامتر","سودآوری"],...st.bySession.map(x=>[x.name,x.value])]);add("تحلیل-RR",[["پارامتر","سودآوری"],...st.byRR.map(x=>[x.name,x.value])]);add("تحلیل-آمادگی-ستاپ",[["پارامتر","سودآوری"],...st.bySetupReadiness.map(x=>[x.name,x.value])]);add("تحلیل-ارزیابی-چارت",[["پارامتر","سودآوری"],...st.byChartReadiness.map(x=>[x.name,x.value])]);add("تحلیل-روند",[["پارامتر","سودآوری"],...st.byTrend.map(x=>[x.name,x.value])]);add("تحلیل-لات",[["پارامتر","سودآوری"],...st.byLot.map(x=>[x.name,x.value])]);add("تحلیل-روز",[["پارامتر","سودآوری"],...st.byWeekday.map(x=>[x.name,x.value])]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات داشبورد",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...ad.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-comprehensive-dashboard-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardComprehensivePdf(){const st=dashboardStatExportData(),ad=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی جامع داشبورد",[{name:"خلاصه داشبورد",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",ad.a.avgDayPlanReadiness??"—"]]},{name:"تحلیل آماری - سیستم",header:["پارامتر","سودآوری"],rows:st.bySystem.map(x=>[x.name,x.value])},{name:"تحلیل آماری - نشست",header:["پارامتر","سودآوری"],rows:st.bySession.map(x=>[x.name,x.value])},{name:"تحلیل آماری - R:R",header:["پارامتر","سودآوری"],rows:st.byRR.map(x=>[x.name,x.value])},{name:"تحلیل آماری - روند",header:["پارامتر","سودآوری"],rows:st.byTrend.map(x=>[x.name,x.value])},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(ad.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
     /* ---------------- combined full export ---------------- */
     async function exportAll() {
@@ -9210,8 +9413,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.0", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.0"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.2", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.2"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -10164,7 +10367,7 @@ function App() {
                     React.createElement("button", { onClick: () => persistAppLanguage("fa"), className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: appLanguage === "fa" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: appLanguage === "fa" ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${appLanguage === "fa" ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}` } }, "فارسی"),
                     React.createElement("button", { onClick: () => persistAppLanguage("en"), className: "flex-1 py-2.5 rounded-lg text-[12px] font-medium", style: { background: appLanguage === "en" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: appLanguage === "en" ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${appLanguage === "en" ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}` } }, "English")),
                 openSettingsSection.language && React.createElement("p", { className: "text-[10px] leading-5 mt-2", style: { color: "var(--text-muted)" } }, appLanguage === "en"
-                    ? "This switches the bottom navigation and settings labels to English immediately. Full translation of every screen's content is still in progress and will expand over time."
+                    ? "English mode translates the full user interface, including journal, analysis, trading metrics, sessions, library, settings, exports, and other layers using standard trading terminology."
                     : "این گزینه نوار پایین و برچسب‌های تنظیمات رو فوراً به انگلیسی تغییر می‌ده. ترجمه‌ی کامل محتوای همه‌ی صفحات هنوز در حال تکمیله و به‌مرور گسترش پیدا می‌کنه.")),
             RE(NmCollapsible, { title: "امنیت، پشتیبان، ذخیره ابری و Namello Backend", subtitle: "امنیت داده، پشتیبان، Google Drive و حساب/Sync چنددستگاهی", icon: "🔐", defaultOpen: false },
                 React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "color-mix(in srgb, #0EA5E9 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #0EA5E9 28%, var(--border-1))" } },
