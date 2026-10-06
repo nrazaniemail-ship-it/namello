@@ -88,6 +88,8 @@
   .nm-settings-chevron svg { width: 14px !important; height: 14px !important; color: var(--accent-gold) !important; }
   .nm-collapse-chevron { flex: 0 0 28px; }
   .nm-collapse-chevron svg { display: block; }
+  .nm-header-dots { width: 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; line-height: 1; }
+  .nm-header-dot { width: 3px; height: 3px; border-radius: 999px; background: #fff; display: block; box-shadow: 0 0 2px rgba(255,255,255,.45); }
 </style>
 </head>
 <body>
@@ -3127,9 +3129,12 @@ function nmGetHelpGuide(title){
   if (NM_HELP_GUIDES[key]) return {key,...NM_HELP_GUIDES[key]};
   return {key,icon:"💡",purpose:`این بخش برای کار با «${key}» طراحی شده است و راهنمای آن به‌صورت مرحله‌ای در همین پنجره ارائه می‌شود.`,steps:["بخش را باز کن و گزینه‌های موجود را به‌ترتیب بررسی کن.","اطلاعات موردنیاز را با دقت وارد یا انتخاب کن.","نتیجه را بررسی کن و در صورت نیاز آن را در ژورنال ثبت کن.","برای تصمیم‌های معاملاتی، داده‌های این بخش را همراه با مدیریت ریسک تفسیر کن."],terms:[["Setup","شرایط و الگوی موردنیاز برای اجرای یک معامله"],["Risk","مقدار سرمایه در معرض زیان"],["Journal","ثبت ساختاریافته تصمیم و نتیجه معامله"]],tips:["راهنما جنبه آموزشی دارد؛ قبل از اجرای معامله قوانین بروکر، بازار و برنامه مدیریت ریسک خودت را بررسی کن."]};
 }
-function NmHelpButton({title, className=""}){
-  const label=(typeof document!=="undefined" && document.documentElement.lang==="en")?"Guide":"راهنما";
-  return RE("button",{type:"button",onClick:e=>{e.stopPropagation();window.dispatchEvent(new CustomEvent("namello-open-help",{detail:{title}}));},className:"inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold shrink-0 "+className,style:{background:"var(--bg-card2)",color:"var(--accent-gold)",border:"1px solid var(--border-2)"},"aria-label":label+" "+title},RE("span",null,"❔"),label);
+function NmHeaderDots({className=""}){
+  return RE("span",{className:"nm-header-dots shrink-0 "+className,"aria-hidden":true},
+    RE("span",{className:"nm-header-dot"}),
+    RE("span",{className:"nm-header-dot"}),
+    RE("span",{className:"nm-header-dot"})
+  );
 }
 function nmHelpEnglish(guide){
   const key=guide.key;
@@ -3222,19 +3227,18 @@ function NmHelpCenter(){
 /* ---------------- اجزای مشترکِ رابط ---------------- */
 function NmCollapsible({ title, subtitle, badge, defaultOpen, children, icon, helpKey }) {
     const [open, setOpen] = useState(!!defaultOpen);
-    const guideTitle = helpKey || title;
     return RE("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-        RE("div", { className: "w-full flex items-center gap-2", style: { textAlign: "start" } },
-            RE("button", { type: "button", onClick: () => setOpen(o => !o), className: "min-w-0 flex-1 flex items-center justify-between gap-3", style: { textAlign: "start" }, "aria-expanded": open },
+        RE("div", { className: "w-full flex items-center gap-2", style: { textAlign: "start", direction: "ltr" } },
+            RE("button", { type: "button", onClick: () => setOpen(o => !o), className: "min-w-0 flex-1 flex items-center gap-2", style: { textAlign: "start", direction: "rtl" }, "aria-expanded": open },
                 RE("div", { className: "min-w-0 flex-1" },
                     RE("div", { className: "flex items-center gap-2 flex-wrap" },
                         icon && RE("span", { style: { fontSize: 15 } }, icon),
                         RE("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, title),
                         badge && RE("span", { className: "text-[10px] px-2 py-0.5 rounded-full", style: { background: nmTint(15), color: "var(--accent-gold)" } }, badge)),
                     subtitle && RE("div", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, open ? "برای بستن لیست کلیک کنید" : subtitle)),
-                RE("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true },
+                RE("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0 order-last", "aria-hidden": true },
                     open ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
-            RE(NmHelpButton, { title: guideTitle })
+            RE(NmHeaderDots, null)
         ),
         open && RE("div", { className: "mt-3" }, children));
 }
@@ -3286,7 +3290,7 @@ function NmSettingsAutoCollapse({ children }) {
                         isOpen ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })
                     )
                 ),
-                RE(NmHelpButton, { title })
+                RE(NmHeaderDots, null)
             ),
             isOpen && RE("div", { className: "mt-3" }, child)
         );
@@ -3460,7 +3464,6 @@ function NmAboutSectionCard({ section, index, total, onTitleChange, onContentCha
                 RE("span", { className: "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0", style: { background: "color-mix(in srgb, var(--accent-gold) 13%, transparent)", color: "var(--accent-gold)" } }, index + 1),
                 RE("span", { className: "text-[13px] font-semibold truncate", style: { color: "var(--text-primary)" } }, section.title || "بخش بدون عنوان"),
                 open ? RE(ChevronUp, { size: 15, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 15, color: "var(--accent-gold)" })),
-            RE(NmHelpButton, { title: section.title || "درباره برنامه" })
         ),
         open && RE("div", { className: "pt-3" },
             RE("div", { className: "flex items-center gap-1 mb-2" },
@@ -4553,7 +4556,7 @@ function NmLayerHeading({ title, Icon, image, helpKey }) {
             image ? React.createElement("img", { src: image, alt: title, loading: "lazy", decoding: "async", className: "w-7 h-7 rounded-lg object-contain shrink-0", style: { background: "#FFFFFF", border: "1px solid var(--border-2)" } }) :
             Icon ? React.createElement(Icon, { size: 18, color: "var(--accent-gold)", className: "shrink-0" }) : null,
             React.createElement("span", { className: "truncate" }, title)),
-        React.createElement(NmHelpButton, { title: helpKey || title })
+        React.createElement(NmHeaderDots, null)
     );
 }
 
@@ -4968,12 +4971,12 @@ function NmBookViewer({ book, onClose, showToast }) {
 function NmLibraryCollapsibleSection({ title, icon, children, defaultOpen = false }) {
     const [open, setOpen] = useState(defaultOpen);
     return RE("section", { className: "mb-4 rounded-2xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", direction: "rtl" } },
-        RE("div", { className: "w-full flex items-center gap-2 mb-2", style: { textAlign: "start" } },
-            RE("button", { type: "button", onClick: () => setOpen(v => !v), className: "min-w-0 flex-1 flex items-center justify-between gap-2", "aria-expanded": open },
-                RE("div", { className: "flex items-center gap-2 min-w-0", style: { textAlign: "right" } }, RE("span", { style: { fontSize: 18 } }, icon), RE("span", { className: "text-[14px] font-bold", style: { color: "var(--text-primary)", textAlign: "right" } }, title)),
+        RE("div", { className: "w-full flex items-center gap-2 mb-2", style: { textAlign: "start", direction: "ltr" } },
+            RE("button", { type: "button", onClick: () => setOpen(v => !v), className: "min-w-0 flex-1 flex items-center gap-2", style: { direction: "rtl", textAlign: "start" }, "aria-expanded": open },
+                RE("div", { className: "flex items-center gap-2 min-w-0 flex-1", style: { textAlign: "right" } }, RE("span", { style: { fontSize: 18 } }, icon), RE("span", { className: "text-[14px] font-bold", style: { color: "var(--text-primary)", textAlign: "right" } }, title)),
                 open ? RE(ChevronUp, { size: 16, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 16, color: "var(--accent-gold)" })
             ),
-            RE(NmHelpButton, { title })
+            RE(NmHeaderDots, null)
         ),
         open ? RE("div", { className: "pt-2" }, children) : null
     );
