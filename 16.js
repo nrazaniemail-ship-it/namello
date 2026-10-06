@@ -2348,12 +2348,12 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.6";
-const NM_VERSION_CODE = 7;
+const NM_VERSION_NAME = "1.0.7";
+const NM_VERSION_CODE = 8;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "نسخهٔ بازطراحی‌شده";
+const NM_VERSION_DATE = "بازطراحی لایه ژورنال و اصلاح چیدمان ثبت ورود";
 const NM_CHANGELOG = [
-    "نسخه 1.0.6: دکمه فوروارد بلااستفاده از کنترل‌های داخل کارت اپیزود حذف شد؛ Before/Next با رنگ تأکیدی نمایش داده می‌شوند؛ خطای ChevronLeft در پخش‌کننده شناور برطرف شد و آیکون‌های چپ/راست به‌صورت تعریف‌شده استفاده می‌شوند.",
+    "نسخه 1.0.7: دکمه فوروارد بلااستفاده از کنترل‌های داخل کارت اپیزود حذف شد؛ Before/Next با رنگ تأکیدی نمایش داده می‌شوند؛ خطای ChevronLeft در پخش‌کننده شناور برطرف شد و آیکون‌های چپ/راست به‌صورت تعریف‌شده استفاده می‌شوند.",
     "نسخه 1.0.0 اصلاحی: مثلث‌های جمع/باز داشبورد با همان استایل استاندارد تنظیمات یکسان شدند؛ باکس مدیریت جفت‌ارز از لایه ژورنال حذف شد و مدیریت/افزودن جفت‌ارز در فرم ثبت ورود حفظ شد؛ پروژه Native ویجت از بسته اصلی برنامه جدا نگه داشته شد.",
     "نسخه 1.0.0: بازطراحی Namello؛ امنیت، پشتیبان و ذخیره ابری با Namello Backend و حساب/Sync واقعی در یک سربرگ واحد ادغام شدند و سبک مثلث‌های جمع/باز شدن یکسان شد. ویجت اندروید نیز به‌صورت بستهٔ Native جداگانه آماده شده است.",
     "نسخه 1.22.31: عنوان داشبورد عملکرد دیگر حساب مبنا را نمایش نمی‌دهد؛ خلاصه حساب مبنا زیر تحلیل آماری و ارزیابی پیشرفته اضافه شد و تیترهای سه‌گانه Dashboard به‌صورت پررنگ‌تر نمایش داده می‌شوند.",
@@ -7620,7 +7620,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.6</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.7</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8348,7 +8348,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.6</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.7</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8743,8 +8743,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.6", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.6"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.7", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.7"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -8993,10 +8993,14 @@ function App() {
                 React.createElement("span", { className: "text-[12px]", style: { color: "var(--accent-gold)", fontFamily: "JetBrains Mono, monospace" } },
                     (appLanguage === "en" ? "Next lot: " : "\u0644\u0627\u062A \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC \u0628\u0639\u062F\u06CC: "),
                     derived.nextLot))),
-            React.createElement("div", { className: "mb-4" },
-                React.createElement("button", { onClick: openNewTradeForm, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
-                    React.createElement(Plus, { size: 16 }),
-                    " ", t("journal_new_entry"))),
+            React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "color-mix(in srgb, #F59E0B 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #F59E0B 30%, var(--border-1))" } },
+                React.createElement("div", { className: "flex items-center justify-between gap-3" },
+                    React.createElement("div", { className: "min-w-0" },
+                        React.createElement("div", { className: "text-sm font-bold", style: { color: "var(--text-primary)" } }, "ثبت ورود"),
+                        React.createElement("div", { className: "text-[10px] leading-5 mt-0.5", style: { color: "var(--text-muted)" } }, "اطلاعات معامله را پیش از ورود ثبت کن تا تصمیم و شرایط اولیه معامله مستند بماند.")),
+                    React.createElement("button", { type: "button", onClick: openNewTradeForm, className: "shrink-0 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-bold", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
+                        React.createElement(Plus, { size: 15 }),
+                        "ثبت ورود"))),
             openTrades.length > 0 && (React.createElement("div", { className: "mb-4" },
                 React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } },
                     t("journal_open_trades"),
@@ -9122,9 +9126,7 @@ function App() {
                 (t.voiceNoteBefore || t.voiceNoteAfter) && (React.createElement("div", { className: "flex flex-col gap-1 mb-1" },
                     t.voiceNoteBefore && React.createElement("audio", { src: t.voiceNoteBefore, controls: true, style: { height: 30, width: "100%" } }),
                     t.voiceNoteAfter && React.createElement("audio", { src: t.voiceNoteAfter, controls: true, style: { height: 30, width: "100%" } })))))))),
-            React.createElement("button", { onClick: () => doExport("all"), className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mb-4 nm-unified-export-btn", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-1)" } },
-                React.createElement(Download, { size: 16 }),
-                " \u062E\u0631\u0648\u062C\u06CC Excel \u0698\u0648\u0631\u0646\u0627\u0644"))))),
+            React.createElement(React.Fragment, null))))),
         tab === "marketeval" && (RE(NmMarketEvalLayer, { config, pairs, askDeleteConfirm })),
         tab === "calendar" && (!activeAccount ? (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, appLanguage === "en" ? "First create an account from the Profile tab." : "\u0627\u0648\u0644 \u0627\u0632 \u062A\u0628 \u0698\u0648\u0631\u0646\u0627\u0644 \u06CC\u06A9 \u062D\u0633\u0627\u0628 \u0627\u06CC\u062C\u0627\u062F \u06A9\u0646."))) : (React.createElement(CalendarLayer, {
