@@ -61,6 +61,6 @@
   "launch_handler": {
     "client_mode": "navigate-existing"
   },
-  "version": "1.0.4",
-  "versionCode": 5
+  "version": "1.0.6",
+  "versionCode": 7
 }
