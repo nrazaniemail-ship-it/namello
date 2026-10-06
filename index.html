@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.16</title>
+<title>Namello 1.0.0</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -91,7 +91,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.16…</div>
+<div id="boot-status">Loading Namello 1.0.0…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -1705,28 +1705,28 @@ const DEFAULT_PREP_STEPS = [
 const DEFAULT_ABOUT_SECTIONS = [
     {
         id: "about1",
-        title: "نامللو چیست؟",
-        content: "نامللو یک ژورنال معاملاتی جامع برای تریدرهاییه که به روش ICT و بر اساس نشست‌ها و کیل‌زون‌های نیویورک کار می‌کنن. این برنامه ساعت زنده‌ی نشست‌ها/کیل‌زون‌ها/سیلور بولت‌ها، ثبت دقیق معاملات، مدیریت مالی، تحلیل آماری و مدیریت اهداف رو در یک اپلیکیشن واحد و قابل‌نصب (PWA) کنار هم آورده.",
+        title: "معرفی Namello",
+        content: "Namello یک ژورنال معاملاتی جامع برای ثبت، بررسی و تحلیل معاملات است که ثبت جزئیات معامله، ارزیابی عملکرد، مدیریت مالی، روانشناسی ترید و ابزارهای تحلیلی را در یک محیط یکپارچه جمع می‌کند.",
     },
     {
         id: "about2",
-        title: "چرا ژورنال‌نویسی معاملاتی مهمه؟",
-        content: "بدون ثبت دقیق و منظم معاملات، هیچ تریدری نمی‌تونه نقاط قوت و ضعف واقعی سیستم معاملاتی‌ش رو پیدا کنه. ژورنال‌نویسی کمک می‌کنه بفهمی کدوم نشست، کدوم سیستم، کدوم فراکتال یا کدوم حالت روانی برات سودآورتره، احساس رو از تصمیم‌گیری جدا کنی، و به‌مرور یک روش معاملاتی پایدار و قابل‌تکرار بسازی.",
+        title: "قابلیت‌های اصلی برنامه",
+        content: "نشست‌ها و کیل‌زون‌ها، اخبار، ارزیابی چارت و آمادگی معامله، ثبت ورود و نتیجه معامله، کتابخانه و پادکست، اهداف و شکرگزاری، روانشناسی ترید، تحلیل آماری و خروجی‌گیری از داده‌ها از بخش‌های اصلی Namello هستند.",
     },
     {
         id: "about3",
-        title: "قابلیت‌های اصلی برنامه",
-        content: "کاربر (تعریف کاربر و تمپلیت‌های شخصی) • نشست‌ها (ساعت زنده‌ی نشست‌ها، کیل‌زون‌ها و سیلور بولت‌های نیویورک) • اخبار (ثبت و ردیابی رویدادهای تقویمی) • ارزیابی چارت (چک‌لیست پیش از معامله) • ژورنال (ثبت ورود و نتیجه‌ی معاملات با ده‌ها پارامتر دقیق، به‌همراه مدیریت مالی) • سیستم‌های معاملاتی • استراتژی • اهداف معامله‌گری، اهداف زندگی و شکرگزاری • تحلیل (آمار سودآوری بر اساس هر پارامتر، سودآورترین شرایط معامله، احتمال موفقیت محاسباتی و نمودار سه‌بعدی).",
+        title: "ثبت و تحلیل معاملات",
+        content: "در ژورنال می‌توان اطلاعات ورود، نتیجه، ریسک، شرایط بازار، سیستم معاملاتی و عوامل روانشناسی را ثبت کرد. داده‌های ثبت‌شده در تحلیل آماری برای پیدا کردن شرایط سودآور و نقاط قابل بهبود استفاده می‌شوند.",
     },
     {
         id: "about4",
-        title: "راهنمای شروع کار",
-        content: "۱) از تنظیمات ← پروفایل یک پروفایل بساز و در بخش تمپلت تنظیمات سفارشی را ذخیره کن. ۲) از تب «ژورنال» یک کد حساب تعریف کن. ۳) قبل از هر معامله، چک‌لیست «ارزیابی چارت» رو مرور کن. ۴) موقع ورود به معامله، از دکمه‌ی «ثبت ورود» همه‌ی پارامترهای معامله رو دقیق ثبت کن. ۵) بعد از بستن معامله، از «ثبت نتیجه معامله» نتیجه‌ی نهایی رو وارد کن. ۶) به‌مرور که داده جمع شد، به تب «تحلیل» سر بزن تا ببینی کدوم شرایط برات سودآورتره.",
+        title: "روانشناسی و مدیریت عملکرد",
+        content: "بخش روانشناسی ترید برای ثبت وضعیت ذهنی، بررسی اشتباهات انضباطی و پیدا کردن الگوهای رفتاری در کنار نتایج واقعی معاملات طراحی شده است تا تصمیم‌گیری و عملکرد معامله‌گر قابل ارزیابی باشد.",
     },
     {
         id: "about5",
-        title: "نکات و توصیه‌ها",
-        content: "هرچی پارامترهای معامله (فراکتال، الگوی برگشتی، سیستم‌ها، روانشناسی و…) رو دقیق‌تر و منظم‌تر ثبت کنی، تحلیل آماری برنامه (و «احتمال موفقیت محاسباتی») دقیق‌تر می‌شه. حداقل قبل از هر بار سفارشی‌سازی بزرگ تنظیمات، یک تمپلیت جدید از تب «کاربر» ذخیره کن تا در صورت نیاز بتونی برگردی. این بخش (درباره برنامه) رو هم می‌تونی مطابق سبک کاری خودت ویرایش، کم یا زیاد کنی.",
+        title: "راهنمای استفاده",
+        content: "ابتدا پروفایل و حساب را تنظیم کن، سپس پیش از معامله ارزیابی‌ها را انجام بده، اطلاعات ورود را دقیق ثبت کن و پس از بسته‌شدن معامله نتیجه را وارد کن. با جمع‌شدن داده‌ها، از تحلیل آماری و گزارش‌ها برای بهبود سیستم معاملاتی استفاده کن.",
     },
 ];
 const DEFAULT_SUCCESS_PROB_OPTIONS = ["50", "60", "70", "80", "90"];
@@ -2716,42 +2716,14 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.16";
-const NM_VERSION_CODE = 16;
+const NM_VERSION_NAME = "1.0.0";
+const NM_VERSION_CODE = 1;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "نسخهٔ بازطراحی‌شده";
+const NM_VERSION_DATE = "نسخهٔ پایه و بازطراحی‌شده";
 const NM_CHANGELOG = [
-    "نسخه 1.0.5: دکمه فوروارد بلااستفاده از کنترل‌های داخل کارت اپیزود حذف شد؛ Before/Next با رنگ تأکیدی نمایش داده می‌شوند؛ خطای ChevronLeft در پخش‌کننده شناور برطرف شد و آیکون‌های چپ/راست به‌صورت تعریف‌شده استفاده می‌شوند.",
-    "نسخه 1.0.0 اصلاحی: مثلث‌های جمع/باز داشبورد با همان استایل استاندارد تنظیمات یکسان شدند؛ باکس مدیریت جفت‌ارز از لایه ژورنال حذف شد و مدیریت/افزودن جفت‌ارز در فرم ثبت ورود حفظ شد؛ پروژه Native ویجت از بسته اصلی برنامه جدا نگه داشته شد.",
-    "نسخه 1.0.0: بازطراحی Namello؛ امنیت، پشتیبان و ذخیره ابری با Namello Backend و حساب/Sync واقعی در یک سربرگ واحد ادغام شدند و سبک مثلث‌های جمع/باز شدن یکسان شد. ویجت اندروید نیز به‌صورت بستهٔ Native جداگانه آماده شده است.",
-    "نسخه 1.22.31: عنوان داشبورد عملکرد دیگر حساب مبنا را نمایش نمی‌دهد؛ خلاصه حساب مبنا زیر تحلیل آماری و ارزیابی پیشرفته اضافه شد و تیترهای سه‌گانه Dashboard به‌صورت پررنگ‌تر نمایش داده می‌شوند.",
-    "نسخه 1.22.30: رفع خطای لایه تنظیمات؛ کلیدهای NM_DEVICE_KEY و NM_SYNC_STATE_KEY که در مسیر Sync استفاده می‌شدند تعریف شدند تا ورود به تنظیمات دیگر با ReferenceError متوقف نشود.",
-    "نسخه 1.22.27: مسیر تنظیمات ایزوله شد؛ خطای Runtime یک کارت تنظیمات دیگر نمی‌تواند کل لایه را از رندر خارج کند و خطا با پیام کنترل‌شده نمایش داده می‌شود.",
-    "نسخه 1.22.25: پایداری لایه تنظیمات و مدیریت ترتیب لایه‌ها اصلاح شد؛ مقدار ترتیب ذخیره‌شده اعتبارسنجی می‌شود و خرابی یک آیتم ترتیب نمی‌تواند کل لایه تنظیمات را از رندر خارج کند.",
-    "نسخه 1.22.24: رفع خطای SyntaxError در راه‌اندازی برنامه که باعث نمایش Script error می‌شد؛ بسته PWA و Android از همین اصلاح استفاده می‌کنند.",
-    "نسخه 1.22.23: مدیریت Chart/Trade/Day Plan از داشبورد حذف شد و تحلیل مستقیم هر سه چک‌لیست (Chart، Trade و Day Plan) در ارزیابی پیشرفته قرار گرفت؛ در ثبت ورود ژورنال «آمادگی برنامه روزانه» قبل از آمادگی ستاپ اضافه شد، چک‌لیست‌های سه‌گانه از همان‌جا قابل ویرایش/حذف/افزودن/جابجایی شدند، امتیاز آمادگی برنامه روزانه وارد تحلیل آماری و وزن‌دهی احتمال موفقیت محاسباتی شد، شماره‌گذاری ثبت ورود اصلاح شد، پروفایل/تمپلیت ظاهر مستقل گرفتند، خط زرد کنار لایه فعال حذف و «ترتیب لایه‌ها» به تنظیمات اضافه شد.",
-    "نسخه 1.22.22: اصلاح آیکن/نسخه‌بندی PWA و همسان‌سازی شماره نسخه با Android Native؛ قابلیت‌های نسخه 1.22.20 شامل همگام‌سازی R-multiple و ریسک دلاری و پارامترهای تحلیل آماری حفظ شد.",
-    "نسخه 1.22.20: مقدار R-multiple و ریسک دلاری ثبت ورود با باکس «مقدار جدید/حالت جدید» همگام شد؛ ریسک دلاری، احتمال موفقیت ذهنی/محاسباتی و سایر پارامترهای جدید ثبت ورود به تحلیل سودآوری داشبورد اضافه شدند و پارامترهای جدید در وزن‌دهی احتمال موفقیت محاسباتی قابل تنظیم شدند.",
-    "نسخه 1.22.19: مدیریت Chart/Trade/Day Plan ساده‌تر شد، متن شروط چندسطره شد، امتیاز آمادگی ستاپ و ارزیابی چارت به پارامترهای تحلیلی اضافه شد، R/R برنامه‌ریزی‌شده حذف و استخراج چارت برای R-multiple و ریسک دلاری بهبود یافت.",
-    "نسخه 1.22.17: بهبود گرافیکی لایه‌ها، پلیر درون آیتم کتابخانه، تفکیک رنگی فرم ورود/نتیجه، باکس‌های تنظیمات، دکمه شناور Native، OCR قیمت از چارت، و مدیریت Chart/Trade/Day Plan اضافه شد.",
-    "نسخه 1.22.16: گزینه «نصب Namello به‌عنوان اپ» از تنظیمات حذف شد؛ نصب PWA فقط از مسیر استاندارد مرورگر انجام می‌شود. همچنین مسیر Android Native از TWA/Chrome جدا نگه داشته شد تا APK مستقل اجرا شود.",
-    "نسخه 1.22.16: لوگوی لایه ژورنال در منوی لایه‌ها با تصویر اختصاصی ارسالی جایگزین شد و از لوگوی داشبورد جداست.",
-    "نسخه 1.22.15: بررسی تطبیقی Trading Journal، FX Journal و TraderSync انجام شد؛ Strategy Checker قبل از ورود، ذخیره پاسخ‌های Plan در Review و محاسبه R:R برنامه‌ریزی‌شده از روی TP/SL قیمتی اضافه شد.",
-    "نسخه 1.22.15: قابلیت‌های موجود Namello مثل Psychology، اسکرین‌شات و Voice Note، فیلترهای ژورنال، Replay/What-if، MFE/MAE، Plan Analysis و Journal Coach حفظ و با قابلیت‌های مشابه اپ‌های بررسی‌شده یکپارچه شدند.",
-    "نسخه 1.22.14: «ارزیابی استیتمنت» از لایه مستقل به Dashboard منتقل شد؛ برای هر تحلیل آماری/ارزیابی پیشرفته می‌توان منبع ژورنال یا استیتمنت را انتخاب کرد و استیتمنت MT4/MT5/CSV/Excel را مستقیماً به حساب مبنا وارد کرد.",
-    "نسخه 1.22.14: دکمه «نصب Namello به‌عنوان اپ» بازطراحی شد؛ دریافت beforeinstallprompt پایدارتر شد و در صورت نبودن prompt، مسیر رسمی Chrome برای Install app به‌صورت واضح راهنمایی می‌شود.",
-    "نسخه 1.22.14: لوگوی لایه ژورنال با لوگوی جدید ارسالی جایگزین شد.",
-    "نسخه 1.22.14: بخش بروزرسانی در «درباره برنامه» به آخرین نسخه و آخرین تغییرات واقعی پروژه به‌روزرسانی شد.",
-    "نسخه 1.22.13: جستجو و فیلتر سریع ژورنال با خلاصه KPI و فیلتر اشتباهات/نتیجه/جهت/نشست اضافه شد.",
-    "نسخه 1.22.13: Calendar Day Review با P&L، تعداد برد/باخت و تعداد Discipline Mistake برای روز انتخاب‌شده اضافه شد.",
-    "نسخه 1.22.12: داشبورد سه بخش مجزا با خروجی مستقل برای تحلیل آماری، ارزیابی پیشرفته و خروجی جامع اضافه شد؛ مسیرهای امنیت، پشتیبان و Sync در تنظیمات تفکیک شدند.",
-    "نسخه 1.22.10: منطق Dashboard به baseline سالم 1.22.5 بازگردانده شد تا خطای خالی‌شدن Dashboard برطرف شود؛ قابلیت‌های مستقل نسخه‌های بعدی حفظ شدند.",
-    "حساب و Sync: هویت Google، شناسه دستگاه، Sync رمزگذاری‌شده، نسخه‌بندی، تشخیص Conflict و بازیابی Google Drive App Data.",
-    "نسخه 1.19: Advanced Edge Discovery با کنترل حداقل نمونه، آزمون پایداری و تحلیل چندبعدی Edge اضافه شد.",
-    "نسخه 1.18: Namello Intelligence، ماتریس Setup×Session×Plan×Mistake، گزارش هفتگی و Coach قابل‌اقدام اضافه شد.",
-    "نسخه 1.17: Analytics Engine و Journal Coach مبتنی بر داده‌های واقعی اضافه شد.",
-    "نسخه 1.16: Trade Replay، What-if Exit Analysis و Plan Analysis اضافه شد.",
-    "نسخه 1.15: موتور Trade/Day Plan و Checklist با Rule Compliance و Discipline اضافه شد."
+    "نسخه 1.0.0: بازطراحی و یکپارچه‌سازی بخش‌های برنامه، جمع‌شدن پیش‌فرض سربرگ‌ها، بازطراحی بخش «درباره برنامه» و «بروزرسانی»، و بهبود ساختار لایه کتابخانه.",
+    "نسخه 1.0.0: بخش‌های کتابخانه به‌صورت مستقل و جمع‌شونده سازمان‌دهی شدند و کنترل‌های مرتبط با پادکست و کتاب‌های صوتی مرتب‌تر شدند.",
+    "نسخه 1.0.0: ساختار توضیحات نسخه و تغییرات برنامه از نو تنظیم شد تا از این پس تغییرات هر نسخه به‌صورت شفاف در بخش بروزرسانی نمایش داده شود."
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -3051,22 +3023,44 @@ function NmUpdateCard() {
             RE("div", { className: "text-[12px] font-bold mb-2", style: { color: "var(--accent-gold)" } }, "نسخه‌ی جدید: " + NM_APP_NAME + " " + shown.name + (shown.date ? " — " + shown.date : "")),
             RE("div", { className: "text-[10px] mb-1", style: { color: "var(--text-muted)" } }, "آخرین تغییرات اعمال‌شده:"),
             RE(NmChangeList, { items: shown.changes })),
-        (phase === "idle" || phase === "uptodate") && RE("div", { className: "mt-3" },
-            RE("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "آخرین تغییرات نسخه‌ی " + NM_VERSION_NAME),
-            RE(NmChangeList, { items: NM_CHANGELOG })));
+);
 }
 /* در لایه‌ی «درباره برنامه»: نام ورژن + آخرین تغییرات */
-function NmVersionCard() {
-    return RE("div", { className: "rounded-xl p-3 mb-4", style: { background: "var(--bg-card)", border: "1px solid " + nmTint(35) } },
-        RE("div", { className: "flex items-center gap-2 mb-2" },
-            RE("span", { style: { fontSize: 15 } }, "🔄"),
-            RE("h3", { className: "text-[13px] font-semibold", style: { color: "var(--accent-gold)" } }, "بروزرسانی")),
-        RE("div", { className: "flex items-baseline justify-between mb-2" },
-            RE("div", { className: "text-[16px] font-bold", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace", direction: "ltr" } }, NM_VERSION_LABEL),
-            RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, "Version Code: " + NM_VERSION_CODE + " · " + NM_VERSION_DATE)),
-        RE("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "آخرین تغییرات"),
-        RE(NmChangeList, { items: NM_CHANGELOG }));
+function NmAboutSectionCard({ section, index, total, onTitleChange, onContentChange, onDelete, onMove }) {
+    const [open, setOpen] = useState(false);
+    return RE("div", { className: "rounded-xl p-3 mb-2", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+        RE("button", {
+            type: "button", onClick: () => setOpen(v => !v), className: "w-full flex items-center justify-between gap-2",
+            style: { textAlign: "start" }, "aria-expanded": open
+        },
+            RE("div", { className: "flex items-center gap-2 min-w-0" },
+                RE("span", { className: "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0", style: { background: "color-mix(in srgb, var(--accent-gold) 13%, transparent)", color: "var(--accent-gold)" } }, index + 1),
+                RE("span", { className: "text-[13px] font-semibold truncate", style: { color: "var(--text-primary)" } }, section.title || "بخش بدون عنوان")),
+            open ? RE(ChevronUp, { size: 15, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 15, color: "var(--accent-gold)" })
+        ),
+        open && RE("div", { className: "pt-3" },
+            RE("div", { className: "flex items-center gap-1 mb-2" },
+                RE("div", { className: "flex items-center gap-0.5 shrink-0" },
+                    RE("button", { onClick: e => { e.stopPropagation(); onMove(section.id, -1); }, disabled: index === 0, className: "p-1", style: { opacity: index === 0 ? 0.3 : 1 } }, RE(ChevronUp, { size: 15, color: "var(--text-muted)" })),
+                    RE("button", { onClick: e => { e.stopPropagation(); onMove(section.id, 1); }, disabled: index === total - 1, className: "p-1", style: { opacity: index === total - 1 ? 0.3 : 1 } }, RE(ChevronDown, { size: 15, color: "var(--text-muted)" }))),
+                RE(AutoGrowTextarea, { value: section.title, onChange: e => onTitleChange(section.id, e.target.value), className: "flex-1 bg-transparent outline-none text-sm font-semibold", style: { color: "var(--text-primary)", minWidth: 0 }, placeholder: "عنوان بخش..." }),
+                RE("button", { onClick: e => { e.stopPropagation(); onDelete(section.id); }, className: "shrink-0" }, RE(Trash2, { size: 14, color: "var(--text-muted)" }))),
+            RE(AutoGrowTextarea, { value: section.content, onChange: e => onContentChange(section.id, e.target.value), className: "w-full bg-transparent outline-none text-[12px] leading-6", style: { color: "var(--text-secondary)", minWidth: 0 }, placeholder: "متن این بخش..." })
+        )
+    );
 }
+
+function NmVersionCard() {
+    return RE(NmCollapsible, { title: "بروزرسانی", subtitle: "مشاهده نسخه فعلی و تغییرات همین نسخه", icon: "🔄" },
+        RE("div", { className: "pt-3" },
+            RE("div", { className: "flex items-baseline justify-between mb-2" },
+                RE("div", { className: "text-[16px] font-bold", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace", direction: "ltr" } }, NM_VERSION_LABEL),
+                RE("div", { className: "text-[10px]", style: { color: "var(--text-muted)" } }, "Version Code: " + NM_VERSION_CODE + " · " + NM_VERSION_DATE)),
+            RE("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "تغییرات این نسخه"),
+            RE(NmChangeList, { items: NM_CHANGELOG }))
+    );
+}
+
 /* باکس «تغییرات نسخه‌ی جدید»: بعد از هر بروزرسانی (تغییر Version Code) یک‌بار خودکار نشان داده می‌شود */
 function NmWhatsNew() {
     const [open, setOpen] = useState(false);
@@ -3756,7 +3750,7 @@ function NmPriceExtremesAnalysis() {
             ` — ${top.count} بار از ${obj.total} (${top.pct}٪)`);
     };
     const empty = !stats || (stats.ev.total + stats.tm.total + stats.dy.total === 0);
-    return RE(NmCollapsible, { title: "ارزیابی سقف/کف قیمت", subtitle: "پایش تعداد تکرار سقف/کف روزانه و هفتگی", icon: "🎯", defaultOpen: true },
+    return RE(NmCollapsible, { title: "ارزیابی سقف/کف قیمت", subtitle: "پایش تعداد تکرار سقف/کف روزانه و هفتگی", icon: "🎯", defaultOpen: false },
         !data ? RE("div", { className: "text-[12px]", style: { color: "var(--text-muted)" } }, "در حال بارگذاری...")
             : RE(React.Fragment, null,
                 RE("div", { className: "flex gap-1.5 mb-2" },
@@ -4113,7 +4107,7 @@ function NmStatementSyncCard({ statementTrades, journalTrades, persistTrades, ac
         RE("div", { className: "flex gap-2" },
             RE("button", { type: "button", disabled: busy, onClick: onAct, className: "flex-1 py-2 rounded-lg text-[12px] font-semibold", style: primary ? { background: "var(--accent-gold)", color: "var(--bg-page)", opacity: busy ? 0.6 : 1 } : { background: nmTint(15), color: "var(--accent-gold)", border: "1px solid " + nmTint(40), opacity: busy ? 0.6 : 1 } }, actLabel),
             onDismiss && RE("button", { type: "button", disabled: busy, onClick: onDismiss, className: "px-3 py-2 rounded-lg text-[12px]", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "نادیده بگیر")));
-    return RE(NmCollapsible, { title: "همگام‌سازی با ژورنال", subtitle: "معاملات باز را با نتیجه‌ی واقعی MT5 ببندید یا موارد جامانده را اضافه کنید", icon: "🔗", defaultOpen: true, badge: String(toClose.length + toCreate.length) },
+    return RE(NmCollapsible, { title: "همگام‌سازی با ژورنال", subtitle: "معاملات باز را با نتیجه‌ی واقعی MT5 ببندید یا موارد جامانده را اضافه کنید", icon: "🔗", defaultOpen: false, badge: String(toClose.length + toCreate.length) },
         toClose.length > 0 && RE("div", { className: "mb-3" },
             RE("div", { className: "text-[11px] font-semibold mb-2", style: { color: "var(--accent-gold)" } }, "معاملات باز قابل بستن با نتیجه‌ی MT5 (" + toClose.length + ")"),
             toClose.map(m => row("🎯", m.stmt.pair + " · " + (m.stmt.direction === "buy" ? "خرید" : "فروش"),
@@ -4543,7 +4537,7 @@ function NmBookViewer({ book, onClose, showToast }) {
                             : RE("div", { className: "p-6 text-center text-[12px] leading-7", style: { color: "var(--text-secondary)" } }, "نمایش داخلی این نوع فایل (" + (nmLibExt(book.fileName) || "نامشخص").toUpperCase() + ") ممکن نیست. با دکمه‌ی «اشتراک/دانلود» آن را در برنامه‌ی خوانشگر گوشی (مثل خواننده‌ی EPUB یا Word) باز کنید.")),
         state.kind === "pdf" && RE("div", { className: "px-3 py-1.5 text-[10px] text-center", style: { color: "var(--text-muted)", background: "var(--bg-card)" } }, "اگر PDF نمایش داده نشد، «اشتراک/دانلود» را بزنید و در برنامه‌ی PDF‌خوان باز کنید."));
 }
-function NmLibraryCollapsibleSection({ title, icon, children, defaultOpen = true }) {
+function NmLibraryCollapsibleSection({ title, icon, children, defaultOpen = false }) {
     const [open, setOpen] = useState(defaultOpen);
     return RE("section", { className: "mb-4 rounded-2xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", direction: "rtl" } },
         RE("button", { type: "button", onClick: () => setOpen(v => !v), className: "w-full flex items-center justify-between gap-2 mb-2", "aria-expanded": open },
@@ -5042,7 +5036,7 @@ function NmReplayModal({trade,onClose}){
 
 function NmExcursionModal({trade,onClose,onSave}){const [text,setText]=React.useState("");const [result,setResult]=React.useState(null);const [fileName,setFileName]=React.useState("");const run=()=>{const r=nmApplyExcursion(trade,text);setResult(r.error?{error:r.error}:r.x);};const file=async e=>{const f=e.target.files?.[0];if(!f)return;setFileName(f.name);setText(await f.text());};return React.createElement("div",{className:"fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.72)"}},React.createElement("div",{className:"w-full max-w-lg rounded-2xl p-4 max-h-[92vh] overflow-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-3"},React.createElement("div",{className:"font-bold",style:{color:"var(--text-primary)"}},"MFE / MAE واقعی · ",trade.pair||"Trade"),React.createElement("button",{onClick:onClose},"✕")),React.createElement("div",{className:"text-[10px] leading-5 mb-3",style:{color:"var(--text-muted)"}},"فایل/متن OHLC مسیر معامله را وارد کن. هر ردیف: time, open, high, low, close. محاسبه فقط از High/Low واقعی مسیر انجام می‌شود."),React.createElement("input",{type:"file",accept:".csv,.txt",onChange:file,className:"text-[11px] mb-2 w-full"}),fileName&&React.createElement("div",{className:"text-[10px] mb-2",style:{color:"var(--accent-gold)"}},fileName),React.createElement("textarea",{value:text,onChange:e=>setText(e.target.value),rows:8,placeholder:"time,open,high,low,close\n10:01,3980.2,3983.1,3978.9,3982.4",className:"w-full rounded-xl p-3 text-[11px] mono",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)",color:"var(--text-primary)"}}),result&&React.createElement("div",{className:"rounded-xl p-3 mt-3 text-[11px]",style:{background:"var(--bg-card2)",border:"1px solid var(--border-1)"}},result.error?result.error:`MFE: ${nmDashNum(result.mfe,2)} · MAE: ${nmDashNum(result.mae,2)} · Best Exit: ${nmDashNum(result.bestExit?.price,2)} · Exit Efficiency: ${result.exitEfficiency===null?"—":nmDashNum(result.exitEfficiency,1)+"%"} · MFE R: ${result.bestExit?.rMultiple===null?"—":nmDashNum(result.bestExit?.rMultiple,2)+"R"}`),React.createElement("div",{className:"rounded-xl p-2.5 mt-3 text-[10px]",style:{background:"var(--bg-card2)",color:"var(--text-secondary)"}},React.createElement("b",{style:{color:"var(--accent-gold)"}},"Exit Insight · "),nmExitInsight(selected)),
     React.createElement("div",{className:"grid grid-cols-2 gap-2 mt-3"},React.createElement("button",{onClick:run,className:"py-2.5 rounded-xl text-[11px]",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}},"محاسبه"),React.createElement("button",{disabled:!result||result.error,onClick:()=>onSave(result),className:"py-2.5 rounded-xl text-[11px]",style:{background:"var(--accent-gold)",color:"var(--bg-page)",opacity:!result||result.error?.5:1}},"ذخیره در معامله"))));}
-function NmDashWidget({id,title,children,onDragStart,onDragOver,onMove,defaultOpen=true}){
+function NmDashWidget({id,title,children,onDragStart,onDragOver,onMove,defaultOpen = false}){
  const [open,setOpen]=React.useState(!!defaultOpen);
  return React.createElement("section",{draggable:true,onDragStart:e=>onDragStart(e,id),onDragOver:e=>{e.preventDefault();onDragOver(id);},className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
   React.createElement("div",{className:"flex items-center justify-between gap-2"},
@@ -6297,7 +6291,7 @@ function App() {
             }
             catch (e) { }
             try {
-                const r = await window.storage.get("namello_about_sections_v1");
+                const r = await window.storage.get("namello_about_sections_v2");
                 if (r)
                     setAboutSections(JSON.parse(r.value));
             }
@@ -6501,7 +6495,7 @@ function App() {
     }
     catch (e) { } }, []);
     const persistAboutSections = useCallback(async (next) => { setAboutSections(next); try {
-        await window.storage.set("namello_about_sections_v1", JSON.stringify(next));
+        await window.storage.set("namello_about_sections_v2", JSON.stringify(next));
     }
     catch (e) { } }, []);
     const persistBrokers = useCallback(async (next) => { setBrokers(next); try {
@@ -8091,7 +8085,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.16</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.0</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8819,7 +8813,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.16</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.0</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9214,8 +9208,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.16", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.16"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.0", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.0"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -10170,7 +10164,7 @@ function App() {
                 openSettingsSection.language && React.createElement("p", { className: "text-[10px] leading-5 mt-2", style: { color: "var(--text-muted)" } }, appLanguage === "en"
                     ? "This switches the bottom navigation and settings labels to English immediately. Full translation of every screen's content is still in progress and will expand over time."
                     : "این گزینه نوار پایین و برچسب‌های تنظیمات رو فوراً به انگلیسی تغییر می‌ده. ترجمه‌ی کامل محتوای همه‌ی صفحات هنوز در حال تکمیله و به‌مرور گسترش پیدا می‌کنه.")),
-            RE(NmCollapsible, { title: "امنیت، پشتیبان، ذخیره ابری و Namello Backend", subtitle: "امنیت داده، پشتیبان، Google Drive و حساب/Sync چنددستگاهی", icon: "🔐", defaultOpen: true },
+            RE(NmCollapsible, { title: "امنیت، پشتیبان، ذخیره ابری و Namello Backend", subtitle: "امنیت داده، پشتیبان، Google Drive و حساب/Sync چنددستگاهی", icon: "🔐", defaultOpen: false },
                 React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "color-mix(in srgb, #0EA5E9 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #0EA5E9 28%, var(--border-1))" } },
                     React.createElement("div", { className: "text-[10px] leading-5", style: { color: "var(--text-muted)" } }, "امنیت، پشتیبان محلی/فایلی، Google Drive و Backend Sync همه در این بخش مدیریت می‌شوند. داده قبل از Sync رمزگذاری می‌شود و سرور فقط ciphertext را نگه می‌دارد.")),
                 RE(NmBackendSyncCard, { showToast }),
@@ -10178,7 +10172,7 @@ function App() {
                 RE(NmStorageCard, { showToast })
             ),
             RE(NmCustomFieldsManager, null),
-            RE(NmCollapsible, { title: "فونت برنامه", subtitle: "برای جمع/باز کردن این بخش کلیک کنید", icon: "🔤", defaultOpen: true },
+            RE(NmCollapsible, { title: "فونت برنامه", subtitle: "برای جمع/باز کردن این بخش کلیک کنید", icon: "🔤", defaultOpen: false },
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, "فونت برنامه"),
                 React.createElement("div", { className: "flex flex-wrap gap-1.5" }, FONT_OPTIONS.map(f => (React.createElement("button", { key: f.key, onClick: () => changeAppFont(f.key), className: "px-3 py-2 rounded-lg text-[12px]", style: { background: appFont === f.key ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: appFont === f.key ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${appFont === f.key ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}`, fontFamily: f.css } }, f.label))))),
@@ -10219,7 +10213,7 @@ function App() {
                     React.createElement("br", null),
                     React.createElement("br", null),
                     "اگه بعد از فعال‌کردن هنوز این نوتیفیکیشن ظاهر نمی‌شه، دلیلش تقریباً همیشه مدیریت باتریِ خودِ سامسونگه: چون Namello یه تبِ مرورگرِ پس‌زمینه است (نه اپ نصب‌شده)، سامسونگ اغلب پردازشش رو همون لحظه‌ای که ازش خارج می‌شی می‌بنده، قبل از اینکه فرصت کنه نوتیفیکیشن رو نشون بده. برای رفع این مورد: تنظیمات گوشی ← نرم‌افزارها (یا مراقبت از باتری) ← مرورگری که Namello رو باهاش باز کردی (کروم/سامسونگ‌اینترنت) ← مصرف باتری ← گزینه‌ی «بدون محدودیت» رو انتخاب کن، و مطمئن شو مرورگر تو لیست «اپ‌های خواب» یا «به‌خواب‌رفته» نیست. بدون این تنظیم، این قابلیت (و کلاً نوتیفیکیشن‌های Namello) روی گوشی‌های سامسونگ به‌طور نامنظم کار می‌کنن.")),
-            RE(NmCollapsible, { title: "MT5 · دریافت خودکار OHLC و MFE/MAE", subtitle: "برای جمع/باز کردن این بخش کلیک کنید", icon: "📊", defaultOpen: true },
+            RE(NmCollapsible, { title: "MT5 · دریافت خودکار OHLC و MFE/MAE", subtitle: "برای جمع/باز کردن این بخش کلیک کنید", icon: "📊", defaultOpen: false },
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "MT5 · دریافت خودکار OHLC و MFE/MAE"),
@@ -10244,7 +10238,7 @@ function App() {
                 React.createElement("label", { className: "text-[11px] block mb-1.5", style: { color: "var(--text-muted)" } }, "\u0633\u0627\u06CC\u0632 \u0646\u0645\u0627\u06CC\u0634 \u062F\u0631 widget.html"),
                 React.createElement("div", { className: "flex gap-2 mb-3" }, [[1, "کوچک"], [2, "متوسط"], [3, "بزرگ"]].map(([lvl, label]) => (React.createElement("button", { key: lvl, onClick: () => persistWidgetSettings({ ...widgetSettings, sizeLevel: lvl }), className: "flex-1 py-2 rounded-lg text-[12px]", style: { background: widgetSettings.sizeLevel === lvl ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: widgetSettings.sizeLevel === lvl ? "var(--accent-gold)" : "var(--text-muted)" } }, label)))),
                 React.createElement("a", { href: "./widget.html", target: "_blank", rel: "noopener", className: "w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-medium", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } }, "\u0628\u0627\u0632 \u06A9\u0631\u062F\u0646 widget.html")),
-            RE(NmCollapsible, { title: "بروزرسانی برنامه", subtitle: "بررسی و نصب آخرین نسخه", icon: "🔄", defaultOpen: true },
+            RE(NmCollapsible, { title: "بروزرسانی برنامه", subtitle: "بررسی و نصب آخرین نسخه", icon: "🔄", defaultOpen: false },
                 RE(NmUpdateCard, null)
             ),
             )))
@@ -10253,19 +10247,14 @@ function App() {
             React.createElement("p", { className: "text-[11px] mb-4 leading-5", style: { color: "var(--text-muted)" } }, "\u0645\u062D\u062A\u0648\u0627\u06CC \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0627\u0645\u0644\u0627\u064B \u0642\u0627\u0628\u0644 \u0648\u06CC\u0631\u0627\u06CC\u0634\u060C \u0627\u0641\u0632\u0648\u062F\u0646 \u0648 \u062D\u0630\u0641 \u0627\u0633\u062A \u2014 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0645\u0637\u0627\u0628\u0642 \u0633\u0628\u06A9 \u06A9\u0627\u0631\u06CC \u062E\u0648\u062F\u062A \u062A\u063A\u06CC\u06CC\u0631\u0634 \u0628\u062F\u06CC."),
             RE(NmVersionCard, null),
             React.createElement("div", { className: "grid grid-cols-1 gap-2 mb-4" },
-                aboutSections.map((s, i) => (React.createElement("div", { key: s.id, className: "rounded-xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                    React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                        React.createElement("div", { className: "flex items-center gap-0.5 shrink-0" },
-                            React.createElement("button", { onClick: () => moveAboutSection(s.id, -1), disabled: i === 0, className: "p-1", style: { opacity: i === 0 ? 0.3 : 1 } },
-                                React.createElement(ChevronUp, { size: 16, color: "var(--text-muted)" })),
-                            React.createElement("button", { onClick: () => moveAboutSection(s.id, 1), disabled: i === aboutSections.length - 1, className: "p-1", style: { opacity: i === aboutSections.length - 1 ? 0.3 : 1 } },
-                                React.createElement(ChevronDown, { size: 16, color: "var(--text-muted)" }))),
-                        React.createElement("span", { className: "w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0", style: { background: "color-mix(in srgb, var(--accent-gold) 13%, transparent)", color: "var(--accent-gold)" } }, i + 1),
-                        React.createElement(AutoGrowTextarea, { value: s.title, onChange: e => updateAboutSectionTitle(s.id, e.target.value), className: "flex-1 bg-transparent outline-none text-sm font-semibold", style: { color: "var(--text-primary)", minWidth: 0 }, placeholder: "\u0639\u0646\u0648\u0627\u0646 \u0628\u062E\u0634..." }),
-                        React.createElement("button", { onClick: () => askDeleteConfirm("این بخش حذف بشه؟", () => deleteAboutSection(s.id)), className: "shrink-0" },
-                            React.createElement(Trash2, { size: 14, color: "var(--text-muted)" }))),
-                    React.createElement(AutoGrowTextarea, { value: s.content, onChange: e => updateAboutSectionContent(s.id, e.target.value), className: "w-full bg-transparent outline-none text-[12px] leading-6", style: { color: "var(--text-secondary)", minWidth: 0 }, placeholder: "\u0645\u062A\u0646 \u0627\u06CC\u0646 \u0628\u062E\u0634..." })))),
-                aboutSections.length === 0 && (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0647\u0646\u0648\u0632 \u0628\u062E\u0634\u06CC \u0627\u0636\u0627\u0641\u0647 \u0646\u0634\u062F\u0647."))),
+                aboutSections.map((s, i) => RE(NmAboutSectionCard, {
+                    key: s.id, section: s, index: i, total: aboutSections.length,
+                    onTitleChange: updateAboutSectionTitle,
+                    onContentChange: updateAboutSectionContent,
+                    onDelete: id => askDeleteConfirm("این بخش حذف بشه؟", () => deleteAboutSection(id)),
+                    onMove: moveAboutSection
+                })),
+                aboutSections.length === 0 && (React.createElement("div", { className: "rounded-xl p-6 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "هنوز بخشی اضافه نشده."))),
             React.createElement("div", { className: "rounded-xl p-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement(Field, { label: "\u0639\u0646\u0648\u0627\u0646 \u0628\u062E\u0634 \u062C\u062F\u06CC\u062F" },
                     React.createElement("input", { type: "text", value: newAboutTitle, onChange: e => setNewAboutTitle(e.target.value), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" }, placeholder: "\u0645\u062B\u0644\u0627\u064B: \u0633\u0648\u0627\u0644\u0627\u062A \u0645\u062A\u062F\u0627\u0648\u0644" })),
