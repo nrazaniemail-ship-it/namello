@@ -2348,12 +2348,12 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.7";
-const NM_VERSION_CODE = 8;
+const NM_VERSION_NAME = "1.0.9";
+const NM_VERSION_CODE = 9;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "بازطراحی لایه ژورنال و اصلاح چیدمان ثبت ورود";
 const NM_CHANGELOG = [
-    "نسخه 1.0.7: دکمه فوروارد بلااستفاده از کنترل‌های داخل کارت اپیزود حذف شد؛ Before/Next با رنگ تأکیدی نمایش داده می‌شوند؛ خطای ChevronLeft در پخش‌کننده شناور برطرف شد و آیکون‌های چپ/راست به‌صورت تعریف‌شده استفاده می‌شوند.",
+    "نسخه 1.0.9: دکمه فوروارد بلااستفاده از کنترل‌های داخل کارت اپیزود حذف شد؛ Before/Next با رنگ تأکیدی نمایش داده می‌شوند؛ خطای ChevronLeft در پخش‌کننده شناور برطرف شد و آیکون‌های چپ/راست به‌صورت تعریف‌شده استفاده می‌شوند.",
     "نسخه 1.0.0 اصلاحی: مثلث‌های جمع/باز داشبورد با همان استایل استاندارد تنظیمات یکسان شدند؛ باکس مدیریت جفت‌ارز از لایه ژورنال حذف شد و مدیریت/افزودن جفت‌ارز در فرم ثبت ورود حفظ شد؛ پروژه Native ویجت از بسته اصلی برنامه جدا نگه داشته شد.",
     "نسخه 1.0.0: بازطراحی Namello؛ امنیت، پشتیبان و ذخیره ابری با Namello Backend و حساب/Sync واقعی در یک سربرگ واحد ادغام شدند و سبک مثلث‌های جمع/باز شدن یکسان شد. ویجت اندروید نیز به‌صورت بستهٔ Native جداگانه آماده شده است.",
     "نسخه 1.22.31: عنوان داشبورد عملکرد دیگر حساب مبنا را نمایش نمی‌دهد؛ خلاصه حساب مبنا زیر تحلیل آماری و ارزیابی پیشرفته اضافه شد و تیترهای سه‌گانه Dashboard به‌صورت پررنگ‌تر نمایش داده می‌شوند.",
@@ -4477,7 +4477,7 @@ const NM_DISCIPLINE_OPTIONS = [
  ["high_risk","معامله پر ریسک"], ["wrong_sl","حدضرر اشتباه"], ["wrong_tp","حد سود اشتباه"],
  ["overtrade","over trade"], ["bad_session_event","نشست/رویداد نامناسب"], ["not_ready","عدم آمادگی"]
 ];
-const NM_DASH_DEFAULT_LAYOUT = ["kpi","equity","advanced","chartplan","plans","dayplananalysis","analytics","edge","intelligence","coach","excursion","session","setup","tags","discipline","dayplan","trades"];
+const NM_DASH_DEFAULT_LAYOUT = ["strategic","kpi","equity","advanced","chartplan","plans","dayplananalysis","analytics","edge","intelligence","coach","excursion","session","setup","tags","discipline","dayplan","trades"];
 function nmDashNum(v,digits=2){const n=Number(v);return Number.isFinite(n)?n.toLocaleString("en-US",{maximumFractionDigits:digits}):"—";}
 function nmDashPnl(v){const n=Number(v)||0;return `${n>=0?"+":""}${n.toLocaleString("en-US",{maximumFractionDigits:2})}`;}
 function nmDashR(t){if(t&&t.rMultiple!==undefined&&t.rMultiple!==null&&Number.isFinite(Number(t.rMultiple)))return Number(t.rMultiple);const p=Number(t&&t.pnl),r=Number(t&&t.riskDollar);return Number.isFinite(p)&&Number.isFinite(r)&&r>0?p/r:null;}
@@ -4583,314 +4583,28 @@ function NmDashWidget({id,title,children,onDragStart,onDragOver,onMove,defaultOp
  );
 }
 
-function nmAdvancedStats(trades, startingBalance=0){
- const a=(trades||[]).filter(t=>t.status==='closed'&&Number.isFinite(Number(t.pnl))).slice().sort((x,y)=>`${x.date||''}T${x.time||''}`.localeCompare(`${y.date||''}T${y.time||''}`));
- const vals=a.map(t=>Number(t.pnl)||0), rs=a.map(nmDashR).filter(v=>v!==null&&Number.isFinite(v));
- const mean=vals.length?vals.reduce((x,y)=>x+y,0)/vals.length:0;
- const sd=vals.length>1?Math.sqrt(vals.reduce((x,y)=>x+(y-mean)**2,0)/(vals.length-1)):0;
- const downside=a.map(t=>Math.min(0,Number(t.pnl)||0)), dsd=downside.length>1?Math.sqrt(downside.reduce((x,y)=>x+y*y,0)/(downside.length-1)):0;
- const rf=vals.length&&sd?mean/sd*Math.sqrt(252):null;
- const sortino=vals.length&&dsd?mean/dsd*Math.sqrt(252):null;
- let bal=Number(startingBalance)||0,peak=bal,maxDD=0; const dd=[];
- a.forEach(t=>{bal+=Number(t.pnl)||0;peak=Math.max(peak,bal);const d=peak-bal;maxDD=Math.max(maxDD,d);dd.push(d)});
- const totalReturn=Number(startingBalance)>0?(bal-startingBalance)/Number(startingBalance)*100:null;
- const calmar=totalReturn!==null&&maxDD>0?(bal-startingBalance)/maxDD:null;
- const grossW=vals.filter(x=>x>0).reduce((x,y)=>x+y,0),grossL=Math.abs(vals.filter(x=>x<0).reduce((x,y)=>x+y,0));
- const recovery=maxDD>0?(grossW-grossL)/maxDD:null;
- const ulcer=dd.length?Math.sqrt(dd.reduce((x,d)=>x+(bal?d/Math.max(1,Math.abs(bal))*100:0)**2,0)/dd.length):0;
- const holds=a.map(t=>{const st=t.date&&t.time?new Date(`${t.date}T${t.time}:00`):null;const en=t.closedDate&&t.closedTime?new Date(`${t.closedDate}T${t.closedTime}:00`):null;return st&&en&&!isNaN(st)&&!isNaN(en)?Math.max(0,(en-st)/60000):null}).filter(x=>x!==null);
- const avgHold=holds.length?holds.reduce((x,y)=>x+y,0)/holds.length:null;
- const setupVals=a.map(nmTradeSetupReadiness).filter(v=>v!==null),chartVals=a.map(nmTradeChartReadiness).filter(v=>v!==null),dayPlanVals=a.map(nmTradeDayPlanReadiness).filter(v=>v!==null);
- const avgSetupReadiness=setupVals.length?setupVals.reduce((x,y)=>x+y,0)/setupVals.length:null;
- const avgChartReadiness=chartVals.length?chartVals.reduce((x,y)=>x+y,0)/chartVals.length:null;
- const avgDayPlanReadiness=dayPlanVals.length?dayPlanVals.reduce((x,y)=>x+y,0)/dayPlanVals.length:null;
- const exits={early:0,efficient:0,roundTrip:0};
- a.forEach(t=>{const e=Number(t.exitEfficiency);const m=Number(t.mfe);const r=nmDashR(t);if(Number.isFinite(e)&&e<35)exits.early++;if(Number.isFinite(e)&&e>=70)exits.efficient++;if(Number.isFinite(m)&&m>0&&Number.isFinite(r)&&r<0)exits.roundTrip++;});
- return {count:a.length,mean,sd,sharpe:rf,sortino,calmar,recovery,ulcer,maxDD,totalReturn,avgHold,avgSetupReadiness,avgChartReadiness,avgDayPlanReadiness,exits,rs};
-}
-function nmTagStats(trades){
- const map={};(trades||[]).forEach(t=>(t.tags||[]).forEach(tag=>{const k=typeof tag==='string'?tag:(tag?.label||'');if(!k)return;map[k]??={count:0,pnl:0,wins:0};map[k].count++;map[k].pnl+=Number(t.pnl)||0;if(Number(t.pnl)>0)map[k].wins++;}));
- return Object.entries(map).map(([name,v])=>({...v,name,win:v.count?v.wins/v.count*100:0})).sort((a,b)=>b.pnl-a.pnl);
-}
-function nmExitInsight(t){
- const e=Number(t?.exitEfficiency),r=nmDashR(t),m=Number(t?.mfe);if(!Number.isFinite(e))return 'داده خروج کافی نیست';
- if(e<25 && Number.isFinite(m)&&m>0) return 'خروج زودهنگام / بخش بزرگی از حرکت از دست رفته';
- if(Number.isFinite(r)&&r<0&&Number.isFinite(m)&&m>0) return 'Round-trip: حرکت مطلوب ایجاد شد اما معامله با زیان بسته شد';
- if(e>=70) return 'خروج با بهره‌برداری مناسب از حرکت مطلوب';
- return 'خروج متوسط؛ برای بررسی دقیق‌تر به MFE/MAE نگاه کن';
-}
+function nmStrategicMean(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0;}
+function nmStrategicSd(a){if(a.length<2)return 0;const m=nmStrategicMean(a);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1));}
+function nmStrategicQuantile(a,q){if(!a.length)return null;const x=[...a].sort((u,v)=>u-v),i=(x.length-1)*q,l=Math.floor(i),h=Math.ceil(i);return l===h?x[l]:x[l]+(x[h]-x[l])*(i-l);}
+function nmStrategicSeeded(seed=0x9e3779b9){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};}
+function nmStrategicBootstrapR(rs,iterations=3000){if(rs.length<8)return {p:null,lo:null,hi:null};const rnd=nmStrategicSeeded(0x9e3779b9),means=[];for(let i=0;i<iterations;i++){let sum=0;for(let j=0;j<rs.length;j++)sum+=rs[(rnd()*rs.length)|0];means.push(sum/rs.length);}means.sort((a,b)=>a-b);const obs=nmStrategicMean(rs),p=means.filter(x=>x<=0).length/iterations;return{p,lo:nmStrategicQuantile(means,.025),hi:nmStrategicQuantile(means,.975),observed:obs,iterations};}
+function nmStrategicMonteCarlo(rs,paths=10000,steps=Math.min(300,Math.max(20,rs.length*2)),startingR=0,opts={}){if(rs.length<8)return{paths:0,steps,p05:null,p50:null,p95:null,probProfit:null,probDrawdown25:null,probDrawdown10:null,meanFinal:null};const rnd=nmStrategicSeeded(opts.seed||0x12345678),finals=[],dds=[],targets=Number(opts.targetR);for(let i=0;i<paths;i++){let eq=startingR,peak=eq,min=0;for(let j=0;j<steps;j++){const r=rs[(rnd()*rs.length)|0];eq+=r;peak=Math.max(peak,eq);min=Math.min(min,eq-peak);}finals.push(eq);dds.push(-min);}finals.sort((a,b)=>a-b);dds.sort((a,b)=>a-b);return{paths,steps,p05:nmStrategicQuantile(finals,.05),p50:nmStrategicQuantile(finals,.5),p95:nmStrategicQuantile(finals,.95),probProfit:finals.filter(x=>x>startingR).length/paths,probTarget:Number.isFinite(targets)?finals.filter(x=>x>=targets).length/paths:null,probDrawdown10:dds.filter(x=>x>=10).length/paths,probDrawdown25:dds.filter(x=>x>=25).length/paths,meanFinal:nmStrategicMean(finals)};}
+function nmStrategicMonteCarloWorker(rs,paths=10000,steps=100,startingR=0){return new Promise(resolve=>{if(typeof Worker==='undefined'||typeof Blob==='undefined'){resolve(nmStrategicMonteCarlo(rs,paths,steps,startingR));return;}const code=`self.onmessage=function(e){const d=e.data,r=d.rs,paths=d.paths,steps=d.steps,start=d.start;let seed=305419896;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};const q=(a,p)=>{const x=a.slice().sort((u,v)=>u-v),i=(x.length-1)*p,l=Math.floor(i),h=Math.ceil(i);return l===h?x[l]:x[l]+(x[h]-x[l])*(i-l)};const finals=[],dds=[];for(let i=0;i<paths;i++){let eq=start,peak=start,min=0;for(let j=0;j<steps;j++){eq+=r[(rnd()*r.length)|0];peak=Math.max(peak,eq);min=Math.min(min,eq-peak)}finals.push(eq);dds.push(-min)}finals.sort((a,b)=>a-b);dds.sort((a,b)=>a-b);self.postMessage({paths,steps,p05:q(finals,.05),p50:q(finals,.5),p95:q(finals,.95),probProfit:finals.filter(x=>x>start).length/paths,probDrawdown10:dds.filter(x=>x>=10).length/paths,probDrawdown25:dds.filter(x=>x>=25).length/paths,meanFinal:finals.reduce((a,b)=>a+b,0)/paths});};`;let url=URL.createObjectURL(new Blob([code],{type:'application/javascript'})),w=new Worker(url);w.onmessage=e=>{resolve(e.data);w.terminate();URL.revokeObjectURL(url)};w.onerror=()=>{w.terminate();URL.revokeObjectURL(url);resolve(nmStrategicMonteCarlo(rs,paths,steps,startingR))};w.postMessage({rs,paths,steps,start:startingR});});}
+function nmStrategicKelly(rs){const wins=rs.filter(x=>x>0),loss=rs.filter(x=>x<0).map(Math.abs);if(!wins.length||!loss.length)return{full:null,half:null,quarter:null};const p=wins.length/rs.length,q=1-p,b=nmStrategicMean(wins)/nmStrategicMean(loss),full=b>0?(p-q/b):null;return{full,half:full==null?null:full*.5,quarter:full==null?null:full*.25};}
+function nmStrategicDrawdown(rs){let e=0,peak=0,dd=0,under=0,maxUnder=0,ulcer=[];for(const r of rs){e+=r;peak=Math.max(peak,e);const d=Math.max(0,peak-e);dd=Math.max(dd,d);if(d>0){under++;maxUnder=Math.max(maxUnder,under)}else under=0;ulcer.push(d);}return{maxDD:dd,avgDD:ulcer.length?nmStrategicMean(ulcer):0,timeUnderwater:maxUnder,ulcerIndex:ulcer.length?Math.sqrt(nmStrategicMean(ulcer.map(x=>x*x))):0};}
+function nmStrategicRuin(rs,fraction=.01,ruinLevel=.5){if(!rs.length)return null;const wins=rs.filter(x=>x>0),loss=rs.filter(x=>x<0).map(Math.abs),p=wins.length/rs.length,q=1-p,b=loss.length?nmStrategicMean(wins)/nmStrategicMean(loss):null;if(!Number.isFinite(b)||b<=0||p<=q/b)return 1;const f=Math.max(0.0001,Math.min(.25,fraction)),a=(1-f)**(-1),r=Math.max(1,Math.round(ruinLevel/f));return Math.min(1,Math.pow((q/p),Math.max(1,r))*(a-1));}
+function nmStrategicOHLCFeatures(t){const rows=nmNormalizeBridgeOHLC(t?.ohlcPath||t?.ohlc||t?.bars||[]);if(rows.length<15)return null;const trs=rows.map((r,i)=>i?Math.max(r.high-r.low,Math.abs(r.high-rows[i-1].close),Math.abs(r.low-rows[i-1].close)):r.high-r.low);const period=Math.min(14,rows.length-1),atr=nmStrategicMean(trs.slice(-period));const closes=rows.map(r=>r.close),n=closes.length,chg=closes[n-1]-closes[Math.max(0,n-period-1)],sumAbs=closes.slice(1).reduce((s,c,i)=>s+Math.abs(c-closes[i]),0),er=sumAbs?Math.abs(chg)/sumAbs:0;let plus=0,minus=0,adxSum=0;for(let i=Math.max(1,n-14);i<n;i++){const up=rows[i].high-rows[i-1].high,down=rows[i-1].low-rows[i].low;if(up>down&&up>0)plus+=up;if(down>up&&down>0)minus+=down;}const dx=plus+minus?Math.abs(plus-minus)/(plus+minus)*100:0;adxSum=dx;const vol=closes[n-1]?(atr/Math.abs(closes[n-1]))*100:null;const trend=adxSum>=25&&er>=.35?'Trend':adxSum<18||er<.2?'Range':'Transition';const volatility=vol==null?'Unknown':vol<.15?'Low':vol<.45?'Medium':'High';return{atr,atrPct:vol,adx:adxSum,efficiencyRatio:er,trend,volatility,bars:n};}
+function nmStrategicDateParts(t){const d=new Date(`${t?.date||''}T${t?.time||'12:00'}`);if(!Number.isFinite(d.getTime()))return{hour:null,weekday:null};return{hour:d.getHours(),weekday:d.getDay()};}
+function nmStrategicRegimes(trades){const rows=(trades||[]).filter(t=>t.status==='closed'&&Number.isFinite(Number(t.pnl)));const groups={};const add=(key,t)=>{if(!key)return;(groups[key]??=[]).push(t)};rows.forEach(t=>{const r=nmDashR(t);if(!Number.isFinite(r))return;const f=nmStrategicOHLCFeatures(t);if(f){add(`Volatility · ${f.volatility}`,t);add(`Structure · ${f.trend}`,t);}const dp=nmStrategicDateParts(t);if(dp.hour!=null)add(`Hour · ${String(dp.hour).padStart(2,'0')}:00`,t);if(dp.weekday!=null)add(`Day · ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dp.weekday]}`,t);add(`Session · ${nmDashSession(t)}`,t);add(`Setup · ${nmDashSetup(t)}`,t);if(t.marketBias)add(`Bias · ${t.marketBias}`,t);});const summarize=(name,ts)=>{const rs=ts.map(nmDashR).filter(Number.isFinite),m=rs.length?nmStrategicMean(rs):null;return{name,count:ts.length,expectancy:m,sd:rs.length>1?nmStrategicSd(rs):null,winRate:ts.length?ts.filter(t=>Number(t.pnl)>0).length/ts.length*100:0,ci95:rs.length>=5?[m-1.96*(nmStrategicSd(rs)/Math.sqrt(rs.length)),m+1.96*(nmStrategicSd(rs)/Math.sqrt(rs.length))]:null};};return Object.values(groups).map((ts,i)=>summarize(Object.keys(groups)[i],ts)).sort((a,b)=>(b.expectancy??-999)-(a.expectancy??-999));}
+function nmStrategicConditional(trades,keyFns,minN=5){const map={};(trades||[]).forEach(t=>{const keys=keyFns.map(f=>f(t));if(keys.some(k=>!k))return;const k=keys.join(' × ');(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const rs=ts.map(nmDashR).filter(Number.isFinite),e=nmStrategicMean(rs);return{name,count:rs.length,expectancy:e,winRate:ts.length?ts.filter(t=>Number(t.pnl)>0).length/ts.length*100:0,stable:rs.length>=minN};}).filter(x=>x.count>=minN).sort((a,b)=>b.expectancy-a.expectancy);}
+function nmStrategicInteractions(trades){return nmStrategicConditional(trades,[t=>nmDashSetup(t),t=>t.marketBias||'بدون Bias',t=>nmDashSession(t)],5).slice(0,20);}
+function nmStrategicRolling(trades,window=10){const a=(trades||[]).filter(t=>t.status==='closed'&&Number.isFinite(nmDashR(t))).slice().sort((x,y)=>`${x.date||''}T${x.time||''}`.localeCompare(`${y.date||''}T${y.time||''}`)),out=[];for(let i=window-1;i<a.length;i++){const rs=a.slice(i-window+1,i+1).map(nmDashR),e=nmStrategicMean(rs);out.push({index:i,end:a[i].date||'',expectancy:e,count:rs.length});}if(out.length<3)return{points:out,decay:null,trend:'insufficient'};const half=Math.max(1,Math.floor(out.length/2)),early=nmStrategicMean(out.slice(0,half).map(x=>x.expectancy)),late=nmStrategicMean(out.slice(-half).map(x=>x.expectancy)),delta=late-early;return{points:out,early,late,decay:delta,trend:delta<-0.15?'decaying':delta>0.15?'improving':'stable'};}
+function nmStrategicBehavior(trades){const a=(trades||[]).filter(t=>t.status==='closed').slice().sort((x,y)=>`${x.date||''}T${x.time||''}`.localeCompare(`${y.date||''}T${y.time||''}`));let revenge=0,over=0,disc=0,discN=0,revengePnl=0,normalPnl=0;for(let i=1;i<a.length;i++){const gap=a[i].date&&a[i-1].date?Math.abs(new Date(`${a[i].date}T${a[i].time||'00:00'}`)-new Date(`${a[i-1].date}T${a[i-1].time||'00:00'}`))/60000:999;if(Number(a[i-1].pnl)<0&&Number.isFinite(Number(a[i].pnl))&&gap<=30){revenge++;revengePnl+=Number(a[i].pnl)}else if(Number.isFinite(Number(a[i].pnl)))normalPnl+=Number(a[i].pnl);if(Number(a[i-1].pnl)>0&&Number(a[i].riskDollar)>Number(a[i-1].riskDollar)*1.25)over++;}a.forEach(t=>{const x=t.disciplineMistakes||t.review?.mistakes||[];if(!x.length)disc++;discN++;});return{revenge,overconfidence:over,disciplineScore:discN?disc/discN*100:null,revengeAvg:revenge?revengePnl/revenge:null,normalAvg:normalPnl/Math.max(1,a.length-revenge-1)};}
+function nmStrategicStress(rs){const scenarios=[['Base',1,0],['Win-rate -10%',.9,0],['Loss-size +20%',1.1,-1],['Edge -25%',.75,0],['Costs +0.2R',1,-.2]];return scenarios.map(([name,scale,cost])=>{const x=rs.map(r=>r>0?r*scale:r*Math.abs(scale)+cost);return{name,expectancy:nmStrategicMean(x),maxDD:nmStrategicDrawdown(x).maxDD};});}
+function nmStrategicCapacity(trades){const risks=(trades||[]).map(t=>Number(t.riskDollar)).filter(x=>Number.isFinite(x)&&x>0);if(!risks.length)return null;const med=nmStrategicQuantile(risks,.5),p95=nmStrategicQuantile(risks,.95);return{medianRisk:med,p95Risk:p95,concentration:p95/Math.max(.0001,med),note:p95>med*3?'سایز ریسک پراکندگی بالایی دارد.':'پراکندگی سایز ریسک کنترل‌پذیر است.'};}
+function nmStrategicGoalFeasibility(rs,startingR=0){const e=nmStrategicMean(rs);return{monthlyEquivalent:e*Math.min(22,rs.length),edgePerTrade:e,breakEven:e>0,comment:e>0?'هدف رشد از نظر Edge نمونه فعلاً از نظر آماری ممکن است؛ تضمینی نیست.':'با Edge فعلی، هدف رشد نیازمند بازنگری در نمونه یا مزیت است.'};}
+function nmStrategicEngine(trades,startingBalance=0){const a=(trades||[]).filter(t=>t.status==='closed'&&Number.isFinite(Number(t.pnl))),rs=a.map(nmDashR).filter(Number.isFinite);if(rs.length<8)return{sample:rs.length,ready:false,confidence:'insufficient',metrics:null,regimes:[],behavior:null,mc:null,narrative:['برای تفسیر استراتژیک حداقل ۸ معامله با R معتبر لازم است.'],recommendations:['ابتدا R-multiple، ریسک هر معامله و شرایط ورود/خروج را ثبت کن.'],rolling:null,interactions:[],stress:[],capacity:null,goal:null};const mean=nmStrategicMean(rs),sd=nmStrategicSd(rs),wins=rs.filter(x=>x>0),loss=rs.filter(x=>x<0),payoff=loss.length?nmStrategicMean(wins)/nmStrategicMean(loss.map(Math.abs)):null,pf=loss.length?wins.reduce((x,y)=>x+y,0)/loss.reduce((x,y)=>x+y,0):wins.length?Infinity:0,sqn=sd?Math.sqrt(rs.length)*mean/sd:null,boot=nmStrategicBootstrapR(rs),kelly=nmStrategicKelly(rs),dd=nmStrategicDrawdown(rs),mc=nmStrategicMonteCarlo(rs,10000,Math.min(300,Math.max(30,rs.length*2))),ruin=nmStrategicRuin(rs,0.01,.5),regimes=nmStrategicRegimes(a),behavior=nmStrategicBehavior(a),rolling=nmStrategicRolling(a,Math.min(12,Math.max(8,Math.floor(rs.length/3)))),interactions=nmStrategicInteractions(a),stress=nmStrategicStress(rs),capacity=nmStrategicCapacity(a),goal=nmStrategicGoalFeasibility(rs,startingBalance),weak=regimes.filter(x=>x.count>=5&&x.expectancy<0).slice(0,4),strong=regimes.filter(x=>x.count>=5&&x.expectancy>0).slice(0,4);const status=mean>0&&boot.p<.05?'positive edge':mean>0?'promising but uncertain':'no reliable positive edge';const narrative=[];narrative.push(status==='positive edge'?`Edge مثبت است: ${mean.toFixed(2)}R با CI95% ${boot.lo.toFixed(2)} تا ${boot.hi.toFixed(2)}R و Bootstrap p=${boot.p.toFixed(3)}.`:status==='promising but uncertain'?`میانگین Edge ${mean.toFixed(2)}R است اما شواهد آماری هنوز قطعی نیست.`:`در نمونه فعلی Edge مثبت و قابل اتکا مشاهده نشد؛ میانگین ${mean.toFixed(2)}R است.`);if(rolling?.trend==='decaying')narrative.push(`Rolling Expectancy در حال افت است (${rolling.early.toFixed(2)}R → ${rolling.late.toFixed(2)}R)؛ احتمال Decay باید در نمونه مستقل بررسی شود.`);if(weak.length)narrative.push(`رژیم‌های ضعیف: ${weak.map(x=>`${x.name} ${x.expectancy.toFixed(2)}R`).join('، ')}.`);if(interactions.length&&interactions[0].expectancy>mean+.2)narrative.push(`یک ترکیب Setup × Bias × Session با Edge مشروط بهتر از میانگین پیدا شد؛ برای جلوگیری از overfitting اعتبارسنجی مستقل لازم است.`);if(behavior.revenge||behavior.overconfidence)narrative.push(`نشتی رفتاری: ${behavior.revenge} Revenge و ${behavior.overconfidence} مورد افزایش ریسک پس از برد.`);const recommendations=[];if(weak.length)recommendations.push(`رژیم ${weak[0].name} را در نمونه مستقل فیلتر آزمایشی کن، نه حذف قطعی.`);if(rolling?.trend==='decaying')recommendations.push('Decay را با پنجره Rolling ثابت و نمونه out-of-sample پایش کن.');if(interactions.length)recommendations.push('بهترین Interaction را فقط با حداقل نمونه و اعتبارسنجی خارج از نمونه وارد قانون کن.');if(behavior.revenge)recommendations.push('Cooldown پس از ضرر تعریف و اثر آن را جداگانه اندازه‌گیری کن.');if(behavior.overconfidence)recommendations.push('سقف افزایش ریسک پس از بردهای متوالی تعیین کن.');if(mean>0&&kelly.quarter!=null)recommendations.push(`Quarter-Kelly حدود ${(kelly.quarter*100).toFixed(1)}٪ است؛ برای اجرای واقعی محافظه‌کارانه‌تر باش.`);if(mc.probDrawdown25>.25)recommendations.push(`Monte Carlo احتمال DD≥25R را ${(mc.probDrawdown25*100).toFixed(0)}٪ نشان می‌دهد؛ سقف DD را در پلن لحاظ کن.`);return{sample:rs.length,ready:true,confidence:status,metrics:{expectancyR:mean,sdR:sd,payoffRatio:payoff,profitFactor:pf,sqn,bootstrapP:boot.p,ci95:[boot.lo,boot.hi],kelly,drawdown:dd,riskOfRuin:ruin},regimes,strong,weak,behavior,mc,rolling,interactions,stress,capacity,goal,narrative,recommendations};}
 
-
-const NM_DEFAULT_TRADE_PLAN = {
-  id: "core-trade-plan", name: "برنامه اصلی معامله", scope: "trade",
-  conditions: [
-    { id:"setup", type:"checkbox", label:"ستاپ معتبر است" },
-    { id:"prep", type:"checkbox", label:"آماده‌سازی کامل انجام شد" },
-    { id:"risk", type:"checkbox", label:"ریسک در محدوده مجاز است" },
-    { id:"sl", type:"checkbox", label:"حدضرر طبق پلن است" },
-    { id:"tp", type:"checkbox", label:"حدسود طبق پلن است" },
-    { id:"session", type:"checkbox", label:"زمان/نشست مناسب است" },
-    { id:"news", type:"checkbox", label:"خبر پرریسک بررسی شد" },
-    { id:"emotion", type:"checkbox", label:"آمادگی ذهنی" },
-    { id:"conviction", type:"checkbox", label:"اعتماد به معامله" }
-  ]
-};
-const NM_DEFAULT_DAY_PLAN = {
-  id:"core-day-plan", name:"برنامه روزانه معامله", scope:"day",
-  conditions:[
-    {id:"sleep",type:"checkbox",label:"آمادگی و خواب مناسب"},
-    {id:"calendar",type:"checkbox",label:"تقویم اخبار بررسی شد"},
-    {id:"levels",type:"checkbox",label:"سطوح مهم مشخص شد"},
-    {id:"riskbudget",type:"checkbox",label:"بودجه ریسک روز مشخص شد"},
-    {id:"goal",type:"text",label:"هدف اصلی روز"}
-  ]
-};
-const NM_DEFAULT_CHART_CONDITIONS = [
-  {id:"chart_key_levels",type:"checkbox",label:"PMH/L, PWH/L, PDH/L, Daily key level, P4HH/L"},
-  {id:"chart_daily_direction",type:"checkbox",label:"تعیین جهت روند / کندل روزانه"},
-  {id:"chart_fvg_ls",type:"checkbox",label:"تعیین FVG و LS ها در H1، H4، D"},
-  {id:"chart_sessions",type:"checkbox",label:"Sessions H/L in M15، Asia %50"},
-  {id:"chart_ict_main",type:"checkbox",label:"ساختار ICT تایم اصلی (شامل پترن‌های نقدینگی و مناطق عرضه و تقاضا)"},
-  {id:"chart_ict_entry",type:"checkbox",label:"ساختار ICT تایم ورود (شامل پترن‌های نقدینگی)"}
-];
-const NM_DEFAULT_CHART_PLAN = { id:"core-chart-plan", name:"ارزیابی چارت", scope:"chart", conditions:NM_DEFAULT_CHART_CONDITIONS };
-function nmPlanAnswerStatus(v){ return v===true ? "yes" : v===false ? "no" : (v==null||v==="" ? "unanswered" : "answered"); }
-function nmPlanAdherence(trade, plan){
-  const answerKey=plan?.scope==='chart'?'chartAnswers':plan?.scope==='day'?'dayPlanAnswers':'planAnswers'; const a=trade?.review?.[answerKey]?.answers||{}; const rows=(plan?.conditions||[]).map(c=>({id:c.id,label:c.label,type:c.type,status:nmPlanAnswerStatus(a[c.id]),value:a[c.id]}));
-  const answered=rows.filter(x=>x.status!=="unanswered"), yes=rows.filter(x=>x.status==="yes").length, no=rows.filter(x=>x.status==="no").length;
-  return {rows,answered,yes,no,rate:answered.length?Math.round(yes/answered.length*100):null};
-}
-function NmPlanBuilder({plans,setPlans,dayPlans,setDayPlans,chartPlans,setChartPlans,onClose}){
-  const [scope,setScope]=React.useState('chart');
-  const [selectedId,setSelectedId]=React.useState(null);
-  const [draft,setDraft]=React.useState([]);
-  const list=scope==='trade'?plans:scope==='day'?dayPlans:chartPlans;
-  const setList=scope==='trade'?setPlans:scope==='day'?setDayPlans:setChartPlans;
-  React.useEffect(()=>{
-    const base=(list||[]).find(x=>x.id===selectedId)||(list||[])[0]||null;
-    setSelectedId(base?.id||null);
-    setDraft(base?.conditions||[]);
-  },[scope,list,selectedId]);
-  const select=(p)=>{setSelectedId(p.id);setDraft(p.conditions||[])};
-  const add=()=>setDraft(a=>[...a,{id:'c'+Date.now().toString(36),type:'checkbox',label:'شرط جدید',options:[]}]);
-  const update=(i,k,v)=>setDraft(a=>a.map((x,n)=>n===i?{...x,[k]:v}:x));
-  const save=()=>{
-    if(!selectedId) return;
-    setList((list||[]).map(x=>x.id===selectedId?{...x,conditions:draft}:x));
-  };
-  const remove=(id)=>{
-    if(['core-chart-plan','core-trade-plan','core-day-plan'].includes(id)) return;
-    const next=(list||[]).filter(x=>x.id!==id);setList(next);
-    const n=next[0];setSelectedId(n?.id||null);setDraft(n?.conditions||[]);
-  };
-  const move=(id,dir)=>{
-    const i=(list||[]).findIndex(x=>x.id===id);const j=i+dir;
-    if(i<0||j<0||j>=list.length)return;
-    const n=[...list];[n[i],n[j]]=[n[j],n[i]];setList(n);
-  };
-  const active=(list||[]).find(x=>x.id===selectedId)||null;
-  return React.createElement('div',{className:'fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-2',style:{background:'rgba(0,0,0,.78)'}},
-    React.createElement('div',{className:'w-full max-w-2xl rounded-2xl p-4 max-h-[90vh] overflow-y-auto',style:{background:'var(--bg-page)',border:'1px solid var(--border-1)'}},
-      React.createElement('div',{className:'flex justify-between mb-3'},
-        React.createElement('div',null,
-          React.createElement('b',{className:'text-sm'},'مدیریت Chart / Trade / Day Plan'),
-          React.createElement('div',{className:'text-[9px] mt-1',style:{color:'var(--text-muted)'}},'در این نسخه مدیریت مستقیماً روی شروط هر برنامه انجام می‌شود؛ باکس نام و افزودن برنامه حذف شده است.')
-        ),
-        React.createElement('button',{onClick:onClose},'✕')
-      ),
-      React.createElement('div',{className:'grid grid-cols-3 gap-2 mb-3',style:{direction:'rtl'}},
-        [['chart','Chart'],['trade','Trade Plan'],['day','Day Plan']].map(([x,l])=>
-          React.createElement('button',{key:x,onClick:()=>setScope(x),className:'py-2.5 rounded-xl text-[11px] font-semibold',style:{background:scope===x?'color-mix(in srgb, var(--accent-gold) 16%, transparent)':'var(--bg-card2)',color:scope===x?'var(--accent-gold)':'var(--text-secondary)',border:'1px solid '+(scope===x?'color-mix(in srgb, var(--accent-gold) 35%, transparent)':'var(--border-1)')}},l)
-        )
-      ),
-      React.createElement('div',{className:'grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4'},
-        (list||[]).map((p,i)=>React.createElement('div',{key:p.id,className:'rounded-xl p-2',style:{background:p.id===selectedId?'color-mix(in srgb, var(--accent-gold) 8%, var(--bg-card))':'var(--bg-card)',border:'1px solid '+(p.id===selectedId?'color-mix(in srgb, var(--accent-gold) 30%, var(--border-1))':'var(--border-1)')}},
-          React.createElement('button',{className:'w-full text-right text-[11px] font-semibold',onClick:()=>select(p),style:{color:'var(--text-primary)'}},p.name),
-          React.createElement('div',{className:'mt-2 text-[9px]',style:{color:'var(--text-muted)'}},`${(p.conditions||[]).length} شرط چک‌لیست`)
-        ))
-      ),
-      draft.map((c,i)=>React.createElement('div',{key:c.id,className:'rounded-xl p-3 mb-2',style:{background:'var(--bg-card2)',border:'1px solid var(--border-1)'}},
-        React.createElement('div',{className:'flex gap-2 mb-2'},
-          React.createElement('div',{className:'flex gap-0.5'},
-            React.createElement('button',{onClick:()=>setDraft(a=>{if(i===0)return a;const n=[...a];[n[i-1],n[i]]=[n[i],n[i-1]];return n}),disabled:i===0},React.createElement(ChevronUp,{size:13})),
-            React.createElement('button',{onClick:()=>setDraft(a=>{if(i===a.length-1)return a;const n=[...a];[n[i+1],n[i]]=[n[i],n[i+1]];return n}),disabled:i===draft.length-1},React.createElement(ChevronDown,{size:13}))
-          ),
-          React.createElement('select',{value:c.type,onChange:e=>update(i,'type',e.target.value),className:'rounded-lg px-2 text-[10px]',style:{background:'var(--bg-page)',color:'var(--text-primary)'}},['checkbox','category','number','text','multi'].map(x=>React.createElement('option',{key:x,value:x},x))),
-          React.createElement('textarea',{value:c.label,onChange:e=>update(i,'label',e.target.value),rows:1,className:'flex-1 bg-transparent outline-none text-[11px]',style:{color:'var(--text-primary)',resize:'none',minHeight:28,lineHeight:1.6,overflowY:'hidden',whiteSpace:'pre-wrap',overflowWrap:'anywhere'},onInput:e=>{e.currentTarget.style.height='auto';e.currentTarget.style.height=e.currentTarget.scrollHeight+'px';}}),
-          React.createElement('button',{onClick:()=>setDraft(a=>a.filter((_,n)=>n!==i))},React.createElement(Trash2,{size:13,color:'#F87171'}))
-        ),
-        ['category','multi'].includes(c.type)&&React.createElement('input',{value:(c.options||[]).join(', '),onChange:e=>update(i,'options',e.target.value.split(',').map(x=>x.trim()).filter(Boolean)),placeholder:'گزینه‌ها با , جدا شوند',className:'w-full bg-transparent outline-none text-[10px]',style:{color:'var(--text-secondary)'}})
-      )),
-      active && React.createElement('button',{onClick:add,className:'w-full py-2 rounded-lg text-[11px] mb-2',style:{background:'var(--bg-card2)',color:'var(--accent-gold)'}},'+ افزودن شرط'),
-      active && React.createElement('button',{onClick:save,className:'w-full py-3 rounded-xl text-sm',style:{background:'var(--accent-gold)',color:'var(--bg-page)'}},'ذخیره شروط')
-    )
-  );
-}
-
-function NmDayPlanToday({plans,todayStr}){
- const plan=plans?.[0]; const key="namello_day_plan_answers_v1_"+(todayStr||new Date().toISOString().slice(0,10));
- const [answers,setAnswers]=React.useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
- if(!plan) return null;
- const update=(id,v)=>{const n={...answers,[id]:v};setAnswers(n);try{localStorage.setItem(key,JSON.stringify(n));const hk="namello_day_plan_history_v1";const hist=JSON.parse(localStorage.getItem(hk)||"{}");hist[todayStr||new Date().toISOString().slice(0,10)]={planId:plan.id,answers:n,updatedAt:new Date().toISOString()};localStorage.setItem(hk,JSON.stringify(hist))}catch(e){}};
- const items=(plan.conditions||[]).map(c=>{
-   let control;
-   if(c.type==="checkbox") control=React.createElement("div",{className:"flex gap-1"},
-     React.createElement("button",{onClick:()=>update(c.id,true),className:"px-2 py-1 rounded",style:{background:answers[c.id]===true?"color-mix(in srgb, var(--accent-gold) 18%, transparent)":"var(--bg-card2)",color:answers[c.id]===true?"var(--accent-gold)":"var(--text-muted)"}},"✓"),
-     React.createElement("button",{onClick:()=>update(c.id,false),className:"px-2 py-1 rounded",style:{background:answers[c.id]===false?"color-mix(in srgb, var(--accent-gold) 18%, transparent)":"var(--bg-card2)",color:answers[c.id]===false?"var(--accent-gold)":"var(--text-muted)"}},"✕"),
-     React.createElement("button",{onClick:()=>update(c.id,null),className:"px-2 py-1 rounded",style:{background:answers[c.id]==null?"color-mix(in srgb, var(--accent-gold) 18%, transparent)":"var(--bg-card2)",color:answers[c.id]==null?"var(--accent-gold)":"var(--text-muted)"}},"—"));
-   else control=React.createElement("input",{value:answers[c.id]||"",onChange:e=>update(c.id,e.target.value),className:"w-32 rounded px-2 py-1 bg-transparent text-[10px]",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}});
-   return React.createElement("div",{key:c.id,className:"flex items-center justify-between gap-2 py-1.5"},React.createElement("span",{className:"text-[10px]",style:{color:"var(--text-secondary)",flex:1,minWidth:0,whiteSpace:"normal",overflowWrap:"anywhere",lineHeight:1.75}},c.label),control);
- });
- return React.createElement("div",{className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},[
-   React.createElement("div",{key:"h",className:"flex justify-between items-center mb-2"},React.createElement("b",{className:"text-[12px]",style:{color:"var(--accent-gold)"}},plan.name),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},todayStr||"today")),
-   ...items
- ]);
-}
-function NmPlanAnalysis({trades,plans}){
- const closed=(trades||[]).filter(t=>t.status==="closed"), plan=plans?.[0]; if(!plan) return null;
- const answerKey=plan.scope==='chart'?'chartAnswers':plan.scope==='day'?'dayPlanAnswers':'planAnswers';
- const rows=(plan.conditions||[]).map(c=>{
-   const vals=closed.map(t=>t?.review?.[answerKey]?.answers||{}).filter(a=>Object.prototype.hasOwnProperty.call(a,c.id)&&a[c.id]!==null&&a[c.id]!=="").map(a=>a[c.id]);
-   const ts=closed.filter(t=>Object.prototype.hasOwnProperty.call(t?.review?.[answerKey]?.answers||{},c.id)&&t.review[answerKey]?.answers[c.id]!==null&&t.review[answerKey]?.answers[c.id]!=="");
-   const pnl=a=>a.reduce((s,t)=>s+(Number(t.pnl)||0),0);
-   const yes=ts.filter(t=>t.review[answerKey].answers[c.id]===true), no=ts.filter(t=>t.review[answerKey].answers[c.id]===false);
-   const numeric=ts.map(t=>Number(t.review[answerKey].answers[c.id])).filter(Number.isFinite);
-   const cats={}; vals.filter(v=>typeof v==="string"&&!String(v).match(/^[-+]?\d+(\.\d+)?$/)).forEach(v=>{const k=String(v);cats[k]??={count:0,pnl:0};cats[k].count++;const t=ts.find(x=>String(x.review[answerKey].answers[c.id])===k);cats[k].pnl+=Number(t?.pnl)||0;});
-   return {...c,answered:ts.length,yes:yes.length,no:no.length,unanswered:closed.length-ts.length,yesRate:ts.length?Math.round(yes.length/ts.length*100):null,yesPnl:pnl(yes),noPnl:pnl(no),avgNumber:numeric.length?numeric.reduce((a,b)=>a+b,0)/numeric.length:null,cats:Object.entries(cats).sort((a,b)=>b[1].count-a[1].count)};
- });
- return React.createElement("div",{className:"rounded-2xl p-3 mb-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-2"},React.createElement("b",{className:"text-[12px]",style:{color:"var(--accent-gold)"}},(plan.scope==='chart'?"Chart Analysis · ":plan.scope==='day'?"Day Plan Analysis · ":"Trade Plan Analysis · ")+plan.name),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},closed.length+" معامله")),rows.map(r=>React.createElement("div",{key:r.id,className:"rounded-lg p-2 mb-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"flex justify-between text-[10px]"},React.createElement("span",null,r.label),React.createElement("span",{style:{color:r.yesRate==null?"var(--text-muted)":r.yesRate>=70?"#34D399":"#F87171"}},r.type==="checkbox"?(r.yesRate==null?"بی‌پاسخ":r.yesRate+"% رعایت"):r.type==="number"?(r.avgNumber==null?"بدون داده":"میانگین "+nmDashNum(r.avgNumber,1)):r.answered+" پاسخ")),React.createElement("div",{className:"flex flex-wrap gap-3 text-[9px] mt-1",style:{color:"var(--text-muted)"}},r.type==="checkbox"&&React.createElement(React.Fragment,null,React.createElement("span",null,"✓ "+r.yes),React.createElement("span",null,"✕ "+r.no),React.createElement("span",null,"— "+r.unanswered),React.createElement("span",{style:{color:r.yesPnl>=0?"#34D399":"#F87171"}},"رعایت: "+r.yesPnl),React.createElement("span",{style:{color:r.noPnl>=0?"#34D399":"#F87171"}},"نقض: "+r.noPnl)),r.type!=="checkbox"&&r.cats.slice(0,4).map(([k,v])=>React.createElement("span",{key:k},`${k}: ${v.count} · ${nmDashPnl(v.pnl)}`))))));
-}
-
-function nmAnalyticsGroup(trades,keyFn){
- const groups={};(trades||[]).forEach(t=>{const k=keyFn(t);if(k===null||k===undefined||k==="")return;(groups[k]??=[]).push(t);});
- return Object.entries(groups).map(([key,ts])=>{const pnl=ts.reduce((s,t)=>s+(Number(t.pnl)||0),0),rs=ts.map(nmDashR).filter(v=>v!==null&&Number.isFinite(v));return {key,count:ts.length,pnl,avgPnl:ts.length?pnl/ts.length:0,winRate:ts.length?ts.filter(t=>Number(t.pnl)>0).length/ts.length*100:0,avgR:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null};});
-}
-function nmCorrelationAnalytics(trades,plans){
- const closed=(trades||[]).filter(t=>t.status==="closed"&&Number.isFinite(Number(t.pnl)));
- const rows=[];
- (plans||[]).forEach(plan=>{
-  const answerKey=plan.scope==='chart'?'chartAnswers':plan.scope==='day'?'dayPlanAnswers':'planAnswers';
-  (plan.conditions||[]).forEach(c=>{
-   if(c.type!=="checkbox")return;
-   const answered=closed.filter(t=>{const a=t.review?.[answerKey]?.answers||{};return a[c.id]===true||a[c.id]===false;});
-   if(answered.length<2)return;
-   const yes=answered.filter(t=>t.review?.[answerKey]?.answers?.[c.id]===true),no=answered.filter(t=>t.review?.[answerKey]?.answers?.[c.id]===false);
-   const avg=a=>a.length?a.reduce((s,t)=>s+(Number(t.pnl)||0),0)/a.length:null;
-   rows.push({id:c.id,label:c.label,answered:answered.length,yes:yes.length,no:no.length,yesAvg:avg(yes),noAvg:avg(no),delta:avg(yes)!==null&&avg(no)!==null?avg(yes)-avg(no):null,yesWin:yes.length?yes.filter(t=>Number(t.pnl)>0).length/yes.length*100:null,noWin:no.length?no.filter(t=>Number(t.pnl)>0).length/no.length*100:null,scope:plan.scope||'trade'});
-  });
- });
- const mistakes={};closed.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>{mistakes[k]??=[];mistakes[k].push(t);}));
- const discipline=Object.entries(mistakes).map(([key,ts])=>({key,count:ts.length,pnl:ts.reduce((s,t)=>s+(Number(t.pnl)||0),0),avg:ts.reduce((s,t)=>s+(Number(t.pnl)||0),0)/ts.length}));
- const exit=closed.filter(t=>Number.isFinite(Number(t.exitEfficiency)));const early=exit.filter(t=>Number(t.exitEfficiency)<25),strong=exit.filter(t=>Number(t.exitEfficiency)>=75);
- return {closed,plan:rows,discipline,exit:{count:exit.length,early:early.length,earlyAvg:early.length?early.reduce((s,t)=>s+(Number(t.pnl)||0),0)/early.length:null,strong:strong.length,strongAvg:strong.length?strong.reduce((s,t)=>s+(Number(t.pnl)||0),0)/strong.length:null}};
-}
-function nmCoachInsights(trades,plans){
- const a=nmCorrelationAnalytics(trades,plans),edge=nmEdgeCandidates(trades,plans),out=[];
- if(!a.closed.length)return [{kind:"info",title:"داده کافی نیست",text:"برای Coach حداقل چند معامله بسته‌شده با P&L و Review ثبت کن."}];
- if(edge.candidates?.length){const stable=edge.candidates.filter(x=>x.stable).slice(0,2);stable.forEach(x=>out.push({kind:x.delta>=0?"positive":"attention",title:"Edge candidate · "+x.dim,text:`الگوی ${x.value} در ${x.count} معامله دیده شده؛ میانگین P&L ${nmDashPnl(x.avg)} در برابر ${nmDashPnl(x.baseAvg)} برای بقیه معاملات است. این اختلاف در دو نیمه دوره هم‌جهت بوده و هنوز نیاز به نمونه بیشتر دارد.`}));}
- a.plan.filter(x=>x.delta!==null&&x.answered>=3).sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta)).slice(0,4).forEach(x=>out.push({kind:x.delta>=0?"positive":"attention",title:"Plan · "+x.label,text:`در ${x.yes} معامله رعایت شده و ${x.no} معامله نقض شده؛ میانگین P&L رعایت ${nmDashPnl(x.yesAvg)} در برابر ${nmDashPnl(x.noAvg)} هنگام نقض است. اختلاف مشاهده‌شده ${x.delta>=0?"به نفع رعایت":"به زیان رعایت"} است.`}));
- a.discipline.filter(x=>x.count>=2).sort((x,y)=>x.avg-y.avg).slice(0,4).forEach(x=>out.push({kind:x.avg<0?"attention":"info",title:"Discipline · "+x.key,text:`این مورد در ${x.count} معامله ثبت شده و میانگین P&L معاملات دارای آن ${nmDashPnl(x.avg)} بوده است.`}));
- if(a.exit.count>=3){if(a.exit.early>=2)out.push({kind:"attention",title:"Exit Efficiency",text:`${a.exit.early} معامله با Exit Efficiency زیر 25٪ ثبت شده‌اند؛ این الگو می‌تواند برای بررسی خروج زودهنگام در Replay استفاده شود.`});if(a.exit.strong>=2)out.push({kind:"positive",title:"Best-exit capture",text:`${a.exit.strong} معامله حداقل 75٪ از MFE ثبت‌شده را در خروج واقعی گرفته‌اند.`});}
- const bySetup=nmAnalyticsGroup(a.closed,nmDashSetup).filter(x=>x.count>=3).sort((x,y)=>y.avgPnl-x.avgPnl);if(bySetup.length)out.push({kind:"info",title:"Setup consistency",text:`برای هر Setup حداقل 3 معامله در نظر گرفته شده؛ این بخش را برای مقایسه ثبات P&L و Avg R هر Setup بررسی کن.`});
- return out.slice(0,8);
-}
-
-function nmEdgeDimensions(trades,plans){
- const closed=(trades||[]).filter(t=>t.status==="closed"&&Number.isFinite(Number(t.pnl)));
- const planLabels={};(plans||[]).forEach(p=>(p.conditions||[]).forEach(c=>planLabels[c.id]=c.label));
- const rows=[];
- closed.forEach(t=>{
-   const add=(dim,val)=>{if(val!==undefined&&val!==null&&String(val)!=="")rows.push({t,dim,val:String(val)});};
-   add("Setup",nmDashSetup(t)); add("Session",nmDashSession(t)); add("Direction",t.direction||t.type);
-   const ans=t.review?.planAnswers?.answers||{};
-   Object.entries(ans).forEach(([id,v])=>{if(v===true||v===false)add("Plan: "+(planLabels[id]||id),v?"رعایت":"نقض"); else if(typeof v==="string"&&v.trim())add("Plan: "+(planLabels[id]||id),v.trim()); else if(Number.isFinite(Number(v)))add("Plan: "+(planLabels[id]||id),"عدد "+Math.round(Number(v)*10)/10);});
-   const chartAns=t.review?.chartAnswers?.answers||{};
-   Object.entries(chartAns).forEach(([id,v])=>{if(v===true||v===false)add("Chart: "+(planLabels[id]||id),v?"رعایت":"نقض"); else if(typeof v==="string"&&v.trim())add("Chart: "+(planLabels[id]||id),v.trim()); else if(Number.isFinite(Number(v)))add("Chart: "+(planLabels[id]||id),"عدد "+Math.round(Number(v)*10)/10);});
-   const sr=nmTradeSetupReadiness(t), cr=nmTradeChartReadiness(t);
-   if(sr!==null)add("آمادگی ستاپ",nmReadinessBand(sr));
-   if(cr!==null)add("ارزیابی چارت",nmReadinessBand(cr));
-   (t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>add("Mistake",(NM_DISCIPLINE_OPTIONS.find(x=>x[0]===k)||NM_REVIEW_MISTAKES.find(x=>x[0]===k)||[k,k])[1]));
-   const r=nmDashR(t); if(r!==null)add("R bucket",r>=1?"R ≥ +1":r<0?"R < 0":"0 تا +1R");
-   const mfe=Number(t.mfe),mae=Number(t.mae),eff=Number(t.exitEfficiency); if(Number.isFinite(mfe)&&Number.isFinite(mae))add("Excursion","MFE/MAE ثبت‌شده"); if(Number.isFinite(eff))add("Exit Efficiency",eff<25?"<25%":eff>=75?"≥75%":"25–75%");
- });
- return {closed,rows};
-}
-function nmEdgeCandidates(trades,plans){
- const {closed,rows}=nmEdgeDimensions(trades,plans); const MIN=5, MIN_TOTAL=10;
- if(closed.length<MIN_TOTAL)return {candidates:[],sample:closed.length,min:MIN_TOTAL,warning:"برای کشف Edge حداقل ۱۰ معامله بسته‌شده لازم است."};
- const groups={};rows.forEach(x=>{const k=x.dim+"|||"+x.val;(groups[k]??=[]).push(x.t)});
- const out=[];
- Object.entries(groups).forEach(([key,ts])=>{
-   if(ts.length<MIN||ts.length>closed.length-MIN)return;
-   const rest=closed.filter(t=>!ts.includes(t));
-   const avg=a=>a.length?a.reduce((s,t)=>s+(Number(t.pnl)||0),0)/a.length:0;
-   const avgR=a=>{const v=a.map(nmDashR).filter(Number.isFinite);return v.length?v.reduce((x,y)=>x+y,0)/v.length:null};
-   const win=a=>a.length?a.filter(t=>Number(t.pnl)>0).length/a.length*100:0;
-   const a=avg(ts),b=avg(rest), ar=avgR(ts),br=avgR(rest), delta=a-b, rdelta=ar!==null&&br!==null?ar-br:null;
-   const half=Math.max(2,Math.floor(ts.length/2));const ordered=ts.slice().sort((x,y)=>String(x.date||x.closeTime||"").localeCompare(String(y.date||y.closeTime||"")));const h1=avg(ordered.slice(0,half))-avg(rest.slice(0,Math.min(rest.length,half)));const h2=avg(ordered.slice(half))-avg(rest.slice(0,Math.min(rest.length,ordered.length-half)));
-   const stable=(Math.sign(h1)===Math.sign(delta)&&Math.sign(h2)===Math.sign(delta));
-   const effect=Math.abs(delta)/(Math.abs(b)+Math.abs(a)+1e-9);
-   out.push({dim:key.split("|||")[0],value:key.split("|||")[1],count:ts.length,restCount:rest.length,avg:a,baseAvg:b,delta,win:win(ts),baseWin:win(rest),avgR:ar,baseR:br,rdelta,effect,stable});
- });
- out.sort((a,b)=>(Number(b.stable)-Number(a.stable))||(Math.abs(b.rdelta??b.delta)-Math.abs(a.rdelta??a.delta))||b.count-a.count);
- return {candidates:out.slice(0,20),sample:closed.length,min:MIN_TOTAL,warning:null};
-}
-function NmEdgeDiscovery({trades,plans}){
- const data=React.useMemo(()=>nmEdgeCandidates(trades,plans),[trades,plans]);
- const [stableOnly,setStableOnly]=React.useState(true);
- const rows=data.candidates.filter(x=>!stableOnly||x.stable).slice(0,10);
- const rowView=rows.map((x,i)=>React.createElement("div",{key:i,className:"rounded-lg p-2 mb-1.5",style:{background:"var(--bg-card2)"}},
-   React.createElement("div",{className:"flex justify-between text-[9px]"},React.createElement("span",null,x.dim+" · "+x.value),React.createElement("span",{style:{color:x.delta>=0?"#34D399":"#F87171"}},(x.delta>=0?"+":"")+nmDashPnl(x.delta)+" avg")),
-   React.createElement("div",{className:"flex flex-wrap gap-2 text-[8px] mt-1",style:{color:"var(--text-muted)"}},
-     React.createElement("span",null,x.count+" vs "+x.restCount),React.createElement("span",null,"WR "+nmDashNum(x.win,0)+"% vs "+nmDashNum(x.baseWin,0)+"%"),React.createElement("span",null,"ΔR "+(x.rdelta===null?"—":(x.rdelta>=0?"+":"")+nmDashNum(x.rdelta,2))),React.createElement("span",{style:{color:x.stable?"#34D399":"var(--text-muted)"}},x.stable?"پایدار":"ناپایدار"))));
- return React.createElement("div",{className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
-   React.createElement("div",{className:"flex justify-between items-center mb-2"},React.createElement("b",{className:"text-[12px]",style:{color:"var(--accent-gold)"}},"Advanced Edge Discovery"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},data.sample+" معامله")),
-   data.warning?React.createElement("div",{className:"text-[10px] p-2 rounded-lg",style:{background:"var(--bg-card2)",color:"var(--text-muted)"}},data.warning):React.createElement(React.Fragment,null,
-     React.createElement("label",{className:"flex items-center gap-2 text-[9px] mb-2",style:{color:"var(--text-secondary)"}},React.createElement("input",{type:"checkbox",checked:stableOnly,onChange:e=>setStableOnly(e.target.checked)}),"فقط الگوهایی که در دو نیمهٔ دوره هم‌جهت بوده‌اند"),
-     rows.length?rowView:React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"با حداقل نمونه و فیلتر پایداری، Edge قابل‌نمایش پیدا نشد."),
-     React.createElement("div",{className:"text-[8px] mt-2",style:{color:"var(--text-muted)"}},"این بخش کشف الگو است، نه اثبات Edge؛ حجم نمونه، سوگیری انتخاب و تغییر رژیم بازار باید جداگانه بررسی شود.")));
-}
-
-function NmAnalyticsEngine({trades,plans}){
- const a=React.useMemo(()=>nmCorrelationAnalytics(trades,plans),[trades,plans]);
- const setups=React.useMemo(()=>nmAnalyticsGroup(a.closed,nmDashSetup).filter(x=>x.count>=2).sort((x,y)=>y.avgPnl-x.avgPnl),[a.closed]);
- const sessions=React.useMemo(()=>nmAnalyticsGroup(a.closed,nmDashSession).filter(x=>x.count>=2).sort((x,y)=>y.avgPnl-x.avgPnl),[a.closed]);
- const line=(label,rows)=>React.createElement("div",{className:"mb-2"},React.createElement("div",{className:"text-[10px] font-semibold mb-1",style:{color:"var(--text-primary)"}},label),rows.slice(0,5).map(x=>React.createElement("div",{key:x.key,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,`${x.key} · ${x.count} معامله`),React.createElement("span",null,`${nmDashPnl(x.avgPnl)} avg · ${x.avgR===null?"—":(x.avgR>=0?"+":"")+nmDashNum(x.avgR,2)+"R"}`))));
- return React.createElement("div",{className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-2"},React.createElement("b",{className:"text-[12px]",style:{color:"var(--accent-gold)"}},"Analytics Engine"),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},a.closed.length+" معامله")),
- a.plan.filter(x=>x.delta!==null&&x.answered>=2).slice().sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta)).slice(0,5).map(x=>React.createElement("div",{key:x.id,className:"rounded-lg p-2 mb-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"flex justify-between text-[9px]"},React.createElement("span",null,x.label),React.createElement("b",{style:{color:x.delta>=0?"#34D399":"#F87171"}},`${x.delta>=0?"+":""}${nmDashPnl(x.delta)} avg`)),React.createElement("div",{className:"text-[8px] mt-1",style:{color:"var(--text-muted)"}},`رعایت ${x.yes} · نقض ${x.no} · WR ${nmDashNum(x.yesWin,0)}% / ${nmDashNum(x.noWin,0)}%`))),
- a.discipline.slice().sort((x,y)=>x.avg-y.avg).slice(0,4).map(x=>React.createElement("div",{key:"d"+x.key,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,`${x.key} · ${x.count}`),React.createElement("span",null,nmDashPnl(x.avg)+" avg"))),
- line("Setup",setups),line("Session",sessions));
-}
-
-function nmIntelligenceMatrix(trades,plans){
- const closed=(trades||[]).filter(t=>t.status==="closed"&&Number.isFinite(Number(t.pnl)));
- const map={}; closed.forEach(t=>{const setup=nmDashSetup(t)||"—",session=nmDashSession(t)||"—",k=setup+"|||"+session;(map[k]??=[]).push(t);});
- return Object.entries(map).map(([key,ts])=>{const [setup,session]=key.split("|||");const pnl=ts.reduce((s,t)=>s+(Number(t.pnl)||0),0),rs=ts.map(nmDashR).filter(Number.isFinite),eff=ts.map(t=>Number(t.exitEfficiency)).filter(Number.isFinite);return{setup,session,count:ts.length,pnl,avgPnl:pnl/ts.length,winRate:ts.filter(t=>Number(t.pnl)>0).length/ts.length*100,avgR:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null,exitEff:eff.length?eff.reduce((a,b)=>a+b,0)/eff.length:null};}).sort((a,b)=>b.avgPnl-a.avgPnl);
-}
-function nmWeeklyIntelligence(trades,plans,todayStr){
- const end=new Date((todayStr||new Date().toISOString().slice(0,10))+"T23:59:59"),start=new Date(end);start.setDate(start.getDate()-6);
- const closed=(trades||[]).filter(t=>{if(t.status!=="closed")return false;const d=new Date(String(t.date||t.closeTime||t.closedAt||"").slice(0,10)+"T12:00:00");return Number.isFinite(d.getTime())&&d>=start&&d<=end;});
- const pnl=closed.reduce((s,t)=>s+(Number(t.pnl)||0),0),wins=closed.filter(t=>Number(t.pnl)>0),rs=closed.map(nmDashR).filter(Number.isFinite),eff=closed.map(t=>Number(t.exitEfficiency)).filter(Number.isFinite);
- const mistakes={};closed.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>{mistakes[k]??={count:0,pnl:0};mistakes[k].count++;mistakes[k].pnl+=Number(t.pnl)||0;}));
- const violations={};closed.forEach(t=>{[...(t.ruleViolations||[]),...(t.chartRuleViolations||[])].forEach(k=>{violations[k]??={count:0,pnl:0};violations[k].count++;violations[k].pnl+=Number(t.pnl)||0;});});
- const setup=nmAnalyticsGroup(closed,nmDashSetup).sort((a,b)=>b.avgPnl-a.avgPnl),session=nmAnalyticsGroup(closed,nmDashSession).sort((a,b)=>b.avgPnl-a.avgPnl);
- return {start,end,closed,pnl,wins,winRate:closed.length?wins.length/closed.length*100:null,avgR:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:null,exitEff:eff.length?eff.reduce((a,b)=>a+b,0)/eff.length:null,mistakes,violations,setup,session};
-}
-function NmIntelligenceReport({trades,plans,todayStr}){
- const w=React.useMemo(()=>nmWeeklyIntelligence(trades,plans,todayStr),[trades,plans,todayStr]),matrix=React.useMemo(()=>nmIntelligenceMatrix(trades,plans),[trades,plans]);
- const rows=Object.entries(w.mistakes).sort((a,b)=>a[1].pnl-b[1].pnl).slice(0,4), vio=Object.entries(w.violations).sort((a,b)=>b[1].count-a[1].count).slice(0,4);
- return React.createElement("div",{className:"space-y-2"},
-  React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-5 gap-2"},
-   ["معامله",String(w.closed.length),"P&L",nmDashPnl(w.pnl),"Win Rate",w.winRate==null?"—":nmDashNum(w.winRate,1)+"%","Avg R",w.avgR==null?"—":nmDashNum(w.avgR,2)+"R","Exit Eff",w.exitEff==null?"—":nmDashNum(w.exitEff,1)+"%"].reduce((acc,v,i,a)=>{if(i%2===0)acc.push(React.createElement("div",{key:i,className:"rounded-lg p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},v),React.createElement("div",{className:"text-[11px] font-semibold mt-1",style:{color:"var(--text-primary)"}},a[i+1])));return acc},[])),
-  React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-1",style:{color:"var(--accent-gold)"}},"هشدارهای تکرارشونده هفته"),rows.length?rows.map(([k,v])=>React.createElement("div",{key:k,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,k+" · "+v.count),React.createElement("span",null,nmDashPnl(v.pnl)+" avg"))):React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"مورد تکرارشونده‌ای ثبت نشده است.")),
-  React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-1",style:{color:"var(--accent-gold)"}},"Setup × Session"),matrix.slice(0,8).map(x=>React.createElement("div",{key:x.setup+x.session,className:"grid grid-cols-4 gap-1 text-[8px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,x.setup),React.createElement("span",null,x.session),React.createElement("span",null,x.count+" · "+nmDashPnl(x.avgPnl)),React.createElement("span",null,x.avgR==null?"—":nmDashNum(x.avgR,2)+"R")))),
-  vio.length?React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-1",style:{color:"var(--accent-gold)"}},"Rule Violations"),vio.map(([k,v])=>React.createElement("div",{key:k,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,k+" · "+v.count),React.createElement("span",null,nmDashPnl(v.pnl)+" total")))):null
- );
-}
-function NmJournalCoach({trades,plans,onClose}){
- const insights=React.useMemo(()=>nmCoachInsights(trades,plans),[trades,plans]);
- return React.createElement("div",{className:"fixed inset-0 z-[140] flex items-end sm:items-center justify-center p-2",style:{background:"rgba(0,0,0,.78)"}},React.createElement("div",{className:"w-full max-w-xl rounded-2xl p-4 max-h-[92vh] overflow-auto",style:{background:"var(--bg-page)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"flex justify-between items-center mb-3"},React.createElement("div",null,React.createElement("b",{style:{color:"var(--accent-gold)"}},"Journal Coach"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"تحلیل deterministic از داده‌های خود Namello؛ بدون حدس درباره آینده.")),React.createElement("button",{onClick:onClose},"✕")),insights.map((x,i)=>React.createElement("div",{key:i,className:"rounded-xl p-3 mb-2",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},React.createElement("div",{className:"text-[10px] font-semibold",style:{color:x.kind==="attention"?"#F87171":x.kind==="positive"?"#34D399":"var(--text-primary)"}},x.title),React.createElement("div",{className:"text-[10px] leading-5 mt-1",style:{color:"var(--text-secondary)"}},x.text))),React.createElement("div",{className:"text-[8px] mt-3",style:{color:"var(--text-muted)"}},"این گزارش توصیفی است؛ برای تصمیم معاملاتی باید زمینه، نمونه‌حجم و کیفیت داده را هم بررسی کنی.")));
-}
 class NmDashboardRootBoundary extends React.Component {
   constructor(props){super(props);this.state={error:null};}
   static getDerivedStateFromError(error){return {error};}
@@ -4934,12 +4648,46 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  const excursionStats=React.useMemo(()=>{const x=filtered.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae)));const avgM=x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA=x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,eff=x.filter(t=>Number.isFinite(Number(t.exitEfficiency)));return{count:x.length,avgM,avgA,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null}} , [filtered]);
  const mistakes=React.useMemo(()=>{const map={};filtered.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>{map[k]??={count:0,pnl:0};map[k].count++;map[k].pnl+=Number(t.pnl)||0}));return Object.entries(map).map(([key,v])=>({key,label:(NM_DISCIPLINE_OPTIONS.find(x=>x[0]===key)||NM_REVIEW_MISTAKES.find(x=>x[0]===key)||[key,key])[1],...v})).sort((a,b)=>a.pnl-b.pnl)},[filtered]);
  const advanced=React.useMemo(()=>nmAdvancedStats(filtered,startingBalance),[filtered,startingBalance]);
+ const strategic=React.useMemo(()=>nmStrategicEngine(filtered,startingBalance),[filtered,startingBalance]);
+ const [strategicMc,setStrategicMc]=React.useState(null);
+ React.useEffect(()=>{let live=true;if(strategic.ready&&strategic.mc){nmStrategicMonteCarloWorker(filtered.map(nmDashR).filter(Number.isFinite),10000,Math.min(300,Math.max(30,filtered.length*2)),0).then(x=>{if(live)setStrategicMc(x)}).catch(()=>{});}else setStrategicMc(null);return()=>{live=false}},[filtered,strategic.ready]);
+ const strategicViewMc=strategicMc||strategic.mc;
  const tagStats=React.useMemo(()=>nmTagStats(filtered),[filtered]);
  const saveExc=(x)=>{const next=trades.map(t=>t.id===excursion.id?{...t,mfe:x.mfe,mae:x.mae,bestExit:x.bestExit,exitEfficiency:x.exitEfficiency,excursion:x}:t);onPersistTrades(next);setExcursion(null);setSelected({...excursion,...x,excursion:x});};
  const card=(title,value,sub)=>React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},title),React.createElement("div",{className:"text-base font-bold mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono,monospace",direction:"ltr",textAlign:"right"}},value),React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},sub||""));
  const widgets={
   kpi:React.createElement(NmDashWidget,{id:"kpi",title:"KPI · عملکرد کلی",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},card("P&L",nmDashPnl(m.pnl),`${m.closed.length} معامله`),card("Win Rate",`${nmDashNum(m.winRate,1)}%`,`${m.wins} برد / ${m.losses} باخت`),card("Profit Factor",m.pf===Infinity?"∞":nmDashNum(m.pf,2),"Gross W / Gross L"),card("Expectancy",m.expectancy===null?"—":nmDashPnl(m.expectancy),"به ازای هر معامله"),card("Avg R",m.avgR===null?"—":`${m.avgR>=0?"+":""}${nmDashNum(m.avgR,2)}R`,"میانگین R"),card("Max DD",nmDashPnl(-m.maxDD),"افت سرمایه"),card("MFE ثبت‌شده",excursionStats.count?nmDashNum(excursionStats.avgM,2):"—","میانگین حرکت مطلوب"),card("Exit Efficiency",excursionStats.avgEff===null?"—":`${nmDashNum(excursionStats.avgEff,1)}%`,"واقعی از OHLC"))),
   equity:React.createElement(NmDashWidget,{id:"equity",title:"Equity Curve",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"flex items-end justify-start gap-1 h-28 overflow-hidden",style:{direction:"ltr",textAlign:"left"}},m.curve.slice(-40).map((x,i)=>React.createElement("div",{key:i,className:"flex-1 rounded-t",title:`${x.date} · ${nmDashNum(x.balance,2)}`,style:{height:`${Math.max(5,Math.min(100,((x.balance-(Number(startingBalance)||0))/Math.max(1,...m.curve.map(q=>Math.abs(q.balance-(Number(startingBalance)||0))))*45)+50))}%`,background:x.balance>=(Number(startingBalance)||0)?"var(--accent-gold)":"#ef4444",opacity:.8}}))),React.createElement("div",{className:"text-[9px] mt-2",style:{color:"var(--text-muted)"}},"نوارها به ترتیب زمانی معاملات بسته‌شده هستند.")),
+  strategic:React.createElement(NmDashWidget,{id:"strategic",title:"Strategic Analysis Engine · تفسیر و تصمیم‌سازی",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},
+    React.createElement("div",{className:"space-y-3"},
+      !strategic.ready?React.createElement("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)",color:"var(--text-secondary)"}},strategic.narrative[0]):React.createElement(React.Fragment,null,
+        React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},
+          card("Expectancy / R",`${strategic.metrics.expectancyR>=0?"+":""}${strategic.metrics.expectancyR.toFixed(2)}R`,"Edge مرکزی"),
+          card("SQN",strategic.metrics.sqn==null?"—":strategic.metrics.sqn.toFixed(2),"کیفیت سیستم"),
+          card("Profit Factor",strategic.metrics.profitFactor===Infinity?"∞":strategic.metrics.profitFactor.toFixed(2),"Gross R"),
+          card("Bootstrap p",strategic.metrics.bootstrapP==null?"—":strategic.metrics.bootstrapP.toFixed(3),"معناداری Edge")
+        ),
+        React.createElement("div",{className:"rounded-xl p-3",style:{background:"color-mix(in srgb, #8B5CF6 9%, var(--bg-card2))",border:"1px solid color-mix(in srgb, #8B5CF6 25%, var(--border-1))"}},
+          React.createElement("div",{className:"text-[11px] font-bold mb-2",style:{color:"var(--accent-gold)"}},"چکیده ارزیابی استراتژیک"),
+          strategic.narrative.map((x,i)=>React.createElement("div",{key:i,className:"text-[10px] leading-6",style:{color:"var(--text-secondary)"}},"• ",x)),
+          React.createElement("div",{className:"mt-2 text-[10px] font-semibold",style:{color:strategic.confidence==='positive edge'?"#34D399":"#FBBF24"}},strategic.confidence==='positive edge'?"وضعیت: Edge مثبت با شواهد آماری اولیه":"وضعیت: نیازمند اعتبارسنجی بیشتر")
+        ),
+        React.createElement("div",{className:"grid grid-cols-1 sm:grid-cols-2 gap-2"},
+          React.createElement("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-2",style:{color:"var(--text-primary)"}},"Regime / Conditional Edge"),strategic.weak.length?strategic.weak.map((x,i)=>React.createElement("div",{key:i,className:"text-[9px] leading-5",style:{color:"#F87171"}},`هشدار: ${x.name} · ${x.expectancy.toFixed(2)}R · ${x.count} معامله`)):React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"رژیم منفی با نمونه کافی شناسایی نشد.")),
+          React.createElement("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-2",style:{color:"var(--text-primary)"}},"Behavioral Attribution"),React.createElement("div",{className:"text-[9px] leading-5",style:{color:"var(--text-secondary)"}},`Revenge: ${strategic.behavior.revenge} · Overconfidence: ${strategic.behavior.overconfidence} · Discipline: ${strategic.behavior.disciplineScore==null?"—":strategic.behavior.disciplineScore.toFixed(0)+"%"}`))
+        ),
+        React.createElement("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-2",style:{color:"var(--text-primary)"}},"Forward-looking · Monte Carlo (10,000 paths · Web Worker)"),React.createElement("div",{className:"grid grid-cols-3 gap-2"},card("P05",strategicViewMc.p05.toFixed(1)+"R","سناریوی بدبینانه"),card("Median",strategicViewMc.p50.toFixed(1)+"R","میانه"),card("P95",strategicViewMc.p95.toFixed(1)+"R","سناریوی خوش‌بینانه")),React.createElement("div",{className:"text-[9px] mt-2",style:{color:"var(--text-muted)"}},`احتمال پایان بالاتر از نقطه شروع: ${(strategicViewMc.probProfit*100).toFixed(0)}٪ · احتمال Drawdown ≥25R: ${(strategicViewMc.probDrawdown25*100).toFixed(0)}٪`)),
+        React.createElement("div",{className:"grid grid-cols-1 sm:grid-cols-2 gap-2"},
+          React.createElement("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-2",style:{color:"var(--accent-gold)"}},"Decay · Rolling Expectancy"),React.createElement("div",{className:"text-[10px]",style:{color:"var(--text-secondary)"}},strategic.rolling?.trend==='decaying'?`⚠️ افت: ${nmDashNum(strategic.rolling.early,2)}R → ${nmDashNum(strategic.rolling.late,2)}R`:strategic.rolling?.trend==='improving'?`بهبود: ${nmDashNum(strategic.rolling.early,2)}R → ${nmDashNum(strategic.rolling.late,2)}R`:"پایدار/داده ناکافی")),
+          React.createElement("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-2",style:{color:"var(--accent-gold)"}},"Risk · Ruin / Drawdown"),React.createElement("div",{className:"text-[9px] leading-5",style:{color:"var(--text-secondary)"}},`Ruin proxy @1% risk: ${strategic.metrics.riskOfRuin==null?"—":nmDashNum(strategic.metrics.riskOfRuin*100,1)+"%"} · Max DD: ${nmDashNum(strategic.metrics.drawdown.maxDD,2)}R · Ulcer: ${nmDashNum(strategic.metrics.drawdown.ulcerIndex,2)}`))
+        ),
+        React.createElement("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-2",style:{color:"var(--accent-gold)"}},"Interaction Effects · Setup × Bias × Session"),strategic.interactions.slice(0,5).map((x,i)=>React.createElement("div",{key:i,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,`${x.name} · ${x.count}`),React.createElement("b",{style:{color:x.expectancy>=0?"#34D399":"#F87171"}},`${x.expectancy>=0?"+":""}${nmDashNum(x.expectancy,2)}R`))),strategic.interactions.length?null:React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"Interaction معتبر با حداقل نمونه پیدا نشد.")),
+        React.createElement("div",{className:"rounded-xl p-3",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[10px] font-semibold mb-2",style:{color:"var(--accent-gold)"}},"Stress Testing · سناریوهای Edge"),strategic.stress.map((x,i)=>React.createElement("div",{key:i,className:"flex justify-between text-[9px] py-1",style:{color:"var(--text-secondary)"}},React.createElement("span",null,x.name),React.createElement("span",null,`${x.expectancy>=0?"+":""}${nmDashNum(x.expectancy,2)}R · DD ${nmDashNum(x.maxDD,1)}R`))),
+        React.createElement("div",{className:"text-[8px] mt-2",style:{color:"var(--text-muted)"}},strategic.capacity?`Capacity proxy: median risk ${nmDashNum(strategic.capacity.medianRisk,0)} · P95 ${nmDashNum(strategic.capacity.p95Risk,0)} · ${strategic.capacity.note}`:"Capacity: داده ریسک کافی نیست.")),
+        React.createElement("div",{className:"rounded-xl p-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card2))",border:"1px solid color-mix(in srgb, #10B981 25%, var(--border-1))"}},React.createElement("div",{className:"text-[10px] font-semibold mb-2",style:{color:"#34D399"}},"اقدامات پیشنهادی"),strategic.recommendations.slice(0,6).map((x,i)=>React.createElement("div",{key:i,className:"text-[9px] leading-5",style:{color:"var(--text-secondary)"}},`${i+1}. ${x}`)))
+      )
+    )
+  ),
   advanced:React.createElement(NmDashWidget,{id:"advanced",title:"Advanced Risk & Exit Analytics",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-4 gap-2"},card("Sharpe",advanced.sharpe===null?"—":nmDashNum(advanced.sharpe,2),"annualized proxy"),card("Sortino",advanced.sortino===null?"—":nmDashNum(advanced.sortino,2),"downside-adjusted"),card("Calmar",advanced.calmar===null?"—":nmDashNum(advanced.calmar,2),"return / max DD"),card("Recovery",advanced.recovery===null?"—":nmDashNum(advanced.recovery,2),"net P&L / max DD"),card("Ulcer",nmDashNum(advanced.ulcer,2),"drawdown pressure"),card("Avg Hold",advanced.avgHold===null?"—":nmDashNum(advanced.avgHold,0)+"m","holding time"),card("Early Exit",String(advanced.exits.early),"efficiency < 25%"),card("Round-trip",String(advanced.exits.roundTrip),"MFE then losing exit"),card("آمادگی برنامه روزانه",advanced.avgDayPlanReadiness===null?"—":nmDashNum(advanced.avgDayPlanReadiness,1)+"%","میانگین امتیاز برنامه روزانه"),card("آمادگی ستاپ",advanced.avgSetupReadiness===null?"—":nmDashNum(advanced.avgSetupReadiness,1)+"%","میانگین امتیاز ورود"),card("ارزیابی چارت",advanced.avgChartReadiness===null?"—":nmDashNum(advanced.avgChartReadiness,1)+"%","میانگین امتیاز چارت"))),
   chartplan:React.createElement(NmDashWidget,{id:"chartplan",title:"Chart Plan · Rule Compliance",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmPlanAnalysis,{trades:filtered,plans:chartPlans})),
   analytics:React.createElement(NmDashWidget,{id:"analytics",title:"Analytics Engine · Correlation",onDragStart:(e,id)=>setDrag(id),onDragOver:reorder,onMove:moveWidget},React.createElement(NmAnalyticsEngine,{trades:filtered,plans:analysisPlans})),
@@ -7620,7 +7368,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.7</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.9</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8348,7 +8096,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.7</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.9</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -8743,8 +8491,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.7", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.7"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.9", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.9"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),

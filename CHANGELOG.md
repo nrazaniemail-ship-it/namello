@@ -1,9 +1,9 @@
 # Changelog
 
-## 1.0.7 — Journal layout redesign
+## 1.0.9 — Journal layout redesign
 - Moved the «ثبت ورود» action into a dedicated card immediately before «معاملات باز».
 - Removed the adjacent Journal Excel export action from that area.
-- Unified package, PWA manifest and Service Worker version to 1.0.7 / Version Code 8.
+- Unified package, PWA manifest and Service Worker version to 1.0.9 / Version Code 9.
 
 ## 1.0.3
 - Standard broker CSV templates and import guide
