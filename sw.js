@@ -8,7 +8,7 @@
 // برای فایل‌های CDN (React, XLSX, Plotly, Tailwind, فونت‌ها) که نسخه‌شون پین‌شده و عوض نمی‌شه،
 // همچنان استراتژی "اول کش" (سریع‌تر و برای آفلاین قابل‌اعتمادتر) باقی مونده.
 // نام کش به نسخه‌ی برنامه گره خورده (Namello 1.0.14 / Version Code 14)؛ با هر آپدیت این را عوض کن.
-const CACHE_NAME = "namello-1.0.14-c14";
+const CACHE_NAME = "namello-1.0.15-c15";
 
 const HTML_URLS = ["./", "./index.html"];
 const WIDGET_URL = "./widget.html";

@@ -4729,12 +4729,108 @@ function NmLibrarySettingsCard({ open, onToggle }) {
         ) : null
     );
 }
-function NmLibraryLayer({ showToast, askDeleteConfirm }) {
+/* ---------------- پیام انگیزشی ترید ---------------- */
+const NM_MOTIVATION_KEY = "namello_motivational_messages_v1";
+const NM_MOTIVATION_SETTINGS_KEY = "namello_motivational_settings_v1";
+const NM_MOTIVATION_EVT = "namello-motivational-settings";
+const NM_MOTIVATION_DEFAULTS = [
+    "در ترید، هدف تو پیش‌بینی همه‌چیز نیست؛ هدف تو اجرای درست یک مزیت آماری است.",
+    "هر معامله فقط یک نمونه است؛ به سیستم خود اعتماد کن و اجازه بده آمار کارش را انجام دهد.",
+    "انضباط یعنی حتی وقتی احساساتت بلندتر از صدای سیستم هستند، به برنامه‌ات وفادار بمانی.",
+    "موفقیت در ترید از کنترل ریسک، صبر و تکرار تصمیم‌های باکیفیت ساخته می‌شود.",
+    "ضرر یک معامله شکست تو نیست؛ شکست زمانی است که از اشتباهت چیزی یاد نگیری.",
+    "آرام معامله کن؛ فرصت‌های خوب دوباره می‌آیند، اما سرمایه‌ی از دست‌رفته همیشه به‌سادگی برنمی‌گردد.",
+    "به‌جای دنبال کردن سود، کیفیت اجرای خودت را دنبال کن؛ سود نتیجه‌ی طبیعی اجرای درست است.",
+    "هر روز فرصتی است برای اینکه نسخه‌ای منضبط‌تر، صبورتر و آگاه‌تر از معامله‌گر دیروزت باشی.",
+    "بازار به کسی بدهکار نیست؛ مزیتت را پیدا کن، ریسک را محدود کن و اجازه بده احتمال‌ها کار کنند.",
+    "تفاوت معامله‌گر حرفه‌ای با آماتور اغلب در یک چیز است: توانایی انجام ندادن معامله‌ی بد.",
+    "وقتی برنامه‌ات روشن باشد، لازم نیست برای هر حرکت بازار واکنش نشان بدهی.",
+    "موفقیت پایدار یک جهش ناگهانی نیست؛ حاصل صدها تصمیم کوچک و درست است."
+];
+function nmMotivationLoadMessages() { try { const v = JSON.parse(localStorage.getItem(NM_MOTIVATION_KEY) || "null"); return Array.isArray(v) && v.length ? v.filter(x => x && typeof x.text === "string") : NM_MOTIVATION_DEFAULTS.map((text,i) => ({ id: "m"+i, text, createdAt: Date.now() })); } catch (e) { return NM_MOTIVATION_DEFAULTS.map((text,i) => ({ id: "m"+i, text, createdAt: Date.now() })); } }
+function nmMotivationLoadSettings() { try { return { enabled:false, intervalMs:1800000, nextAt:0, ...JSON.parse(localStorage.getItem(NM_MOTIVATION_SETTINGS_KEY) || "{}") }; } catch (e) { return { enabled:false, intervalMs:1800000, nextAt:0 }; } }
+function nmMotivationSaveMessages(v) { try { localStorage.setItem(NM_MOTIVATION_KEY, JSON.stringify(v)); } catch (e) {} try { window.dispatchEvent(new CustomEvent(NM_MOTIVATION_EVT)); } catch (e) {} }
+function nmMotivationSaveSettings(v) { try { localStorage.setItem(NM_MOTIVATION_SETTINGS_KEY, JSON.stringify(v)); } catch (e) {} try { window.dispatchEvent(new CustomEvent(NM_MOTIVATION_EVT)); } catch (e) {} }
+async function nmMotivationRequestPermission() { if (typeof Notification === "undefined") return false; if (Notification.permission === "granted") return true; if (Notification.permission === "denied") return false; try { return (await Notification.requestPermission()) === "granted"; } catch (e) { return false; } }
+async function nmShowMotivationalNotification(text) {
+    const body = String(text || "").trim(); if (!body) return false;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted" || !("serviceWorker" in navigator)) return false;
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        const tag = "namello-motivation-" + Date.now();
+        await reg.showNotification("پیام انگیزشی Namello", { body, icon:"./icon-192.png", badge:"./icon-192.png", tag, vibrate:[200,100,200], silent:false, requireInteraction:false, data:{kind:"motivation"} });
+        setTimeout(() => { try { reg.getNotifications({tag}).then(ns => ns.forEach(n => n.close())).catch(()=>{}); } catch(e){} }, 20000);
+        return true;
+    } catch (e) { return false; }
+}
+function NmMotivationalNotificationScheduler() {
+    useEffect(() => {
+        let timer = null, stopped = false;
+        const run = async () => {
+            if (stopped) return;
+            const settings = nmMotivationLoadSettings();
+            if (!settings.enabled) return;
+            const messages = nmMotivationLoadMessages();
+            if (!messages.length) return;
+            const now = Date.now();
+            let nextAt = Number(settings.nextAt) || (now + 1800000);
+            if (nextAt <= now) {
+                const pick = messages[Math.floor(Math.random() * messages.length)];
+                const ok = await nmShowMotivationalNotification(pick.text);
+                nextAt = now + 1800000;
+                nmMotivationSaveSettings({ ...settings, intervalMs:1800000, nextAt });
+                if (!ok && typeof console !== "undefined") { try { console.warn("[Namello motivation] notification not shown"); } catch(e){} }
+            }
+            const delay = Math.max(1000, Math.min(nextAt - Date.now(), 2147480000));
+            timer = setTimeout(run, delay);
+        };
+        const restart = () => { if (timer) clearTimeout(timer); timer = setTimeout(run, 50); };
+        window.addEventListener(NM_MOTIVATION_EVT, restart);
+        run();
+        return () => { stopped = true; if (timer) clearTimeout(timer); window.removeEventListener(NM_MOTIVATION_EVT, restart); };
+    }, []);
+    return null;
+}
+function NmMotivationalMessagesSection({ showToast, askDeleteConfirm }) {
+    const [messages,setMessages] = useState(() => nmMotivationLoadMessages());
+    const [enabled,setEnabled] = useState(() => !!nmMotivationLoadSettings().enabled);
+    const [permission,setPermission] = useState(() => typeof Notification === "undefined" ? "unsupported" : Notification.permission);
+    const [nextAt,setNextAt] = useState(() => Number(nmMotivationLoadSettings().nextAt) || 0);
+    const persist = next => { setMessages(next); nmMotivationSaveMessages(next); };
+    const add = () => { const text=(window.prompt("متن پیام انگیزشی جدید را بنویس:")||"").trim(); if(!text)return; persist([{id:"m"+Date.now().toString(36),text,createdAt:Date.now()},...messages]); };
+    const edit = m => { const text=(window.prompt("ویرایش پیام انگیزشی:",m.text)||"").trim(); if(!text)return; persist(messages.map(x=>x.id===m.id?{...x,text}:x)); };
+    const remove = m => { const fn=()=>persist(messages.filter(x=>x.id!==m.id)); if(typeof askDeleteConfirm === "function") askDeleteConfirm("این پیام انگیزشی حذف شود؟",fn); else fn(); };
+    const toggle = async () => {
+        if(enabled){ const st={...nmMotivationLoadSettings(),enabled:false,nextAt:0}; nmMotivationSaveSettings(st); setEnabled(false); setNextAt(0); return; }
+        const ok=await nmMotivationRequestPermission(); setPermission(typeof Notification === "undefined" ? "unsupported" : Notification.permission);
+        if(!ok){ if(showToast) showToast("اجازه‌ی نوتیفیکیشن داده نشد."); return; }
+        const st={...nmMotivationLoadSettings(),enabled:true,intervalMs:1800000,nextAt:Date.now()+1800000}; nmMotivationSaveSettings(st); setEnabled(true); setNextAt(st.nextAt); if(showToast) showToast("پیام انگیزشی هر ۳۰ دقیقه فعال شد.");
+    };
+    const test = async () => { const m=messages[0]; if(!m)return; const ok=await nmMotivationRequestPermission(); setPermission(typeof Notification === "undefined" ? "unsupported" : Notification.permission); if(!ok){if(showToast)showToast("اجازه‌ی نوتیفیکیشن داده نشد.");return;} const shown=await nmShowMotivationalNotification(m.text); if(showToast)showToast(shown?"اعلان آزمایشی ارسال شد.":"ارسال اعلان ممکن نشد."); };
+    const addDefault = () => { const missing=NM_MOTIVATION_DEFAULTS.filter(t=>!messages.some(m=>m.text===t)); if(!missing.length){if(showToast)showToast("همه‌ی پیام‌های پیش‌فرض در فهرست هستند.");return;} persist([...missing.map((text,i)=>({id:"md"+Date.now().toString(36)+i,text,createdAt:Date.now()})),...messages]); };
+    return RE("div",{className:"mt-5 mb-5",style:{direction:"rtl"}},
+        RE("div",{className:"rounded-2xl p-3",style:{background:"var(--bg-card)",border:"1px solid var(--border-1)"}},
+            RE("div",{className:"flex items-center justify-between gap-2 mb-3"},
+                RE("div",{className:"flex items-center gap-2 min-w-0"},RE("span",{className:"text-lg"},"💡"),RE("div",null,RE("h3",{className:"text-[14px] font-bold",style:{color:"var(--text-primary)"}},"پیام انگیزشی"),RE("div",{className:"text-[10px] mt-0.5",style:{color:"var(--text-muted)"}},"پیام‌های ترید، موفقیت و الهام‌بخشی"))),
+                RE("button",{type:"button",onClick:toggle,className:"shrink-0 rounded-full px-3 py-1.5 text-[11px] font-medium",style:{background:enabled?"#34D39922":"var(--bg-card2)",color:enabled?"#34D399":"var(--text-muted)",border:"1px solid "+(enabled?"#34D39955":"var(--border-2)")}},enabled?"نوتیفیکیشن فعال":"نوتیفیکیشن غیرفعال")),
+            RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
+                RE("div",{className:"flex items-center justify-between gap-2 mb-2"},RE("span",{className:"text-[11px] font-semibold",style:{color:"var(--text-primary)"}},"زمان‌بندی اعلان"),RE("span",{className:"text-[10px]",style:{color:enabled?"#34D399":"var(--text-muted)"}},enabled?"هر ۳۰ دقیقه":"خاموش")),
+                RE("p",{className:"text-[10px] leading-5",style:{color:"var(--text-muted)"}},"با فعال‌سازی، هر ۳۰ دقیقه یک پیام از این فهرست به‌صورت نوتیفیکیشن اندروید نمایش داده می‌شود و پس از ۲۰ ثانیه بسته می‌شود."),
+                permission!=="granted"&&RE("p",{className:"text-[10px] leading-5 mt-1",style:{color:"var(--accent-gold)"}},permission==="denied"?"مجوز نوتیفیکیشن توسط سیستم رد شده است؛ از تنظیمات اندروید اجازه را فعال کنید.":"برای فعال‌سازی نوتیفیکیشن، اجازه‌ی سیستم لازم است."),
+                RE("div",{className:"flex gap-2 mt-3"},RE("button",{type:"button",onClick:test,className:"flex-1 rounded-lg py-2 text-[11px]",style:{background:"var(--bg-page)",color:"var(--accent-gold)",border:"1px solid var(--border-2)"}},"تست اعلان"),RE("button",{type:"button",onClick:addDefault,className:"flex-1 rounded-lg py-2 text-[11px]",style:{background:"var(--bg-page)",color:"var(--text-secondary)",border:"1px solid var(--border-2)"}},"افزودن پیام‌های پیش‌فرض"))),
+            RE("div",{className:"flex items-center justify-between mb-2"},RE("span",{className:"text-[11px] font-semibold",style:{color:"var(--text-primary)"}},"دایرکتوری پیام‌ها ("+messages.length+")"),RE("button",{type:"button",onClick:add,className:"flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-medium",style:{background:"var(--accent-gold)",color:"var(--bg-page)"}},RE(Plus,{size:13}),"پیام جدید")),
+            messages.length===0?RE("div",{className:"rounded-xl p-4 text-center text-[11px]",style:{background:"var(--bg-card2)",color:"var(--text-muted)"}},"هنوز پیامی در دایرکتوری نیست."):messages.map((m,i)=>RE("div",{key:m.id,className:"rounded-xl p-3 mb-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},RE("div",{className:"flex items-start gap-2"},RE("span",{className:"w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",style:{background:"color-mix(in srgb, var(--accent-gold) 13%, transparent)",color:"var(--accent-gold)"}},i+1),RE("div",{className:"flex-1 min-w-0 text-[12px] leading-6",style:{color:"var(--text-primary)"}},m.text),RE("div",{className:"flex items-center gap-1 shrink-0"},RE("button",{type:"button",onClick:()=>edit(m),className:"p-1.5 rounded",style:{background:"var(--bg-page)"},"aria-label":"ویرایش پیام"},RE(Edit3,{size:13,color:"var(--text-muted)"})),RE("button",{type:"button",onClick:()=>remove(m),className:"p-1.5 rounded",style:{background:"var(--bg-page)"},"aria-label":"حذف پیام"},RE(Trash2,{size:13,color:"#F87171"})))))),
+            enabled&&nextAt>0&&RE("div",{className:"text-[10px] mt-2",style:{color:"var(--text-muted)"}},"اعلان بعدی: "+new Date(nextAt).toLocaleTimeString("fa-IR",{hour:"2-digit",minute:"2-digit"}))
+        )
+    );
+}
+ function NmLibraryLayer({ showToast, askDeleteConfirm }) {
     return RE("div", { className: "px-4 mt-4 pb-16" },
         RE(NmLayerHeading,{title:"کتابخانه",Icon:BookOpen}),
         RE("p", { className: "text-[11px] leading-5 mb-4", style: { color: "var(--text-muted)" } }, "کتاب‌های متنی و پادکست/کتاب‌های صوتی خود را اینجا نگه دارید. فایل‌ها داخل خودِ برنامه ذخیره می‌شوند؛ برای فایل‌های حجیم به فضای ذخیره‌سازی دستگاه توجه کنید (تنظیمات ← فضای ذخیره‌سازی)."),
         RE(NmLibraryBooksSection, { showToast, askDeleteConfirm }),
-        RE(NmLibraryPodcastsSection, { showToast, askDeleteConfirm }));
+        RE(NmLibraryPodcastsSection, { showToast, askDeleteConfirm }),
+        RE(NmMotivationalMessagesSection, { showToast, askDeleteConfirm }));
 }
 
 /* ---------------- تقویم معاملاتی: حساب‌های مبنا + سود دلاری هر روز ---------------- */
@@ -9800,6 +9896,7 @@ function App() {
         tab === "goals" && (React.createElement(GoalsLayer, { title: "\u0627\u0647\u062F\u0627\u0641 \u0645\u0639\u0627\u0645\u0644\u0647 \u06AF\u0631\u06CC", activeAccount: activeAccount, list: goals, newText: newGoalText, setNewText: setNewGoalText, onAdd: addGoalRow, onUpdateText: updateGoalRow, onUpdateProgress: updateGoalProgress, onDelete: deleteGoalRow, onMove: moveGoalRow, onExport: exportGoals, onExportPdf: exportGoalsPdf, askDeleteConfirm: askDeleteConfirm })),
         tab === "lifegoals" && (React.createElement(GoalsLayer, { title: "\u0627\u0647\u062F\u0627\u0641 \u0632\u0646\u062F\u06AF\u06CC", activeAccount: activeAccount, list: lifeGoals, newText: newLifeGoalText, setNewText: setNewLifeGoalText, onAdd: addLifeGoalRow, onUpdateText: updateLifeGoalRow, onUpdateProgress: updateLifeGoalProgress, onDelete: deleteLifeGoalRow, onMove: moveLifeGoalRow, onExport: exportLifeGoals, onExportPdf: exportLifeGoalsPdf, askDeleteConfirm: askDeleteConfirm })),
         tab === "gratitude" && (React.createElement(GratitudeChecklistLayer, { activeAccount: activeAccount, list: gratitude, newText: newGratitudeText, setNewText: setNewGratitudeText, onAdd: addGratitudeRow, onUpdateText: updateGratitudeRow, onUpdateState: updateGratitudeState, onDelete: deleteGratitudeRow, onMove: moveGratitudeRow, onExport: exportGratitude, onExportPdf: exportGratitudePdf, askDeleteConfirm: askDeleteConfirm })),
+        RE(NmMotivationalNotificationScheduler, null),
         false && tab === "statement" && (!activeAccount ? (React.createElement("div", { className: "px-4 mt-4" },
             React.createElement("div", { className: "rounded-xl p-4 text-center text-sm", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, "\u0627\u0648\u0644 \u0627\u0632 \u062A\u0628 \u0698\u0648\u0631\u0646\u0627\u0644 \u06CC\u06A9 \u062D\u0633\u0627\u0628 \u0627\u06CC\u062C\u0627\u062F \u06A9\u0646."))) : (React.createElement(StatementLayer, {
             statementTrades: statementTrades,
