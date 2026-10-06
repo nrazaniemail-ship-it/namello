@@ -1,14 +1,9 @@
 # Changelog
 
-## 1.0.10 — Layer / Skin isolation
-- Rebuilt the visual stacking hierarchy so application skins, navigation, menus, overlays, modals, Help/Update surfaces, toasts and runtime errors no longer compete at the same z-index.
-- Added explicit stacking-context isolation for the app root and full-screen overlay shells.
-- Standardized PWA/package/version.json/manifest/Service Worker version metadata to 1.0.10 / Version Code 11.
-
-## 1.0.9 — Journal layout redesign
+## 1.0.7 — Journal layout redesign
 - Moved the «ثبت ورود» action into a dedicated card immediately before «معاملات باز».
 - Removed the adjacent Journal Excel export action from that area.
-- Unified package, PWA manifest and Service Worker version to 1.0.9 / Version Code 9.
+- Unified package, PWA manifest and Service Worker version to 1.0.7 / Version Code 8.
 
 ## 1.0.3
 - Standard broker CSV templates and import guide
