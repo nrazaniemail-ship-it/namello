@@ -1,4 +1,11 @@
-# Namello 1.0.2 — Bilingual Reports
+# Changelog
 
-- PDF and Excel reports now expose bilingual Persian / English labels for trading, risk, performance, ICT, journal and analysis outputs.
-- User-entered free text is preserved as entered.
+## 1.0.3
+- Standard broker CSV templates and import guide
+- Virtual list rendering and lazy media loading
+- Improved sync conflict resolution with smart merge and status indicators
+- Additional psychology metrics including Tilt-like and Revenge Risk
+- Portfolio / multi-account view
+- Prop Firm challenge rules and limits
+- Trade Replay uses MT5 OHLC / imported TradingView-compatible OHLC
+- Gradual TypeScript/Vite migration scaffold and unit tests
