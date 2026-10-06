@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.8</title>
+<title>Namello 1.0.10</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -105,10 +105,74 @@
   .nm-collapsible-copy { min-width: 0; flex: 1; direction: rtl; text-align: start; }
   .nm-collapsible-chevron { order: 0; flex: 0 0 28px; }
 
+    /* ============================================================
+       Namello 1.0.10 — Layer / Skin Isolation
+       یک سلسله‌مراتب واحد برای جلوگیری از قاطی‌شدن پوسته‌ها و لایه‌های
+       شناور. هیچ کامپوننتی نباید z-index دلخواه خارج از این قرارداد داشته باشد.
+       ============================================================ */
+    :root {
+      --nm-z-base: 0;
+      --nm-z-nav: 20;
+      --nm-z-floating: 40;
+      --nm-z-menu: 50;
+      --nm-z-alarm: 60;
+      --nm-z-modal: 200;
+      --nm-z-modal-high: 260;
+      --nm-z-help: 320;
+      --nm-z-update: 340;
+      --nm-z-toast: 400;
+      --nm-z-critical: 9000;
+    }
+
+    html, body {
+      background: var(--bg-page);
+      isolation: isolate;
+    }
+
+    #root {
+      position: relative;
+      z-index: var(--nm-z-base);
+      isolation: isolate;
+      min-height: 100%;
+      background: var(--bg-page);
+      color: var(--text-primary);
+    }
+
+    /* App shell layers */
+    .nm-layer-nav { z-index: var(--nm-z-nav) !important; }
+    .nm-layer-floating { z-index: var(--nm-z-floating) !important; }
+    .nm-layer-menu { z-index: var(--nm-z-menu) !important; }
+    .nm-layer-alarm { z-index: var(--nm-z-alarm) !important; }
+    .nm-layer-modal { z-index: var(--nm-z-modal) !important; }
+    .nm-layer-modal-high { z-index: var(--nm-z-modal-high) !important; }
+    .nm-layer-help { z-index: var(--nm-z-help) !important; }
+    .nm-layer-update { z-index: var(--nm-z-update) !important; }
+    .nm-layer-toast { z-index: var(--nm-z-toast) !important; }
+    #runtime-error-banner { z-index: var(--nm-z-critical) !important; }
+
+    /* Every full-screen overlay owns its own stacking context. */
+    .nm-layer-modal,
+    .nm-layer-modal-high,
+    .nm-layer-help,
+    .nm-layer-update {
+      isolation: isolate;
+      contain: paint;
+    }
+
+    /* Prevent page content from visually leaking through modal shells. */
+    .nm-layer-modal > div,
+    .nm-layer-modal-high > div,
+    .nm-layer-help > div,
+    .nm-layer-update > div {
+      position: relative;
+      isolation: isolate;
+    }
 </style>
+
+
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.8…</div>
+<div id="boot-status">Loading Namello 1.0.10…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -2977,7 +3041,7 @@ function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, curs
                         (t.systems && t.systems[0] || t.system) && React.createElement("span", null, t.systems ? t.systems[0] : t.system)),
                     t.note && React.createElement("p", { className: "text-[11px] mt-1.5 leading-5", style: { color: "var(--text-muted)" } }, t.note.length > 90 ? t.note.slice(0, 90) + "…" : t.note))))))
             : (React.createElement("div", { className: "rounded-xl p-4 text-center text-[12px] mb-4", style: { background: "var(--bg-card)", color: "var(--text-muted)" } }, lang === "en" ? "Tap a day on the calendar to see that day's trades." : "روی یک روز از تقویم بزن تا معاملات همون روز رو ببینی.")),
-        showSettings && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowSettings(false) },
+        showSettings && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: () => setShowSettings(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, lang === "en" ? "Trading Calendar Settings" : "تنظیمات تقویم معاملاتی"),
@@ -3005,12 +3069,12 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.8";
-const NM_VERSION_CODE = 9;
+const NM_VERSION_NAME = "1.0.10";
+const NM_VERSION_CODE = 11;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "بازطراحی سربرگ‌های نشست، اخبار و تقویم و تقویت ارزیابی پیشرفته";
 const NM_CHANGELOG = [
-    "نسخه 1.0.8: تکمیل اعتبارسنجی CSV با تشخیص Mapping، خطاهای فیلدی و Duplicate Detection؛ بهبود Virtual List و کنترل Replay؛ تقویت وضعیت Conflict و تست‌های واحد قابلیت‌های پیشرفته.",
+    "نسخه 1.0.10: اصلاح معماری لایه‌ها و جلوگیری از تداخل پوسته‌ها، پنجره‌ها، منوها و عناصر شناور؛ یکپارچه‌سازی z-index و تثبیت PWA/Service Worker.",
     "نسخه 1.0.4: برای لایه‌ها و قابلیت‌های اصلی برنامه دکمه «راهنما» با آموزش مرحله‌ای، اصطلاحات تخصصی و نکات حرفه‌ای اضافه شد.",
     "نسخه 1.0.3: قالب‌های استاندارد CSV بروکرهای رایج، راهنمای Import و Virtual List برای داده‌های حجیم اضافه شدند.",
     "نسخه 1.0.3: Conflict Resolution در Sync با ادغام هوشمند و نمایش واضح Revision/Conflict/آخرین Sync تقویت شد.",
@@ -3548,7 +3612,7 @@ function NmWhatsNew() {
     const close = () => { setOpen(false); try { window.localStorage.setItem("ns_namello_seen_version_code_v1", String(NM_VERSION_CODE)); } catch (e) { } };
     useBackClose(open, close);
     if (!open) return null;
-    return RE("div", { className: "fixed inset-0 z-[80] flex items-end", style: { background: "#000000AA" }, onClick: close },
+    return RE("div", { className: "fixed inset-0 nm-layer-update flex items-end", style: { background: "#000000AA" }, onClick: close },
         RE("div", { className: "w-full rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto", style: { background: "var(--bg-card)", borderTop: "1px solid " + nmTint(35) }, onClick: e => e.stopPropagation() },
             RE("div", { className: "text-[15px] font-bold mb-1", style: { color: "var(--accent-gold)" } }, "🎉 برنامه بروزرسانی شد"),
             RE("div", { className: "text-[18px] font-bold mb-3", style: { color: "var(--text-primary)", direction: "ltr", textAlign: "right", fontFamily: "JetBrains Mono, monospace" } }, NM_VERSION_LABEL),
@@ -3830,7 +3894,7 @@ function NmRestoreDialog({ open, onClose }) {
     const keyCount = parsed ? Object.keys(parsed.payload.data || {}).length : 0;
     const row = (k, v) => RE("div", { key: k, className: "flex justify-between gap-3 text-[12px] py-1.5", style: { borderBottom: "1px solid var(--border-1)" } },
         RE("span", { style: { color: "var(--text-muted)" } }, k), RE("span", { style: { color: "var(--text-primary)", direction: "ltr", textAlign: "left", wordBreak: "break-all" } }, v));
-    return RE("div", { className: "fixed inset-0 z-[70] flex items-end", style: { background: "#000000B3" }, onClick: onClose },
+    return RE("div", { className: "fixed inset-0 nm-layer-modal-high flex items-end", style: { background: "#000000B3" }, onClick: onClose },
         RE("div", { className: "w-full rounded-t-3xl p-5 max-h-[88vh] overflow-y-auto", style: { background: "var(--bg-card)", border: "1px solid var(--border-2)" }, onClick: e => e.stopPropagation() },
             RE("div", { className: "flex items-center gap-2 mb-2" },
                 RE("span", { style: { fontSize: 22 } }, "📥"),
@@ -4954,7 +5018,7 @@ function NmGlobalPlayer({ tab }) {
         audioEl,
         /* در کتابخانه کنترل‌های پخش مستقیماً داخل کارت اپیزود رندر می‌شوند؛ پخش‌کننده‌ی جداگانه ساخته نمی‌شود. */
         !inLibrary && miniSlot ? createPortal(mini, miniSlot) : null,
-        !inLibrary && centerOpen ? RE("div", { className: "fixed left-0 right-0 z-[55] flex justify-center px-4", style: { top: "50%", transform: "translateY(-50%)", pointerEvents: "none" } }, RE("div", { style: { pointerEvents: "auto", width: "100%", maxWidth: maxW } }, card(true))) : null);
+        !inLibrary && centerOpen ? RE("div", { className: "fixed left-0 right-0 nm-layer-floating flex justify-center px-4", style: { top: "50%", transform: "translateY(-50%)", pointerEvents: "none" } }, RE("div", { style: { pointerEvents: "auto", width: "100%", maxWidth: maxW } }, card(true))) : null);
 }
 
 /* ---------------- نمایشگر کتاب‌های متنی (داخل برنامه) ----------------
@@ -4998,7 +5062,7 @@ function NmBookViewer({ book, onClose, showToast }) {
             showToast("فایل در حال دانلود است.");
         } catch (e) { showToast("باز کردن فایل ناموفق بود."); }
     };
-    return RE("div", { className: "fixed inset-0 z-[70] flex flex-col", style: { background: "var(--bg-page)" } },
+    return RE("div", { className: "fixed inset-0 nm-layer-modal-high flex flex-col", style: { background: "var(--bg-page)" } },
         RE("div", { className: "flex items-center gap-2 px-3 py-2.5", style: { background: "var(--bg-card)", borderBottom: "1px solid var(--border-1)", paddingTop: "calc(env(safe-area-inset-top, 0px) + 10px)" } },
             RE("button", { type: "button", onClick: onClose, className: "p-1.5 shrink-0", "aria-label": "بستن" }, RE(X, { size: 18, color: "var(--text-primary)" })),
             RE("div", { className: "flex-1 min-w-0 text-[13px] font-semibold truncate", style: { color: "var(--text-primary)" } }, book.title),
@@ -8658,7 +8722,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.8</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.10</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9386,9 +9450,11 @@ function App() {
                     @bottom-center { content: "صفحه " counter(page) " از " counter(pages); font-size: 8.5pt; color: #999; font-family: 'Vazirmatn', sans-serif; }
                     @bottom-left { content: "Namello"; font-size: 8pt; color: #bbb; font-family: 'Vazirmatn', sans-serif; }
                 }
-            </style></head>
+            
+
+</style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.8</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.10</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9771,7 +9837,7 @@ function App() {
         @keyframes namelloNewsSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes namelloPulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.3); } }
       `),
-        sessionAlarmPopup && (React.createElement("div", { className: "fixed left-0 right-0 z-[60] px-3", style: { top: "env(safe-area-inset-top, 0px)", paddingTop: 10, animation: "namelloAlarmSlideDown 0.35s ease-out" }, onClick: () => setSessionAlarmPopup(null) },
+        sessionAlarmPopup && (React.createElement("div", { className: "fixed left-0 right-0 nm-layer-alarm px-3", style: { top: "env(safe-area-inset-top, 0px)", paddingTop: 10, animation: "namelloAlarmSlideDown 0.35s ease-out" }, onClick: () => setSessionAlarmPopup(null) },
             React.createElement("div", { className: "rounded-xl p-3 flex items-start gap-2 shadow-lg", style: { background: "var(--bg-card)", border: "1px solid color-mix(in srgb, var(--accent-gold) 33%, transparent)" } },
                 React.createElement(Bell, { size: 18, color: "var(--accent-gold)", className: "shrink-0 mt-0.5" }),
                 React.createElement("div", { className: "flex-1" },
@@ -9783,8 +9849,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.8", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.8"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.10", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.10"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -10828,7 +10894,7 @@ React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { col
                 React.createElement("button", { onClick: addAboutSection, className: "w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium mt-1", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
                     React.createElement(Plus, { size: 16 }),
                     " \u0627\u0641\u0632\u0648\u062F\u0646 \u0628\u062E\u0634")))),
-        navLayout !== "vertical" && React.createElement("div", { className: "fixed bottom-0 left-0 right-0 flex overflow-x-auto", style: { background: "var(--bg-card)", borderTop: "1px solid var(--border-1)" } }, navOrder.map(key => {
+        navLayout !== "vertical" && React.createElement("div", { className: "fixed bottom-0 left-0 right-0 flex overflow-x-auto nm-layer-nav", style: { background: "var(--bg-card)", borderTop: "1px solid var(--border-1)" } }, navOrder.map(key => {
             const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,"icon-dashboard-logo.png"], live:[t("tab_live"),Clock,"icon-sessions.png"], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,"icon-journal.png"], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
             const label=meta[0], Icon=meta[1], navImage=meta[2];
             return React.createElement("button", { key, onClick:()=>setTab(key), className:"nm-nav-item flex flex-col items-center gap-1 py-2.5 shrink-0 "+(tab===key?"nm-nav-active":""), style:{width:68,color:tab===key?"var(--accent-gold)":"var(--text-muted)"}},
@@ -10836,15 +10902,15 @@ React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { col
                 React.createElement("span",{className:"text-[10px] px-2 py-0.5 rounded-full",style:{background:tab===key?"color-mix(in srgb, var(--accent-gold) 13%, transparent)":"transparent",fontWeight:tab===key?700:400}},label));
         })),
         navLayout === "vertical" && navMenuOpen && React.createElement(React.Fragment, null,
-            React.createElement("div", { className: "fixed inset-0 z-40", style: { background: "#000000AA" }, onClick: () => setNavMenuOpen(false) }),
-            React.createElement("div", { className: "fixed top-16 z-50 rounded-2xl overflow-y-auto", style: { insetInlineStart: 12, background: "var(--bg-card)", border: "1px solid var(--border-2)", maxHeight: "70vh", minWidth: 220, boxShadow: "0 10px 40px #000000AA" } }, navOrder.map(key => {
+            React.createElement("div", { className: "fixed inset-0 nm-layer-floating", style: { background: "#000000AA" }, onClick: () => setNavMenuOpen(false) }),
+            React.createElement("div", { className: "fixed top-16 nm-layer-menu rounded-2xl overflow-y-auto", style: { insetInlineStart: 12, background: "var(--bg-card)", border: "1px solid var(--border-2)", maxHeight: "70vh", minWidth: 220, boxShadow: "0 10px 40px #000000AA" } }, navOrder.map(key => {
                 const meta = { dashboard:[t("tab_dashboard"),LineChartIcon,"icon-dashboard-logo.png"], live:[t("tab_live"),Clock,"icon-sessions.png"], news:[t("tab_news"),Newspaper], journal:[t("tab_journal"),TrendingUp,"icon-journal.png"], marketeval:[t("tab_marketeval"),Target], calendar:[t("tab_calendar"),CalendarIcon], finance:[t("tab_finance"),Wallet], systems:[t("tab_systems"),BarChart3], strategy:[t("tab_strategy"),ListChecks], goals:[t("tab_goals"),Flag], lifegoals:[t("tab_lifegoals"),TreeIcon], gratitude:[t("tab_gratitude"),Heart], psychology:[t("tab_psychology"),Brain], exportall:[t("tab_exportall"),FileSpreadsheet], library:[t("tab_library"),BookOpen], settings:[t("tab_settings"),SettingsIcon], about:[t("tab_about"),Info] }[key] || [key,Info];
                 const label=meta[0], Icon=meta[1], navImage=meta[2];
                 return React.createElement("button", { key, onClick:()=>{setTab(key);setNavMenuOpen(false)}, className:"w-full flex items-center gap-3 px-4 py-3", style:{color:tab===key?"var(--accent-gold)":"var(--text-primary)",background:tab===key?"color-mix(in srgb, var(--accent-gold) 10%, transparent)":"transparent",borderBottom:"1px solid var(--border-1)"}},
                     React.createElement("span", { className:"nm-layer-icon", style:{background:"var(--bg-card2)"}}, navImage ? React.createElement("img",{src:navImage,alt:label,className:"w-full h-full rounded-[9px] object-contain",style:{background:"var(--bg-card2)"}}) : React.createElement(Icon,{size:17})),
                     React.createElement("span",{className:"text-[13px]"},label));
             }))),
-        showSessionSettings && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowSessionSettings(false) },
+        showSessionSettings && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: () => setShowSessionSettings(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, "\u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u062F\u0633\u062A\u06CC \u0633\u0634\u0646\u200C\u0647\u0627 (\u0648\u0642\u062A \u0646\u06CC\u0648\u06CC\u0648\u0631\u06A9)"),
@@ -10913,7 +10979,7 @@ React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { col
                     React.createElement(Check, { size: 16 }),
                     " \u0630\u062E\u06CC\u0631\u0647 \u062A\u0646\u0638\u06CC\u0645\u0627\u062A"),
                 React.createElement("button", { onClick: () => { setConfigForm(JSON.parse(JSON.stringify(DEFAULT_CONFIG))); showToast("به حالت پیش‌فرض بازگشت — برای ثبت، دکمه‌ی ذخیره را بزن."); }, className: "w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] mb-2", style: { background: "var(--bg-card2)", color: "var(--text-secondary)", border: "1px solid var(--border-2)" } }, "\u0628\u0627\u0632\u0646\u0634\u0627\u0646\u06CC \u0647\u0645\u0647 \u0628\u0647 \u067E\u06CC\u0634\u200C\u0641\u0631\u0636")))),
-        showAccSettings && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowAccSettings(false) },
+        showAccSettings && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: () => setShowAccSettings(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } },
@@ -10957,7 +11023,7 @@ React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { col
                 React.createElement("button", { onClick: saveAccSettings, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2 nm-unified-export-btn", style: { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" } },
                     React.createElement(Check, { size: 16 }),
                     " \u0630\u062E\u06CC\u0631\u0647 \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u062D\u0633\u0627\u0628")))),
-        deleteAccountConfirm && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setDeleteAccountConfirm(null) },
+        deleteAccountConfirm && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: () => setDeleteAccountConfirm(null) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "#F87171" } },
@@ -10971,7 +11037,7 @@ React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { col
                     React.createElement("button", { onClick: () => deleteAccount(deleteAccountConfirm), className: "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium nm-unified-export-btn", style: { background: "#F87171", color: "var(--bg-page)" } },
                         React.createElement(Trash2, { size: 16 }),
                         " \u062D\u0630\u0641 \u062D\u0633\u0627\u0628"))))),
-        showExportPicker && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowExportPicker(false) },
+        showExportPicker && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: () => setShowExportPicker(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, "\u0628\u0627\u0632\u0647\u200C\u06CC \u062E\u0631\u0648\u062C\u06CC Excel \u0631\u0627 \u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646"),
@@ -10981,7 +11047,7 @@ React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { col
                     React.createElement("span", { className: "flex-1 text-[12px]", style: { color: "var(--text-primary)" } }, RANGE_LABEL[r]),
                     React.createElement("button", { onClick: () => doExport(r), className: "px-3 py-2 rounded-lg text-[11px] nm-unified-export-btn", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } }, "Excel"),
                     React.createElement("button", { onClick: () => doExportPdf(r), className: "px-3 py-2 rounded-lg text-[11px] nm-unified-export-btn", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, "PDF")))))))),
-        showOpenForm && openForm && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowOpenForm(false) },
+        showOpenForm && openForm && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: () => setShowOpenForm(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, appLanguage === "en" ? "Log Trade Entry" : "\u062B\u0628\u062A \u0648\u0631\u0648\u062F \u0645\u0639\u0627\u0645\u0644\u0647"),
@@ -11349,7 +11415,7 @@ React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { col
                 React.createElement("button", { onClick: saveOpenTrade, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
                     React.createElement(Check, { size: 16 }),
                     " ", appLanguage === "en" ? "Log Entry" : "\u062B\u0628\u062A \u0648\u0631\u0648\u062F")))),
-        closingTrade && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setClosingTrade(null) },
+        closingTrade && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: () => setClosingTrade(null) },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } },
@@ -11445,7 +11511,7 @@ React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { col
                 React.createElement("button", { onClick: finalizeClose, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2 nm-unified-export-btn", style: { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" } },
                     React.createElement(Check, { size: 16 }),
                     " \u062B\u0628\u062A \u0646\u0647\u0627\u06CC\u06CC")))),
-        editingTrade && editForm && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: cancelEditTrade },
+        editingTrade && editForm && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: cancelEditTrade },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } },
@@ -11608,7 +11674,7 @@ React.createElement(Field, { label: RE("span", { className: "flex items-center g
                 React.createElement("button", { onClick: saveEditTrade, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2 nm-unified-export-btn", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
                     React.createElement(Check, { size: 16 }),
                     " \u0630\u062E\u06CC\u0631\u0647 \u0648\u06CC\u0631\u0627\u06CC\u0634")))),
-        addItemModal && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: cancelAddItem },
+        addItemModal && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end", style: { background: "#000000AA" }, onClick: cancelAddItem },
             React.createElement("div", { className: "w-full rounded-t-2xl p-4", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, ADD_ITEM_TITLES[addItemModal.type] || "افزودن مورد جدید"),
@@ -11619,7 +11685,7 @@ React.createElement(Field, { label: RE("span", { className: "flex items-center g
                 React.createElement("button", { onClick: submitAddItem, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 nm-unified-export-btn", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } },
                     React.createElement(Check, { size: 16 }),
                     " \u0627\u0641\u0632\u0648\u062F\u0646")))),
-        confirmDelete && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center px-6", style: { background: "#000000AA" }, onClick: () => setConfirmDelete(null) },
+        confirmDelete && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-center justify-center px-6", style: { background: "#000000AA" }, onClick: () => setConfirmDelete(null) },
             React.createElement("div", { className: "w-full rounded-2xl p-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", maxWidth: 340 }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                     React.createElement(AlertTriangle, { size: 16, color: "#F87171" }),
@@ -11628,7 +11694,7 @@ React.createElement(Field, { label: RE("span", { className: "flex items-center g
                 React.createElement("div", { className: "flex gap-2" },
                     React.createElement("button", { onClick: () => setConfirmDelete(null), className: "flex-1 py-2.5 rounded-xl text-sm", style: { background: "var(--bg-card2)", color: "var(--text-primary)" } }, "\u0627\u0646\u0635\u0631\u0627\u0641"),
                     React.createElement("button", { onClick: runConfirmedDelete, className: "flex-1 py-2.5 rounded-xl text-sm font-medium", style: { background: "#F87171", color: "var(--bg-page)" } }, "\u0628\u0644\u0647\u060C \u062D\u0630\u0641 \u06A9\u0646"))))),
-        showCalcProbWeights && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end sm:items-center justify-center", style: { background: "#000000AA" }, onClick: () => setShowCalcProbWeights(false) },
+        showCalcProbWeights && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-end sm:items-center justify-center", style: { background: "#000000AA" }, onClick: () => setShowCalcProbWeights(false) },
             React.createElement("div", { className: "w-full rounded-t-2xl sm:rounded-2xl p-4", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", maxWidth: 420, maxHeight: "85vh", overflowY: "auto" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, "\u0648\u0632\u0646\u200C\u062F\u0647\u06CC \u0627\u062D\u062A\u0645\u0627\u0644 \u0645\u0648\u0641\u0642\u06CC\u062A \u0645\u062D\u0627\u0633\u0628\u0627\u062A\u06CC"),
@@ -11648,13 +11714,13 @@ React.createElement(Field, { label: RE("span", { className: "flex items-center g
             React.createElement("button", { className: "w-12 h-12 rounded-full overflow-hidden flex items-center justify-center", style: { background: "var(--bg-card)", border: "1px solid var(--border-2)", boxShadow: "0 4px 12px #00000066", padding: 0 }, "aria-label": quickLaunchSettings.mt5Label || "اجرای سریع متاتریدر ۵" }, React.createElement("img", { src: "icon-mt5.jpg", alt: "MT5", className: "w-full h-full object-cover" })))),
         quickLaunchSettings.tvEnabled && (React.createElement(DraggableFab, { posXPercent: quickLaunchSettings.tvPosXPercent, posYPercent: quickLaunchSettings.tvPosYPercent, defaultCorner: "bottom-left", defaultOffsetY: 64, onDrop: (x, y) => persistQuickLaunchSettings({ ...quickLaunchSettings, tvPosXPercent: x, tvPosYPercent: y }), onClick: () => launchInstalledApp(quickLaunchSettings.tvPackage, quickLaunchSettings.tvLabel, quickLaunchSettings.tvScheme) },
             React.createElement("button", { className: "w-12 h-12 rounded-full overflow-hidden flex items-center justify-center", style: { background: "var(--bg-card)", border: "1px solid var(--border-2)", boxShadow: "0 4px 12px #00000066", padding: 0 }, "aria-label": quickLaunchSettings.tvLabel || "اجرای سریع تریدینگ‌ویو" }, React.createElement("img", { src: "icon-tradingview.png", alt: "TradingView", className: "w-full h-full object-cover" })))),
-        viewImageSrc && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-4", style: { background: "#000000EE" }, onClick: () => setViewImageSrc(null) },
+        viewImageSrc && (React.createElement("div", { className: "fixed inset-0 nm-layer-modal flex items-center justify-center p-4", style: { background: "#000000EE" }, onClick: () => setViewImageSrc(null) },
             React.createElement("img", { src: viewImageSrc, alt: "\u0686\u0627\u0631\u062A", className: "max-w-full max-h-full rounded-lg", style: { objectFit: "contain" } }),
             React.createElement("button", { onClick: () => setViewImageSrc(null), className: "fixed top-6 left-6 p-2 rounded-full", style: { background: "#12161CCC" } },
                 React.createElement(X, { size: 18, color: "#E8EAED" })))),
         React.createElement(NmHelpCenter, null),
         React.createElement(NmWhatsNew, null),
-        toast && (React.createElement("div", { className: "fixed left-1/2 z-[95] px-4 py-2.5 rounded-xl text-[12px]", style: { bottom: 76, transform: "translateX(-50%)", background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)", maxWidth: "90%", textAlign: "center" } }, toast))));
+        toast && (React.createElement("div", { className: "fixed left-1/2 nm-layer-toast px-4 py-2.5 rounded-xl text-[12px]", style: { bottom: 76, transform: "translateX(-50%)", background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)", maxWidth: "90%", textAlign: "center" } }, toast))));
 }
 
 try {
