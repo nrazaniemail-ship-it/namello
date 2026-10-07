@@ -2625,11 +2625,12 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.13";
-const NM_VERSION_CODE = 14;
+const NM_VERSION_NAME = "1.0.20";
+const NM_VERSION_CODE = 21;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "موتور تحلیل استراتژیک در ارزیابی پیشرفته داشبورد";
 const NM_CHANGELOG = [
+    "نسخه 1.0.20: تکمیل موتور آماری و Rule-Based تطبیقی: Transition رژیم، Forecast احتمالی، ریسک مشروط، Strategy Fit، تشخیص Decay، Regime × Psychology و مرکز تصمیم‌یار توضیح‌پذیر.",
     "نسخه 1.0.11: به ارزیابی پیشرفته داشبورد «موتور تحلیل استراتژیک» اضافه شد: روایت استراتژیک قاعده‌محور (نقاط قوت، نشت‌ها، موارد اجتناب، اقدامات کوتاه‌مدت و میان‌مدت) که زیر هر یافته دلیل عددی آن را نشان می‌دهد.",
     "نسخه 1.0.11: Edge شرطی بر اساس نشست، روز هفته، ساعت ورود، وضعیت بازار، هم‌راستایی با روند و جفت‌ارز با آماره t و برچسب «معنادار/مقدماتی» و هشدار رژیم (مثبت در یک رژیم، منفی در دیگری).",
     "نسخه 1.0.11: موتور رفتاری: Revenge Trading، Overconfidence، افزایش سایز پس از باخت، Overtrade، Tilt Score پویا، Discipline Score، تفکیک زیان رفتاری از واریانس طبیعی و همبستگی وضعیت روانی با عملکرد؛ با قوانین رفتاری قابل تنظیم توسط کاربر.",
@@ -5417,7 +5418,7 @@ function NmAdvancedFinancialPanel({trades,startingBalance}){
 /* ===== Strategic Analysis Engine (1.0.12) =====
    Analytical + Interpretive + Prescriptive layers on top of nmAdvancedFinancialModel.
    Pure JS, rule-based, deterministic (seeded). Every finding carries an "evidence" string (explainability). */
-const NM_STR_DEFAULT_RULES = { revengeMin: 30, overStreak: 2, sizeMult: 1.25, minGroup: 5 };
+const NM_STR_DEFAULT_RULES = { revengeMin: 30, overStreak: 2, sizeMult: 1.25, minGroup: 5, regimeRollingWindow: 20, transitionMin: 5, forecastHorizon: 10 };
 const NM_STR_RULES_KEY = "namello_strategic_rules_v1";
 const NM_WEEKDAY_FA = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"];
 function nmStrLoadRules() {
@@ -5661,6 +5662,77 @@ function nmStrOhlcGroups(items,minG,featureData){
   return defs.map(([n,f])=>make(n,f)).filter(Boolean).sort((a,b)=>b.mean-a.mean);
 }
 
+
+function nmStrRegimeTransition(items, featureData, minG){
+  if(!featureData?.available) return {available:false,dimensions:[],current:null};
+  const rows=featureData.rows.slice().sort((a,b)=>a.index-b.index);
+  const defs=[
+    {key:'volatility',title:'رژیم نوسان',get:r=>r.volRegimeFa},
+    {key:'trend_range',title:'رژیم روند/رنج',get:r=>r.trendRegimeFa},
+    {key:'combined',title:'رژیم ترکیبی',get:r=>r.combinedRegimeFa}
+  ];
+  const dimensions=defs.map(d=>{
+    const seq=rows.map(r=>d.get(r)).filter(Boolean), counts={}, transitions={};
+    for(const x of seq) counts[x]=(counts[x]||0)+1;
+    for(let i=1;i<seq.length;i++){const k=seq[i-1]+'→'+seq[i];transitions[k]=(transitions[k]||0)+1;}
+    const matrix=Object.entries(transitions).map(([k,count])=>{const [from,to]=k.split('→');const denom=counts[from]||0;return {from,to,count,prob:denom?count/denom:0};}).sort((a,b)=>b.prob-a.prob);
+    const current=seq.at(-1)||null, outgoing=matrix.filter(x=>x.from===current).sort((a,b)=>b.prob-a.prob);
+    return {key:d.key,title:d.title,n:seq.length,current,states:Object.entries(counts).map(([name,n])=>({name,n,share:n/seq.length})),matrix,outgoing};
+  });
+  return {available:true,dimensions};
+}
+function nmStrRegimeRisk(items, featureData, minG, windowSize){
+  if(!featureData?.available) return {available:false,dimensions:[]};
+  const rows=featureData.rows.slice().sort((a,b)=>a.index-b.index);
+  const defs=[
+    {key:'volatility',title:'رژیم نوسان',get:r=>r.volRegimeFa},
+    {key:'trend_range',title:'رژیم روند/رنج',get:r=>r.trendRegimeFa},
+    {key:'combined',title:'رژیم ترکیبی',get:r=>r.combinedRegimeFa}
+  ];
+  const dimensions=defs.map(d=>{const current=d.get(rows.at(-1));const subset=rows.slice(-windowSize).filter(r=>d.get(r)===current).map(r=>items[r.index]).filter(Boolean);const vals=subset.map(x=>x.v).filter(Number.isFinite);const st=nmStrStat(vals);const losses=subset.filter(x=>x.v<0).map(x=>x.v);const lossMean=losses.length?nmStrStat(losses).mean:null;return {key:d.key,title:d.title,current,n:vals.length,edge:st.mean,sd:st.sd,win:st.win,ci:st.ci,t:st.t,verdict:st.verdict,lossMean,maxLoss:losses.length?Math.min(...losses):null};}).filter(x=>x.current);
+  return {available:true,window:windowSize,dimensions};
+}
+function nmStrRegimeForecast(transitions, horizon){
+  if(!transitions?.available) return {available:false,dimensions:[]};
+  const dimensions=transitions.dimensions.map(d=>{const out=d.outgoing.slice(0,6);let probs=out.map(x=>({name:x.to,prob:x.prob}));if(!probs.length&&d.current) probs=[{name:d.current,prob:1}];return {key:d.key,title:d.title,current:d.current,horizon,probabilities:probs};});
+  return {available:true,horizon,dimensions};
+}
+function nmStrAdaptiveDecay(items, featureData, windowSize, minG){
+  if(!featureData?.available) return {available:false,dimensions:[]};
+  const rows=featureData.rows.slice().sort((a,b)=>a.index-b.index), defs=[
+    {key:'volatility',title:'رژیم نوسان',get:r=>r.volRegimeFa},
+    {key:'trend_range',title:'رژیم روند/رنج',get:r=>r.trendRegimeFa},
+    {key:'combined',title:'رژیم ترکیبی',get:r=>r.combinedRegimeFa}
+  ];
+  const dimensions=defs.map(d=>{const seq=rows.map(r=>({r,v:items[r.index]?.v})).filter(x=>Number.isFinite(x.v));const W=Math.min(windowSize,Math.floor(seq.length/2));if(W<minG)return null;const recent=seq.slice(-W), prior=seq.slice(-2*W,-W);const label=d.get(seq.at(-1).r);const rc=recent.filter(x=>d.get(x.r)===label).map(x=>x.v), pc=prior.filter(x=>d.get(x.r)===label).map(x=>x.v);if(rc.length<minG)return null;const a=nmStrStat(rc),b=pc.length>=minG?nmStrStat(pc):null;const delta=b?a.mean-b.mean:null;return {key:d.key,title:d.title,name:label,recent:a,prior:b,delta,status:delta===null?'insufficient':delta<-Math.max(0.05,Math.abs(b?.mean||0)*0.25)?'decay':delta>Math.max(0.05,Math.abs(b?.mean||0)*0.25)?'improving':'stable'};}).filter(Boolean);return {available:true,window:windowSize,dimensions};
+}
+function nmStrAdaptiveStrategy(items, featureData, minG){
+  if(!featureData?.available) return {available:false,current:null,rows:[]};
+  const current=featureData.rows.at(-1); if(!current)return {available:false,current:null,rows:[]};
+  const label=current.combinedRegimeFa; const rows=items.filter(i=>i&&i.t).map(i=>({i,label:featureData.rows.find(r=>r.index===items.indexOf(i))?.combinedRegimeFa})).filter(x=>x.label===label);
+  const map={}; rows.forEach(x=>{const name=nmDashSetup(x.i.t)||'نامشخص';(map[name]=map[name]||[]).push(x.i.v);});
+  const out=Object.entries(map).filter(([,v])=>v.length>=minG).map(([name,v])=>{const st=nmStrStat(v);return {name,n:st.n,edge:st.mean,win:st.win,t:st.t,verdict:st.verdict,fit:st.mean>0?'preferred':st.mean<0?'avoid':'neutral'};}).sort((a,b)=>b.edge-a.edge);
+  return {available:true,current:label,rows:out};
+}
+function nmStrDecisionEngine(out){
+  const e=out.all?.mean??0, conf=out.confidence?.score??50, dq=out.dataQuality?.score??50;
+  const latest=out.regime?.forecast?.dimensions?.find(d=>d.current)?.current||null;
+  const decay=(out.regime?.adaptiveDecay?.dimensions||[]).filter(x=>x.status==='decay').length;
+  const risk=out.regime?.risk?.dimensions?.find(d=>d.key==='combined'&&d.current===latest) || out.regime?.risk?.dimensions?.find(d=>d.current===latest);
+  const psych=out.behavior?.disciplineScore??50;
+  let tone='warn',title='شرایط احتیاط',score=50;
+  if(e>0&&conf>=70&&dq>=70&&decay===0&&psych>=70) {tone='good';title='شرایط مناسب';score=80;}
+  if(e<=0||dq<50||decay>=2||psych<45) {tone='bad';title='شرایط نامناسب';score=25;}
+  const reasons=[];
+  reasons.push(`Edge کلی ${nmFmN(e,3)}${out.unit||''}`); reasons.push(`Confidence ${conf}/100`); reasons.push(`کیفیت داده ${dq}/100`); reasons.push(`انضباط ${psych}/100`);
+  if(decay) reasons.push(`${decay} رژیم دارای نشانه افت Edge`);
+  if(risk?.edge!==null&&risk?.edge!==undefined) reasons.push(`Edge رژیم فعلی ${nmFmN(risk.edge,3)}${out.unit||''}`);
+  let action='ریسک پایه و ثبت کامل داده‌ها را حفظ کن.';
+  if(tone==='good') action='استراتژی‌های ترجیحی رژیم فعلی را اجرا کن و ریسک را از سقف تعیین‌شده بالاتر نبر.';
+  if(tone==='bad') action='از افزایش ریسک خودداری کن؛ در رژیم‌های ضعیف فیلتر یا کاهش سایز اعمال کن و تغییرات رژیم را پایش کن.';
+  return {tone,title,score,action,reasons,currentRegime:latest};
+}
+
 function nmStrategicEngine(trades, startingBalance, opts) {
   opts = opts || {};
   const rules = Object.assign({}, NM_STR_DEFAULT_RULES, opts.rules || {});
@@ -5830,6 +5902,24 @@ function nmStrategicEngine(trades, startingBalance, opts) {
     capacity = { small, big, smallLot: Number(lotItems[0].t.lot), bigLot: Number(lotItems[lotItems.length - 1].t.lot), degrade: big.mean < small.mean * 0.5 && small.mean > 0 };
   }
   out.forward = { scenarios, sizing, goal, capacity, ruinBasis: start > 0 ? "۳۰٪ سرمایه اولیه" : "۲۰ برابر میانگین زیان", horizon, start };
+  /* ---------- Modules 7–13: adaptive regime stack (1.0.14–1.0.20) ---------- */
+  const transition = nmStrRegimeTransition(items, ohlcRegime, minG);
+  const regimeRisk = nmStrRegimeRisk(items, ohlcRegime, minG, rollingWindow);
+  const forecast = nmStrRegimeForecast(transition, Math.max(3, Number(rules.forecastHorizon)||10));
+  const adaptiveDecay = nmStrAdaptiveDecay(items, ohlcRegime, rollingWindow, minG);
+  const adaptiveStrategy = nmStrAdaptiveStrategy(items, ohlcRegime, minG);
+  out.regime.transition = transition;
+  out.regime.risk = regimeRisk;
+  out.regime.forecast = forecast;
+  out.regime.adaptiveDecay = adaptiveDecay;
+  out.strategy.adaptive = adaptiveStrategy;
+  out.regime.psychology = [];
+  if(ohlcRegime.available){
+    const labelsByIndex=new Map(ohlcRegime.rows.map(r=>[r.index,r.combinedRegimeFa]));
+    const pmap={};
+    items.forEach((it,i)=>{const label=labelsByIndex.get(i); if(!label)return; const flagsFor=flags?.[i]; const flagged=flagsFor?Object.values(flagsFor).some(Boolean):false; (pmap[label]=pmap[label]||[]).push({v:it.v,flagged});});
+    out.regime.psychology=Object.entries(pmap).map(([name,a])=>{const allv=nmStrStat(a.map(x=>x.v));const bad=a.filter(x=>x.flagged).map(x=>x.v);return {name,n:a.length,edge:allv.mean,behaviorRate:a.length?bad.length/a.length:0,behaviorEdge:bad.length?nmStrStat(bad).mean:null};}).filter(x=>x.n>=minG);
+  }
   /* ---------- Module 5: strategic narrative (rule-based, explainable) ---------- */
   const fm = opts.fm && opts.fm.ready ? opts.fm : null;
   const leaks = [], avoid = [], short = [], mid = [], strengths = [];
@@ -5890,6 +5980,7 @@ function nmStrategicEngine(trades, startingBalance, opts) {
   auditPush('discipline','انضباط ≥ 80',out.behavior.disciplineScore>=80,`Discipline=${out.behavior.disciplineScore}/100`);
   auditPush('data-quality','کیفیت داده ≥ 70',dq.score>=70,`Data Quality=${dq.score}/100`);
   auditPush('decay','Edge بدون تضعیف',!(decayAll&&decayAll.status==='decay'),decayAll?`${decayAll.prior} → ${decayAll.last}`:'داده کافی نیست');
+  out.decision = nmStrDecisionEngine(out);
   out.health = nmStrHealth(out);
   return out;
 }
@@ -5954,7 +6045,7 @@ function NmStrategicEnginePanel({ trades, startingBalance }) {
     React.createElement("div", { className: "flex-1 min-w-0 text-[10px]", style: { color: "var(--text-primary)", overflowWrap: "anywhere" } }, g.name, React.createElement("span", { style: { color: "var(--text-muted)" } }, ` · n=${g.n} · Win ${f(g.win * 100, 0)}٪`)),
     React.createElement("div", { className: "text-[11px] font-bold", style: { color: g.mean > 0 ? "#34D399" : g.mean < 0 ? "#F87171" : "var(--text-primary)", fontFamily: "JetBrains Mono,monospace", direction: "ltr" } }, f(g.mean, 2) + u),
     badge(g.verdict));
-  const tabs = [["story", "روایت"], ["regime", "Edge شرطی"], ["behavior", "رفتار"], ["strategy", "سیستم"], ["forward", "سناریو و هدف"]];
+  const tabs = [["story", "روایت"], ["regime", "Edge شرطی"], ["behavior", "رفتار"], ["strategy", "سیستم"], ["forward", "سناریو و هدف"], ["command", "مرکز تصمیم"]];
   const tabBar = React.createElement("div", { className: "flex gap-1 mt-3 w-full" }, tabs.map(([k, l]) => React.createElement("button", { key: k, type: "button", onClick: () => setTab(k), className: "flex-1 min-w-0 px-1 py-1.5 rounded-full text-[10px] whitespace-nowrap text-center", style: { background: tab === k ? "var(--accent-gold)" : "var(--bg-card)", color: tab === k ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid var(--border-1)" } }, l)));
   let body = null;
   if (tab === "story") {
@@ -5998,6 +6089,18 @@ function NmStrategicEnginePanel({ trades, startingBalance }) {
       s.regime.alerts.length ? sub("هشدار رژیم", listOf(s.regime.alerts.map(a => ({ text: a.text, why: `${a.evidence} · منبع: ${a.source}` })), "#F59E0B")) : sub("هشدار رژیم", note("هنوز رژیمی با Edge مثبت و منفی هم‌زمان (با حداقل نمونه) پیدا نشد.")),
       s.regime.dims.length ? s.regime.dims.map(d => sub(d.title, d.groups.map(groupRow), d.key)) : note("داده کافی برای بخش‌بندی وجود ندارد؛ ثبت نشست، ساعت و وضعیت بازار را کامل کن."),
       note(`میانگین بر حسب ${s.useR ? "R" : "پول"} است. فقط موارد «معنادار» (n ≥ 8 و |t| ≥ 1.96) قابل اتکاترند؛ رژیم OHLC نیز حداقل ۸ کندل در هر معامله و حداقل نمونه گروهی موتور را نیاز دارد. بخش‌بندی روی نمونه کوچک ممکن است تصادفی باشد (Overfitting).`));
+  } else if (tab === "command") {
+    const d=s.decision||{}; const tone=d.tone==='good'?'good':d.tone==='bad'?'bad':'warn';
+    body=React.createElement("div",null,
+      sub("وضعیت تصمیم‌یار",grid([card("وضعیت",d.title||"—",`امتیاز ${d.score||0}/100`,tone),card("رژیم فعلی",d.currentRegime||"—","بر پایه OHLC/MT5","info"),card("Edge",`${f(s.all.mean,3)}${u}`,"Expectancy کلی",s.all.mean>0?"good":"bad"),card("Confidence",`${s.confidence.score}/100`,"اطمینان موتور","info")])),
+      sub("اقدام Rule-Based",note(d.action||"—")),
+      sub("دلایل تصمیم",listOf((d.reasons||[]).map(x=>({text:x,why:"خروجی مستقیم موتور آماری و قوانین توضیح‌پذیر"})),"#A78BFA")),
+      s.regime.transition?.available ? sub("Transition / Forecast",(s.regime.forecast.dimensions||[]).map(x=>React.createElement("div",{key:x.key,className:"rounded-lg px-2.5 py-2 mb-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[11px] font-semibold"},`${x.title}: ${x.current||"—"}`),React.createElement("div",{className:"text-[10px] leading-5",style:{color:"var(--text-muted)"}},(x.probabilities||[]).map(p=>`${p.name} ${Math.round(p.prob*100)}٪`).join(" · "))))):null,
+      s.regime.risk?.available ? sub("ریسک مشروط به رژیم",(s.regime.risk.dimensions||[]).map(x=>({text:`${x.title}: ${x.current} · Edge ${f(x.edge,3)}${u} · Win ${f(x.win*100,0)}٪`,why:`n=${x.n} · t=${f(x.t,2)} · Max Loss=${f(x.maxLoss,2)}`})).length?listOf(s.regime.risk.dimensions.map(x=>({text:`${x.title}: ${x.current} · Edge ${f(x.edge,3)}${u} · Win ${f(x.win*100,0)}٪`,why:`n=${x.n} · t=${f(x.t,2)}`})),"#34D399"):note("نمونه کافی نیست")):null,
+      s.strategy.adaptive?.available ? sub("Strategy Fit در رژیم فعلی",listOf((s.strategy.adaptive.rows||[]).map(x=>({text:`${x.name}: ${x.fit} · Edge ${f(x.edge,3)}${u}`,why:`n=${x.n} · Win ${f(x.win*100,0)}٪ · t=${f(x.t,2)}`})),"#60A5FA")):null,
+      s.regime.psychology?.length ? sub("Regime × Psychology",listOf(s.regime.psychology.map(x=>({text:`${x.name}: Edge ${f(x.edge,3)}${u} · رفتار پرریسک ${f(x.behaviorRate*100,0)}٪`,why:x.behaviorEdge===null?`n=${x.n}`:`Edge معاملات دارای رفتار ${f(x.behaviorEdge,3)}${u} · n=${x.n}`})),"#F59E0B")):null,
+      s.regime.adaptiveDecay?.dimensions?.length ? sub("Adaptive Edge / Decay",listOf(s.regime.adaptiveDecay.dimensions.map(x=>({text:`${x.title} · ${x.name}: ${x.status}`,why:x.delta===null?`نمونه قبل کافی نیست`:`تغییر ${f(x.delta,3)}${u}`})),"#F87171")):null
+    );
   } else if (tab === "behavior") {
     const b = s.behavior, a = b.attribution;
     const tl = v => v === null ? "info" : v < 25 ? "good" : v < 50 ? "warn" : "bad";

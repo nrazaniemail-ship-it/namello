@@ -1,3 +1,6 @@
+## 1.0.20 — Adaptive Rule-Based Strategic Engine
+- Regime Transition, Forecast, Conditional Risk, Strategy Fit, Adaptive Decay, Regime × Psychology, Decision Center.
+
 ## 1.0.12 — OHLC/MT5 Regime Detection
 
 - افزودن تشخیص رژیم بازار مبتنی بر مسیر OHLC متصل‌شده از MT5.
