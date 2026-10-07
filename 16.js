@@ -2615,7 +2615,7 @@ function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, curs
    اتصال کوچک (props / رویداد) به آن وصل می‌شوند.
    ===================================================================== */
 const RE = React.createElement;
-const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "button", onClick: onToggle, className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, editMode ? "انصراف" : "ویرایش");
+const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "button", onClick: onToggle, className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)", marginInlineStart: "auto" } }, editMode ? "انصراف" : "ویرایش");
 
 /* ---------------- نسخه‌گذاری (Semantic Versioning + Version Code) ----------------
    Version Name  = MAJOR.MINOR.PATCH
@@ -2632,6 +2632,7 @@ const NM_VERSION_DATE = "اصلاحات ژورنال، لایه مالی و ان
 const NM_CHANGELOG = [
     "نسخه 1.0.9: در لایه ژورنال، بخش «ثبت ورود» و «ویرایش معامله»، آیتم‌های چک‌لیستی ۶ (آمادگی برنامه روزانه)، ۷ (ارزیابی چارت) و ۳۲ (آمادگی ستاپ) با لمس عنوان هر شرط هم تیک می‌خورند، نه فقط با لمس خود باکس.",
     "نسخه 1.0.9: در لایه مالی، باکس‌های بازه (روزانه، هفتگی، ماهانه، فصلی، سالانه و کل مدت) کوچک‌تر شدند و همگی کامل داخل صفحه جا می‌شوند.",
+    "نسخه 1.0.9: در لایه ژورنال، دکمه‌های «ویرایش» آیتم‌های «ثبت ورود» و «ثبت نتیجه معامله» به سمت چپ چیده شدند تا همگی در یک راستای عمودی قرار بگیرند.",
     "نسخه 1.0.9: در لایه اخبار، انیمیشن دکمه بروزرسانی بازطراحی شد: دست‌های خرگوش به‌صورت تناوبی و خلاف جهت هم بالا و پایین می‌روند و چشم خرگوش باز و بسته می‌شود.",
 ];
 function nmMigrateTradeSchemaV2(list) {
@@ -5953,7 +5954,7 @@ function NmJournalPlanChecklistField({plan,answers,onChange,label="Trade Plan / 
      c.type==='checkbox' && !tickOnly ? RE('div',{className:'flex gap-1'},[[true,'✓'],[false,'✕'],[null,'—']].map(([v,l])=>RE('button',{key:String(v),type:'button',onClick:()=>onChange({...answers,[c.id]:v}),className:'px-2 py-1 rounded',style:{background:answers[c.id]===v?'color-mix(in srgb, var(--accent-gold) 20%, transparent)':'var(--bg-page)',color:answers[c.id]===v?'var(--accent-gold)':'var(--text-muted)'}},l))) : c.type!=='checkbox' ? RE('input',{value:answers?.[c.id]??'',onChange:e=>onChange({...answers,[c.id]:e.target.value}),className:'w-32 rounded px-2 py-1 bg-transparent text-[10px]',style:{border:'1px solid var(--border-1)',color:'var(--text-primary)'}}) : null
    )
  )}))
- return RE(Field,{label:RE('span',{className:'flex items-center gap-1.5'},label,RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)'}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
+ return RE(Field,{label:RE('span',{className:'flex items-center gap-1.5'},label,RE('button',{type:'button',onClick:()=>editing?cancel():setEditing(true),className:'px-1.5 py-0.5 rounded',style:{background:'var(--bg-card2)',color:'var(--accent-gold)',border:'1px solid var(--border-2)',marginInlineStart:'auto'}},editing?'انصراف':'ویرایش'))},RE(React.Fragment,null,scoreBox,editor,viewer));
 }
 
 function NmPlanChecklistField({plan,answers,onChange,label="Trade Plan / Checklist"}){
@@ -11266,7 +11267,7 @@ function App() {
                             React.createElement("input", { type: "text", value: newTradeManagementText, onChange: e => setNewTradeManagementText(e.target.value), onKeyDown: e => e.key === "Enter" && addTradeManagementOptionInline(), placeholder: (appLanguage === "en" ? "New item..." : "حالت جدید..."), className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addTradeManagementOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
                                 React.createElement(Plus, { size: 12 }))))),
-                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات")), RE("button", { type: "button", onClick: () => setDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, disciplineEditMode ? "انصراف" : "ویرایش")) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات")), RE("button", { type: "button", onClick: () => setDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)", marginInlineStart: "auto" } }, disciplineEditMode ? "انصراف" : "ویرایش")) },
                     React.createElement(React.Fragment, null,
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, disciplineOptions.map(([key,label], i) => disciplineEditMode ? React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? .3 : 1, color: "var(--text-muted)" } }, "▲"),
@@ -11425,7 +11426,7 @@ function App() {
                                 onEditFieldChange("tradeManagement", next);
                             }, className: "px-3 py-2 rounded-lg text-[12px]", style: { background: active ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: active ? "var(--accent-gold)" : "var(--text-muted)" } }, opt));
                     }))),
-React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات")), RE("button", { type: "button", onClick: () => setEditDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, editDisciplineEditMode ? "انصراف" : "ویرایش")) },
+React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5 font-semibold" }, numLabel(7, hlLabel(appLanguage === "en" ? "Discipline / Mistakes" : "انضباط/اشتباهات")), RE("button", { type: "button", onClick: () => setEditDisciplineEditMode(m => !m), className: "px-1.5 py-0.5 rounded", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)", marginInlineStart: "auto" } }, editDisciplineEditMode ? "انصراف" : "ویرایش")) },
                     React.createElement(React.Fragment, null,
                         React.createElement("div", { className: "flex flex-wrap gap-1.5" }, disciplineOptions.map(([key,label], i) => editDisciplineEditMode ? React.createElement("span", { key, className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                             React.createElement("button", { type: "button", onClick: () => moveDisciplineOption(i, -1), disabled: i === 0, style: { opacity: i === 0 ? .3 : 1, color: "var(--text-muted)" } }, "▲"),
