@@ -1,7 +1,7 @@
 # Changelog
 
 ## 1.0.8 — Layer header actions & Advanced Evaluation analytics
-- Economic News: the refresh button now uses the Namello logo (rabbit & snail) as a running animation while news is updating; the animation stops when the update finishes, and on failure the logo background turns red and the animation stops.
+- Economic News: the refresh button now shows the Namello logo (rabbit & snail) running — front arms and back legs swing — while news is updating, on a green background. When the update finishes the motion stops and green stays; on failure the background turns red and the motion stops.
 - Sessions, Economic News and Trading Calendar: the Settings button now sits inside the layer title box, on its left side. Economic News gets a title box matching the other layers.
 - Journal: the «ثبت ورود» button now spans the full width of its card; the extra title/description text was removed.
 - Dashboard → Advanced Evaluation: new quantitative panel (SQN, expectancy confidence interval, Kelly, VaR/CVaR, skewness/kurtosis, drawdown, equity R², edge drift, Runs Test, profit concentration, seeded Monte Carlo bootstrap) with an «چکیده ارزیابی» summary (score + one technical/strategic recommendation). Also included in the Advanced Evaluation Excel/PDF export.
