@@ -2625,15 +2625,16 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.9";
-const NM_VERSION_CODE = 10;
+const NM_VERSION_NAME = "1.0.10";
+const NM_VERSION_CODE = 11;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "اصلاحات ژورنال، لایه مالی و انیمیشن بروزرسانی اخبار";
+const NM_VERSION_DATE = "موتور تحلیل استراتژیک در ارزیابی پیشرفته داشبورد";
 const NM_CHANGELOG = [
-    "نسخه 1.0.9: در لایه ژورنال، بخش «ثبت ورود» و «ویرایش معامله»، آیتم‌های چک‌لیستی ۶ (آمادگی برنامه روزانه)، ۷ (ارزیابی چارت) و ۳۲ (آمادگی ستاپ) با لمس عنوان هر شرط هم تیک می‌خورند، نه فقط با لمس خود باکس.",
-    "نسخه 1.0.9: در لایه مالی، باکس‌های بازه (روزانه، هفتگی، ماهانه، فصلی، سالانه و کل مدت) کوچک‌تر شدند و همگی کامل داخل صفحه جا می‌شوند.",
-    "نسخه 1.0.9: در لایه ژورنال، دکمه‌های «ویرایش» آیتم‌های «ثبت ورود» و «ثبت نتیجه معامله» به سمت چپ چیده شدند تا همگی در یک راستای عمودی قرار بگیرند.",
-    "نسخه 1.0.9: در لایه اخبار، انیمیشن دکمه بروزرسانی بازطراحی شد: دست‌های خرگوش به‌صورت تناوبی و خلاف جهت هم بالا و پایین می‌روند و چشم خرگوش باز و بسته می‌شود.",
+    "نسخه 1.0.10: به ارزیابی پیشرفته داشبورد «موتور تحلیل استراتژیک» اضافه شد: روایت استراتژیک قاعده‌محور (نقاط قوت، نشت‌ها، موارد اجتناب، اقدامات کوتاه‌مدت و میان‌مدت) که زیر هر یافته دلیل عددی آن را نشان می‌دهد.",
+    "نسخه 1.0.10: Edge شرطی بر اساس نشست، روز هفته، ساعت ورود، وضعیت بازار، هم‌راستایی با روند و جفت‌ارز با آماره t و برچسب «معنادار/مقدماتی» و هشدار رژیم (مثبت در یک رژیم، منفی در دیگری).",
+    "نسخه 1.0.10: موتور رفتاری: Revenge Trading، Overconfidence، افزایش سایز پس از باخت، Overtrade، Tilt Score پویا، Discipline Score، تفکیک زیان رفتاری از واریانس طبیعی و همبستگی وضعیت روانی با عملکرد؛ با قوانین رفتاری قابل تنظیم توسط کاربر.",
+    "نسخه 1.0.10: Attribution سیستم، اثر تعامل سیستم با شرایط (نشست/بازار/روند/روز) و تشخیص افت Edge با Rolling Expectancy.",
+    "نسخه 1.0.10: تحلیل سناریو (کاهش Win Rate و میانگین سود، افزایش زیان)، جدول سایزینگ و احتمال سقف افت، امکان‌سنجی هدف و حساسیت به حجم؛ مونت‌کارلوی تحلیل مالی به ۵۰۰۰ مسیر ارتقا یافت. خروجی Excel/PDF ارزیابی پیشرفته شامل موتور استراتژیک است.",
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -5271,8 +5272,8 @@ function nmAdvancedFinancialModel(trades,startingBalance){
   const adv=nmAdvancedStats(closed,start);
   const effCount=closed.filter(t=>Number.isFinite(Number(t.exitEfficiency))).length;
   const roundTripShare=adv.exits.roundTrip/n,earlyShare=effCount?adv.exits.early/effCount:null;
-  // Monte Carlo bootstrap (next 100 trades, 1000 paths, seeded => stable between renders)
-  const H=100,SIMS=1000;
+  // Monte Carlo bootstrap (next 100 trades, 5000 paths, seeded => stable between renders)
+  const H=100,SIMS=5000;
   let seed=(n*2654435761)>>>0;pnl.forEach(v=>{seed=(Math.imul(seed^(Math.round(v*100)|0),16777619))>>>0;});
   const rnd=nmFmRng(seed||1),ruinLimit=start>0?start*0.3:(avgLoss>0?avgLoss*20:0);
   const finals=[],dds=[];let prof=0,ruin=0;
@@ -5413,6 +5414,426 @@ function NmAdvancedFinancialPanel({trades,startingBalance}){
       group(`شبیه‌سازی Monte Carlo · ${mc.H} معامله آینده، ${mc.sims} مسیر`,mcCards)),
     summary);
 }
+/* ===== Strategic Analysis Engine (1.0.10) =====
+   Analytical + Interpretive + Prescriptive layers on top of nmAdvancedFinancialModel.
+   Pure JS, rule-based, deterministic (seeded). Every finding carries an "evidence" string (explainability). */
+const NM_STR_DEFAULT_RULES = { revengeMin: 30, overStreak: 2, sizeMult: 1.25, minGroup: 5 };
+const NM_STR_RULES_KEY = "namello_strategic_rules_v1";
+const NM_WEEKDAY_FA = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"];
+function nmStrLoadRules() {
+  let r = {};
+  try { r = JSON.parse(localStorage.getItem(NM_STR_RULES_KEY) || "{}") || {}; } catch (e) { r = {}; }
+  const o = Object.assign({}, NM_STR_DEFAULT_RULES);
+  Object.keys(o).forEach(k => { const v = Number(r[k]); if (Number.isFinite(v) && v > 0) o[k] = v; });
+  return o;
+}
+function nmStrSaveRules(r) { try { localStorage.setItem(NM_STR_RULES_KEY, JSON.stringify(r)); } catch (e) { } }
+function nmStrMinutes(d, tm) {
+  if (!d || !tm) return null;
+  const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d)), tt = /^(\d{1,2}):(\d{2})/.exec(String(tm));
+  if (!dm || !tt) return null;
+  return Date.UTC(+dm[1], +dm[2] - 1, +dm[3], +tt[1], +tt[2]) / 60000;
+}
+function nmStrCloseMin(t) {
+  const c = nmStrMinutes(t.closedDate || t.date, t.closedTime);
+  if (c !== null) return c;
+  const e = nmStrMinutes(t.date, t.time), du = Number(t.durationMinutes);
+  return e !== null && Number.isFinite(du) && du >= 0 ? e + du : null;
+}
+function nmStrStat(vals) {
+  const n = vals.length;
+  if (!n) return { n: 0, mean: null, sd: null, t: null, sum: 0, win: null, lo: null, hi: null };
+  const sum = vals.reduce((a, b) => a + b, 0), mean = sum / n;
+  const sd = n > 1 ? Math.sqrt(vals.reduce((s, v) => s + (v - mean) * (v - mean), 0) / (n - 1)) : 0;
+  const se = sd > 0 ? sd / Math.sqrt(n) : null, tc = nmFmTCrit(Math.max(1, n - 1));
+  return { n, mean, sd, sum, t: se ? mean / se : null, win: vals.filter(v => v > 0).length / n, lo: se ? mean - tc * se : null, hi: se ? mean + tc * se : null };
+}
+function nmStrVerdict(g) {
+  if (!g || g.t === null || g.t === undefined) return g && g.mean > 0 ? "pos" : g && g.mean < 0 ? "neg" : "neutral";
+  if (g.n >= 8 && g.t >= 1.96) return "sig_pos";
+  if (g.n >= 8 && g.t <= -1.96) return "sig_neg";
+  return g.mean > 0 ? "pos" : g.mean < 0 ? "neg" : "neutral";
+}
+function nmStrGroups(items, keyFn, minN) {
+  const map = {};
+  items.forEach(it => { const k = keyFn(it.t); if (k === null || k === undefined || k === "") return; (map[k] = map[k] || []).push(it.v); });
+  return Object.keys(map).map(name => Object.assign({ name }, nmStrStat(map[name]))).filter(g => g.n >= minN).map(g => Object.assign(g, { verdict: nmStrVerdict(g) })).sort((a, b) => b.mean - a.mean);
+}
+/* bootstrap Monte Carlo with optional what-if shifts (win-rate shift, win/loss scaling, size multiplier) */
+function nmStrMonte(pnl, o) {
+  const n = pnl.length, H = o.H || 100, SIMS = o.sims || 5000;
+  const wins = pnl.filter(v => v > 0), losses = pnl.filter(v => v < 0);
+  const pw = n ? wins.length / n : 0;
+  const shifted = (o.winShift || 0) !== 0 || (o.winScale || 1) !== 1 || (o.lossScale || 1) !== 1;
+  const canShift = shifted && wins.length > 0 && losses.length > 0;
+  const pwS = Math.min(0.98, Math.max(0.02, pw + (o.winShift || 0)));
+  const mult = o.sizeMult || 1, rnd = nmFmRng(((o.seed || 1) >>> 0) || 1);
+  const finals = [], dds = [];
+  let prof = 0, ruin = 0, hit = 0;
+  const lim = o.ruinLimit > 0 ? o.ruinLimit : 0, tgt = Number.isFinite(o.target) ? o.target : null;
+  for (let s = 0; s < SIMS; s++) {
+    let b = 0, pk = 0, md = 0, reached = false;
+    for (let i = 0; i < H; i++) {
+      let v;
+      if (canShift) v = rnd() < pwS ? wins[Math.floor(rnd() * wins.length)] * (o.winScale || 1) : losses[Math.floor(rnd() * losses.length)] * (o.lossScale || 1);
+      else v = pnl[Math.floor(rnd() * n)];
+      b += v * mult; if (b > pk) pk = b; const d = pk - b; if (d > md) md = d;
+      if (tgt !== null && b >= tgt) reached = true;
+    }
+    finals.push(b); dds.push(md); if (b > 0) prof++; if (lim > 0 && md >= lim) ruin++; if (reached) hit++;
+  }
+  finals.sort((a, b) => a - b); dds.sort((a, b) => a - b);
+  return { H, sims: SIMS, probProfit: prof / SIMS, median: nmFmQuantile(finals, 0.5), p5: nmFmQuantile(finals, 0.05), p95: nmFmQuantile(finals, 0.95), dd95: nmFmQuantile(dds, 0.95), ddMedian: nmFmQuantile(dds, 0.5), pRuin: lim > 0 ? ruin / SIMS : null, pTarget: tgt !== null ? hit / SIMS : null };
+}
+function nmStrRolling(vals, W) {
+  const out = [];
+  for (let i = W - 1; i < vals.length; i++) { let s = 0; for (let j = i - W + 1; j <= i; j++) s += vals[j]; out.push(s / W); }
+  return out;
+}
+function nmStrDecay(vals) {
+  const n = vals.length;
+  if (n < 12) return null;
+  const W = Math.max(5, Math.min(20, Math.floor(n / 3)));
+  const roll = nmStrRolling(vals, W);
+  const last = roll[roll.length - 1], prior = n >= 2 * W ? vals.slice(n - 2 * W, n - W).reduce((a, b) => a + b, 0) / W : vals.slice(0, n - W).reduce((a, b) => a + b, 0) / Math.max(1, n - W);
+  const m = roll.length, mx = (m - 1) / 2, my = roll.reduce((a, b) => a + b, 0) / m;
+  let sxy = 0, sxx = 0; roll.forEach((y, i) => { sxy += (i - mx) * (y - my); sxx += (i - mx) * (i - mx); });
+  const slope = sxx > 0 ? sxy / sxx : 0;
+  const status = (prior > 0 && (last < prior * 0.5 || last < 0)) ? "decay" : (last > 0 && (prior <= 0 || last > prior * 1.5)) ? "improving" : "stable";
+  return { W, last, prior, slope, status, n };
+}
+function nmStrategicEngine(trades, startingBalance, opts) {
+  opts = opts || {};
+  const rules = Object.assign({}, NM_STR_DEFAULT_RULES, opts.rules || {});
+  const closed = (trades || []).filter(t => t && t.status === "closed" && Number.isFinite(Number(t.pnl))).slice()
+    .sort((a, b) => `${a.date || ""}T${a.time || ""}`.localeCompare(`${b.date || ""}T${b.time || ""}`));
+  const n = closed.length, out = { n, ready: n >= 8, rules };
+  if (n < 8) return out;
+  const start = Number(startingBalance) > 0 ? Number(startingBalance) : 0;
+  const rAll = closed.map(nmDashR).filter(v => v !== null && Number.isFinite(v));
+  const useR = rAll.length >= Math.max(5, Math.ceil(n * 0.7));
+  const unit = useR ? " R" : "";
+  const items = [];
+  closed.forEach(t => { const v = useR ? nmDashR(t) : Number(t.pnl); if (v !== null && Number.isFinite(v)) items.push({ t, v, pnl: Number(t.pnl) || 0 }); });
+  const vals = items.map(i => i.v), all = nmStrStat(vals), minG = Math.max(3, rules.minGroup);
+  Object.assign(out, { useR, unit, all });
+  const fmt = (v, d) => nmFmN(v, d === undefined ? 2 : d);
+  /* ---------- Module 2: regime & conditional edge ---------- */
+  const hourBlock = t => { const m = /^(\d{1,2}):/.exec(String(t.time || "")); if (!m) return null; const h = Math.floor(+m[1] / 3) * 3, p = x => String(x).padStart(2, "0"); return `${p(h)}–${p(h + 3)}`; };
+  const dimDefs = [
+    { key: "session", title: "نشست / کیل‌زون", fn: t => { const s = nmDashSession(t); return s === "نامشخص" || s === "بدون نشست" ? null : s; } },
+    { key: "weekday", title: "روز هفته", fn: t => t.date && /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? NM_WEEKDAY_FA[new Date(t.date + "T12:00:00Z").getUTCDay()] : null },
+    { key: "hour", title: "بلوک ساعتی ورود (NY)", fn: hourBlock },
+    { key: "condition", title: "وضعیت بازار (رونددار / رنج / پرنوسان)", fn: t => ({ trend: "رونددار", range: "رنج", volatile: "پرنوسان" })[t.marketCondition] || null },
+    { key: "align", title: "هم‌راستایی با روند اصلی", fn: t => t.tradeDirectionRel === "with" ? "هم‌جهت با روند" : t.tradeDirectionRel === "against" ? "خلاف روند" : null },
+    { key: "pair", title: "جفت‌ارز", fn: t => t.pair || null }
+  ];
+  const dims = dimDefs.map(d => ({ key: d.key, title: d.title, groups: nmStrGroups(items, d.fn, minG) })).filter(d => d.groups.length >= 1);
+  const regimeAlerts = [];
+  dims.forEach(d => {
+    if (d.groups.length < 2) return;
+    const best = d.groups[0], worst = d.groups[d.groups.length - 1];
+    if (best.mean > 0 && worst.mean < 0) {
+      const strong = best.verdict === "sig_pos" || worst.verdict === "sig_neg";
+      regimeAlerts.push({ strong, title: d.title, text: `در «${d.title}»، Edge شما در «${best.name}» مثبت (${fmt(best.mean)}${unit}، n=${best.n}) و در «${worst.name}» منفی (${fmt(worst.mean)}${unit}، n=${worst.n}) است.`, evidence: `t(best)=${fmt(best.t)} · t(worst)=${fmt(worst.t)} · ${strong ? "معنادار آماری" : "مقدماتی؛ نیازمند نمونه بیشتر"}`, best, worst, dim: d.key });
+    }
+  });
+  regimeAlerts.sort((a, b) => (b.strong ? 1 : 0) - (a.strong ? 1 : 0));
+  out.regime = { dims, alerts: regimeAlerts };
+  /* ---------- Module 3: behavioural engine ---------- */
+  const sizeOf = t => { const l = Number(t.lot), r = Number(t.riskDollar); return l > 0 ? l : (r > 0 ? r : null); };
+  const flags = items.map(() => ({ revenge: false, overconf: false, lossEsc: false, overtrade: false, mistake: false }));
+  const perDay = {}; items.forEach(i => { if (i.t.date) perDay[i.t.date] = (perDay[i.t.date] || 0) + 1; });
+  const dayCounts = Object.values(perDay).sort((a, b) => a - b), medDay = dayCounts.length ? dayCounts[Math.floor(dayCounts.length / 2)] : 1;
+  const dayLimit = Math.max(3, Math.ceil(medDay * 2));
+  let winStreak = 0;
+  const recentSizes = [];
+  items.forEach((it, i) => {
+    const t = it.t, f = flags[i], s = sizeOf(t);
+    const prev = i > 0 ? items[i - 1] : null;
+    if (prev) {
+      const gap = (() => { const e = nmStrMinutes(t.date, t.time), c = nmStrCloseMin(prev.t); return e !== null && c !== null ? e - c : null; })();
+      if (prev.pnl < 0 && gap !== null && gap >= 0 && gap <= rules.revengeMin) f.revenge = true;
+    }
+    let sizeUp = false;
+    if (s !== null && recentSizes.length >= 3) {
+      const srt = recentSizes.slice(-10).sort((a, b) => a - b), med = srt[Math.floor(srt.length / 2)];
+      sizeUp = med > 0 && s > med * rules.sizeMult;
+    }
+    if (sizeUp && winStreak >= rules.overStreak) f.overconf = true;
+    if (sizeUp && prev && prev.pnl < 0) f.lossEsc = true;
+    if (t.date && perDay[t.date] > dayLimit) f.overtrade = true;
+    if ((t.disciplineMistakes || (t.review && t.review.mistakes) || []).length > 0) f.mistake = true;
+    if (s !== null) recentSizes.push(s);
+    winStreak = it.pnl > 0 ? winStreak + 1 : 0;
+  });
+  const flagDefs = [
+    ["revenge", "Revenge Trading", `ورود ظرف ≤${rules.revengeMin} دقیقه پس از باخت`],
+    ["overconf", "Overconfidence", `افزایش سایز بیش از ${nmFmN(rules.sizeMult, 2)}× پس از ≥${rules.overStreak} برد متوالی`],
+    ["lossEsc", "افزایش سایز پس از باخت", "سایز بزرگ‌تر از معمول بلافاصله پس از ضرر"],
+    ["overtrade", "Overtrade", `روزهایی با بیش از ${dayLimit} معامله`],
+    ["mistake", "اشتباه انضباطی ثبت‌شده", "معاملات دارای اشتباه ثبت‌شده در ژورنال"]
+  ];
+  const patterns = flagDefs.map(([k, title, desc]) => {
+    const yes = [], no = []; items.forEach((it, i) => (flags[i][k] ? yes : no).push(it));
+    const sy = nmStrStat(yes.map(x => x.v)), sn = nmStrStat(no.map(x => x.v));
+    const cost = yes.reduce((a, x) => a + x.pnl, 0);
+    return { key: k, title, desc, n: yes.length, share: yes.length / items.length, meanFlag: sy.mean, meanClean: sn.mean, win: sy.win, costPnl: cost, worse: sy.n >= 3 && sn.n >= 3 && sy.mean < sn.mean, tDiff: (sy.n >= 3 && sn.n >= 3 && sy.sd !== null && sn.sd !== null) ? (() => { const se = Math.sqrt((sy.sd * sy.sd) / sy.n + (sn.sd * sn.sd) / sn.n); return se > 0 ? (sy.mean - sn.mean) / se : null; })() : null };
+  });
+  const tiltOf = idx => {
+    const m = idx.length; if (!m) return null;
+    const sh = k => idx.filter(i => flags[i][k]).length / m;
+    const c = (v, cap) => Math.min(1, v / cap);
+    return Math.round(100 * (0.35 * c(sh("revenge"), 0.25) + 0.25 * c(sh("lossEsc"), 0.2) + 0.2 * c(sh("overtrade"), 0.3) + 0.2 * c(sh("mistake"), 0.4)));
+  };
+  const allIdx = items.map((_, i) => i), recentIdx = allIdx.slice(-20);
+  const tiltAll = tiltOf(allIdx), tiltNow = items.length >= 12 ? tiltOf(recentIdx) : null;
+  const cleanShare = 1 - flags.filter(f => f.mistake).length / items.length;
+  const readiness = items.map(i => nmTradeSetupReadiness(i.t)).filter(v => v !== null);
+  const avgReady = readiness.length >= 3 ? readiness.reduce((a, b) => a + b, 0) / readiness.length : null;
+  const disciplineScore = Math.round(avgReady !== null ? 0.7 * cleanShare * 100 + 0.3 * avgReady : cleanShare * 100);
+  const anyFlag = i => Object.values(flags[i]).some(Boolean);
+  const totalLoss = items.reduce((a, x) => a + (x.pnl < 0 ? -x.pnl : 0), 0);
+  const behLoss = items.reduce((a, x, i) => a + (x.pnl < 0 && anyFlag(i) ? -x.pnl : 0), 0);
+  const cleanVals = items.filter((_, i) => !anyFlag(i)).map(x => x.v), flaggedVals = items.filter((_, i) => anyFlag(i)).map(x => x.v);
+  const psychMap = {};
+  items.forEach(it => (it.t.psychology || []).forEach(p => { if (p) (psychMap[p] = psychMap[p] || []).push(it.v); }));
+  const psych = Object.keys(psychMap).map(name => Object.assign({ name }, nmStrStat(psychMap[name]))).filter(g => g.n >= 3).map(g => Object.assign(g, { verdict: nmStrVerdict(g) })).sort((a, b) => b.mean - a.mean);
+  const hi = items.filter(i => { const r = nmTradeSetupReadiness(i.t); return r !== null && r >= 75; }), lo = items.filter(i => { const r = nmTradeSetupReadiness(i.t); return r !== null && r < 75; });
+  const readyCmp = hi.length >= 5 && lo.length >= 5 ? { hi: nmStrStat(hi.map(x => x.v)), lo: nmStrStat(lo.map(x => x.v)) } : null;
+  out.behavior = { patterns, tiltAll, tiltNow, disciplineScore, avgReady, dayLimit, attribution: { totalLoss, behLoss, behShare: totalLoss > 0 ? behLoss / totalLoss : null, cleanMean: cleanVals.length ? nmStrStat(cleanVals).mean : null, flaggedMean: flaggedVals.length ? nmStrStat(flaggedVals).mean : null, cleanN: cleanVals.length, flaggedN: flaggedVals.length }, psych, readyCmp };
+  /* ---------- Module 4: strategy attribution, interactions, decay ---------- */
+  const sysName = t => nmDashSetup(t);
+  const systems = nmStrGroups(items, sysName, minG);
+  const ctxDefs = [["نشست", t => { const s = nmDashSession(t); return s === "نامشخص" || s === "بدون نشست" ? null : s; }], ["وضعیت بازار", dimDefs[3].fn], ["هم‌راستایی با روند", dimDefs[4].fn], ["روز هفته", dimDefs[1].fn]];
+  const interactions = [];
+  const sysMean = {}; systems.forEach(s => sysMean[s.name] = s.mean);
+  ctxDefs.forEach(([ctxTitle, cfn]) => {
+    const ctxMeans = {}; nmStrGroups(items, cfn, minG).forEach(g => ctxMeans[g.name] = g.mean);
+    const cmap = {};
+    items.forEach(it => { const s = sysName(it.t), c = cfn(it.t); if (!c || sysMean[s] === undefined || ctxMeans[c] === undefined) return; (cmap[s + "\u0000" + c] = cmap[s + "\u0000" + c] || []).push(it.v); });
+    Object.keys(cmap).forEach(k => {
+      const v = cmap[k]; if (v.length < 4) return;
+      const [s, c] = k.split("\u0000"), st = nmStrStat(v);
+      const expected = sysMean[s] + ctxMeans[c] - all.mean;
+      interactions.push({ system: s, ctxTitle, ctx: c, n: v.length, mean: st.mean, t: st.t, expected, effect: st.mean - expected, sysMean: sysMean[s], rescue: sysMean[s] <= 0 && st.mean > 0 && v.length >= 5 && (st.t || 0) >= 1 });
+    });
+  });
+  const posInter = interactions.filter(x => x.effect > 0 && x.mean > 0).sort((a, b) => b.effect - a.effect).slice(0, 4);
+  const negInter = interactions.filter(x => x.effect < 0 && x.mean < 0).sort((a, b) => a.effect - b.effect).slice(0, 4);
+  const decayAll = nmStrDecay(vals);
+  const decaySys = Object.keys(sysMean).map(name => { const sv = items.filter(i => sysName(i.t) === name).map(i => i.v), d = nmStrDecay(sv); return d ? Object.assign({ name }, d) : null; }).filter(Boolean);
+  out.strategy = { systems, interactions, posInter, negInter, rescue: interactions.filter(x => x.rescue).slice(0, 3), decayAll, decaySys };
+  /* ---------- Module 6: scenarios, sizing, goal, capacity ---------- */
+  const pnl = items.map(i => i.pnl), wins = pnl.filter(v => v > 0), losses = pnl.filter(v => v < 0);
+  const avgLoss = losses.length ? Math.abs(losses.reduce((a, b) => a + b, 0) / losses.length) : 0;
+  const ruinLimit = start > 0 ? start * 0.3 : (avgLoss > 0 ? avgLoss * 20 : 0);
+  let seed = (n * 2654435761) >>> 0; pnl.forEach(v => { seed = (Math.imul(seed ^ (Math.round(v * 100) | 0), 16777619)) >>> 0; });
+  const mk = extra => nmStrMonte(pnl, Object.assign({ H: 100, sims: 2500, seed, ruinLimit }, extra));
+  const scenarios = [
+    ["وضع فعلی", {}],
+    ["Win Rate ۱۰ واحد درصد کمتر", { winShift: -0.10 }],
+    ["میانگین سود ۲۰٪ کمتر", { winScale: 0.8 }],
+    ["هر دو (بدترین سناریوی ترکیبی)", { winShift: -0.10, winScale: 0.8 }],
+    ["میانگین زیان ۲۰٪ بیشتر (اسلیپیج/استاپ‌هانتینگ)", { lossScale: 1.2 }]
+  ].map(([name, ex]) => Object.assign({ name }, mk(ex)));
+  const sizing = [0.5, 1, 1.5, 2].map(f => Object.assign({ factor: f }, mk({ sizeMult: f })));
+  const goalIn = opts.goal || {}, horizon = Math.max(10, Math.min(500, Math.round(Number(goalIn.horizon) || 100)));
+  let goal = null;
+  const tgtRaw = Number(goalIn.target);
+  if (Number.isFinite(tgtRaw) && tgtRaw > 0) {
+    const tgt = start > 0 ? start * tgtRaw / 100 : tgtRaw;
+    const base = nmStrMonte(pnl, { H: horizon, sims: 3000, seed: seed ^ 0x9e3779b1, ruinLimit, target: tgt });
+    const stress = nmStrMonte(pnl, { H: horizon, sims: 3000, seed: seed ^ 0x9e3779b1, ruinLimit, target: tgt, winShift: -0.10 });
+    const meanPnl = pnl.reduce((a, b) => a + b, 0) / pnl.length;
+    goal = { target: tgt, targetRaw: tgtRaw, pct: start > 0, horizon, pBase: base.pTarget, pStress: stress.pTarget, pRuin: base.pRuin, medianEnd: base.median, tradesNeeded: meanPnl > 0 ? Math.ceil(tgt / meanPnl) : null, needPerTrade: tgt / horizon, meanPnl };
+  }
+  const lotItems = items.filter(i => Number(i.t.lot) > 0).sort((a, b) => Number(a.t.lot) - Number(b.t.lot));
+  let capacity = null;
+  if (lotItems.length >= 15) {
+    const k = Math.floor(lotItems.length / 3), small = nmStrStat(lotItems.slice(0, k).map(x => x.v)), big = nmStrStat(lotItems.slice(-k).map(x => x.v));
+    capacity = { small, big, smallLot: Number(lotItems[0].t.lot), bigLot: Number(lotItems[lotItems.length - 1].t.lot), degrade: big.mean < small.mean * 0.5 && small.mean > 0 };
+  }
+  out.forward = { scenarios, sizing, goal, capacity, ruinBasis: start > 0 ? "۳۰٪ سرمایه اولیه" : "۲۰ برابر میانگین زیان", horizon, start };
+  /* ---------- Module 5: strategic narrative (rule-based, explainable) ---------- */
+  const fm = opts.fm && opts.fm.ready ? opts.fm : null;
+  const leaks = [], avoid = [], short = [], mid = [], strengths = [];
+  let status;
+  if (all.mean <= 0) status = { tone: "bad", title: "Edge مثبت تأیید نشده", text: `امید ریاضی فعلی ${fmt(all.mean, 3)}${unit} در هر معامله است؛ پیش از افزایش ریسک باید نشت‌ها شناسایی و اصلاح شوند.` };
+  else if (fm && fm.pPos !== null && fm.pPos >= 0.95) status = { tone: "good", title: "Edge مثبت و معنادار", text: `امید ریاضی ${fmt(all.mean, 3)}${unit} با احتمال ≈ ${Math.round(fm.pPos * 100)}٪ مثبت است (SQN ${fmt(fm.sqn)}).` };
+  else status = { tone: "warn", title: "Edge مثبت اما هنوز قطعی نیست", text: `امید ریاضی ${fmt(all.mean, 3)}${unit} است ولی ${fm && fm.pPos !== null ? "احتمال مثبت‌بودن ≈ " + Math.round(fm.pPos * 100) + "٪" : "نمونه برای قطعیت کافی نیست"}؛ با ریسک ثابت ادامه بده تا نمونه بزرگ‌تر شود.` };
+  const sigPos = []; dims.forEach(d => d.groups.forEach(g => { if (g.verdict === "sig_pos") sigPos.push(`«${g.name}» (${d.title}، ${fmt(g.mean)}${unit}، n=${g.n})`); }));
+  if (sigPos.length) strengths.push({ text: "Edge معنادار آماری در: " + sigPos.slice(0, 4).join("، ") + ".", why: "معیار: n ≥ 8 و آماره t ≥ 1.96" });
+  if (out.behavior.disciplineScore >= 80) strengths.push({ text: `امتیاز انضباط بالاست (${out.behavior.disciplineScore}/100).`, why: `${Math.round(cleanShare * 100)}٪ معاملات بدون اشتباه ثبت‌شده` });
+  posInter.slice(0, 2).forEach(x => strengths.push({ text: `ترکیب «${x.system}» + «${x.ctx}» (${x.ctxTitle}) بهتر از انتظار عمل کرده است (${fmt(x.mean)}${unit}، n=${x.n}).`, why: `اثر تعامل = ${fmt(x.effect)}${unit} نسبت به مدل جمعی` }));
+  patterns.filter(p => p.n >= 3 && p.worse && p.share >= 0.05).sort((a, b) => a.costPnl - b.costPnl).forEach(p => {
+    leaks.push({ text: `${p.title}: ${p.n} معامله (${Math.round(p.share * 100)}٪)؛ میانگین ${fmt(p.meanFlag)}${unit} در برابر ${fmt(p.meanClean)}${unit} در سایر معاملات. هزینه تجمعی ≈ ${nmFmN(p.costPnl, 2)}.`, why: p.desc + (p.tDiff !== null ? ` · آماره اختلاف t = ${fmt(p.tDiff)}` : "") });
+  });
+  const att = out.behavior.attribution;
+  if (att.behShare !== null && att.behShare >= 0.35 && att.totalLoss > 0) leaks.push({ text: `حدود ${Math.round(att.behShare * 100)}٪ مجموع زیان‌ها روی معاملاتی رخ داده که الگوی رفتاری (Revenge/Overconfidence/Overtrade/اشتباه ثبت‌شده) داشته‌اند؛ بقیه (${Math.round((1 - att.behShare) * 100)}٪) در محدوده واریانس طبیعی است.`, why: `زیان کل ${nmFmN(att.totalLoss, 2)} · زیان رفتاری ${nmFmN(att.behLoss, 2)}` });
+  const negGroups = []; dims.forEach(d => d.groups.forEach(g => { if (g.mean < 0 && g.n >= 8) negGroups.push({ d, g }); }));
+  negGroups.sort((a, b) => a.g.mean - b.g.mean).slice(0, 4).forEach(({ d, g }) => avoid.push({ text: `از «${g.name}» (${d.title}) اجتناب کن یا فقط با ریسک حداقل معامله کن.`, why: `n=${g.n} · میانگین ${fmt(g.mean)}${unit} · t=${fmt(g.t)}${g.verdict === "sig_neg" ? " · معنادار" : " · مقدماتی"}` }));
+  negInter.slice(0, 2).forEach(x => avoid.push({ text: `ترکیب «${x.system}» در «${x.ctx}» (${x.ctxTitle}) بدتر از انتظار است؛ آن را فیلتر کن.`, why: `n=${x.n} · میانگین ${fmt(x.mean)}${unit} · اثر تعامل ${fmt(x.effect)}${unit}` }));
+  if (decayAll && decayAll.status === "decay") leaks.push({ text: `Edge کلی در حال تضعیف است (امید ریاضی غلتان ${fmt(decayAll.prior)} ← ${fmt(decayAll.last)}${unit}).`, why: `پنجره ${decayAll.W} معامله‌ای · شیب روند ${fmt(decayAll.slope, 3)}` });
+  decaySys.filter(d => d.status === "decay").slice(0, 2).forEach(d => leaks.push({ text: `سیستم «${d.name}» ضعیف شده است (${fmt(d.prior)} ← ${fmt(d.last)}${unit}).`, why: `پنجره ${d.W} معامله‌ای از ${d.n} معامله` }));
+  if (fm && fm.roundTripShare > 0.2) leaks.push({ text: `${Math.round(fm.roundTripShare * 100)}٪ معاملات پس از سودِ شناور با زیان بسته شده‌اند (Round-trip).`, why: "از داده MFE و نتیجه نهایی" });
+  const byKey = k => patterns.find(p => p.key === k);
+  const rv = byKey("revenge"), oc = byKey("overconf"), le = byKey("lossEsc"), ot = byKey("overtrade");
+  if (rv.n >= 3 && rv.worse) short.push({ text: `پس از هر باخت حداقل ${rules.revengeMin * 2} دقیقه از چارت فاصله بگیر و قبل از ورود بعدی چک‌لیست را کامل کن.`, why: `${rv.n} ورود انتقامی با میانگین ${fmt(rv.meanFlag)}${unit}` });
+  if ((oc.n >= 3 && oc.worse) || (le.n >= 3 && le.worse)) short.push({ text: "سایز پوزیشن را فقط طبق قانون ثابت تغییر بده؛ پس از باخت یا زنجیره برد افزایش سایز ممنوع.", why: `Overconfidence ${oc.n} مورد · افزایش پس از باخت ${le.n} مورد` });
+  if (ot.n >= 3 && ot.worse) short.push({ text: `سقف معاملات روزانه را روی ${Math.max(2, Math.round(medDay * 1.5))} بگذار.`, why: `میانه روزانه ${medDay} معامله؛ روزهای بیش از ${dayLimit} معامله ضعیف‌تر بوده‌اند` });
+  if (fm && fm.kelly !== null && fm.kelly > 0) short.push({ text: `سقف ریسک هر معامله را حداکثر Half-Kelly (≈ ${nmFmN(Math.min(fm.kelly * 50, 5), 1)}٪) نگه دار؛ در نمونه کوچک ¼-Kelly محافظه‌کارانه‌تر است.`, why: `Kelly کامل ≈ ${nmFmN(fm.kelly * 100, 1)}٪ (روی داده خودت؛ حساس به خطای تخمین)` });
+  const worstSizing = sizing.find(s => s.factor === 2), baseSizing = sizing.find(s => s.factor === 1);
+  if (worstSizing && worstSizing.pRuin !== null && worstSizing.pRuin > 0.05 && baseSizing.pRuin <= 0.05) short.push({ text: "افزایش ریسک به ۲ برابر، احتمال رسیدن به سقف افت را از آستانه امن عبور می‌دهد؛ سایز را بالا نبر.", why: `احتمال سقف افت: ${nmFmN(baseSizing.pRuin * 100, 1)}٪ ← ${nmFmN(worstSizing.pRuin * 100, 1)}٪` });
+  if (n < 30) mid.push({ text: "هدف میان‌مدت: رسیدن به ۳۰ و سپس ۱۰۰ معامله بسته‌شده با قوانین ثابت تا نتایج بخش‌بندی‌شده (نشست/روز/سیستم) قابل اتکا شوند.", why: `نمونه فعلی ${n} معامله` });
+  if (regimeAlerts.length) mid.push({ text: "فیلتر رژیم رسمی بساز: " + regimeAlerts.slice(0, 2).map(a => `معامله فقط در «${a.best.name}» (${a.title}) و پرهیز از «${a.worst.name}»`).join("؛ ") + ". پس از ۲۰ معامله جدید، اثر فیلتر را دوباره بسنج.", why: regimeAlerts[0].evidence });
+  out.strategy.rescue.forEach(x => mid.push({ text: `سیستم «${x.system}» به‌تنهایی ضعیف است اما در «${x.ctx}» (${x.ctxTitle}) سودده است؛ آن را فقط با همین شرط آزمایش کن.`, why: `n=${x.n} · میانگین ${fmt(x.mean)}${unit} در برابر ${fmt(x.sysMean)}${unit} کلی` }));
+  if (decayAll && decayAll.status === "decay") mid.push({ text: "برای تضعیف Edge، شرایط بازار و کیفیت اجرا را با دوره‌ای که عملکرد بهتر بود مقایسه کن و تا بازگشت پایداری ریسک را کاهش بده.", why: "تشخیص افت Edge (Rolling Expectancy)" });
+  if (capacity && capacity.degrade) mid.push({ text: "Edge با افزایش حجم تضعیف می‌شود؛ ظرفیت لات را محدود نگه دار.", why: `میانگین ثلث کوچک ${fmt(capacity.small.mean)} در برابر ثلث بزرگ ${fmt(capacity.big.mean)}${unit}` });
+  if (goal) mid.push({ text: `هدف ${goal.pct ? nmFmN(goal.targetRaw, 1) + "٪ از سرمایه اولیه" : nmFmN(goal.target, 0)} در ${goal.horizon} معامله: احتمال ≈ ${nmFmN((goal.pBase || 0) * 100, 0)}٪ (در سناریوی Win Rate -۱۰ واحد: ${nmFmN((goal.pStress || 0) * 100, 0)}٪).`, why: "شبیه‌سازی بوت‌استرپ ۳۰۰۰ مسیری روی معاملات واقعی" });
+  if (!leaks.length) leaks.push({ text: "نشت معناداری با آستانه‌های فعلی شناسایی نشد.", why: "این به معنای نبود نشت نیست؛ با رشد نمونه دوباره بررسی می‌شود." });
+  if (!short.length) short.push({ text: "قوانین فعلی را ثابت نگه دار و ثبت کامل ژورنال (MFE/MAE، ساعت بسته‌شدن، حجم) را ادامه بده تا موتور دقیق‌تر شود.", why: "الگوی رفتاری پرهزینه‌ای شناسایی نشد" });
+  out.narrative = { status, strengths, leaks, avoid, short, mid };
+  out.fmReady = !!fm;
+  return out;
+}
+function nmStrExportRows(s) {
+  if (!s || !s.ready) return [["وضعیت", "داده کافی نیست (حداقل ۸ معامله بسته‌شده)"]];
+  const f = nmFmN, rows = [], u = s.unit || "";
+  rows.push(["وضعیت کلی Edge", s.narrative.status.title + " — " + s.narrative.status.text]);
+  s.narrative.leaks.forEach((x, i) => rows.push(["نشت " + (i + 1), x.text + " [" + x.why + "]"]));
+  s.narrative.avoid.forEach((x, i) => rows.push(["اجتناب " + (i + 1), x.text + " [" + x.why + "]"]));
+  s.narrative.short.forEach((x, i) => rows.push(["اقدام کوتاه‌مدت " + (i + 1), x.text + " [" + x.why + "]"]));
+  s.narrative.mid.forEach((x, i) => rows.push(["اقدام میان‌مدت " + (i + 1), x.text + " [" + x.why + "]"]));
+  s.regime.dims.forEach(d => d.groups.forEach(g => rows.push([`Edge شرطی · ${d.title} · ${g.name}`, `n=${g.n} · میانگین ${f(g.mean, 3)}${u} · Win ${f(g.win * 100, 0)}٪ · t=${f(g.t, 2)}`])));
+  const b = s.behavior;
+  rows.push(["Tilt Score کل", b.tiltAll], ["Tilt Score اخیر", b.tiltNow === null ? "—" : b.tiltNow], ["Discipline Score", b.disciplineScore]);
+  b.patterns.forEach(p => rows.push([`الگوی رفتاری · ${p.title}`, `${p.n} معامله (${f(p.share * 100, 0)}٪) · میانگین ${f(p.meanFlag, 3)}${u} در برابر ${f(p.meanClean, 3)}${u} · هزینه ${f(p.costPnl, 2)}`]));
+  rows.push(["سهم زیان رفتاری از کل زیان (٪)", b.attribution.behShare === null ? "—" : f(b.attribution.behShare * 100, 1)]);
+  b.psych.forEach(p => rows.push([`وضعیت روانی · ${p.name}`, `n=${p.n} · میانگین ${f(p.mean, 3)}${u} · Win ${f(p.win * 100, 0)}٪`]));
+  s.strategy.interactions.slice().sort((a, c) => Math.abs(c.effect) - Math.abs(a.effect)).slice(0, 10).forEach(x => rows.push([`تعامل · ${x.system} × ${x.ctx} (${x.ctxTitle})`, `n=${x.n} · میانگین ${f(x.mean, 3)}${u} · اثر تعامل ${f(x.effect, 3)}${u}`]));
+  s.strategy.decaySys.forEach(d => rows.push([`روند Edge · ${d.name}`, `${d.status} · ${f(d.prior, 3)} ← ${f(d.last, 3)}${u}`]));
+  s.forward.scenarios.forEach(c => rows.push([`سناریو · ${c.name}`, `احتمال سود ${f(c.probProfit * 100, 1)}٪ · میانه ${f(c.median, 2)} · افت ۹۵٪ ${f(c.dd95, 2)} · احتمال سقف افت ${c.pRuin === null ? "—" : f(c.pRuin * 100, 1) + "٪"}`]));
+  s.forward.sizing.forEach(c => rows.push([`سایزینگ ×${c.factor}`, `احتمال سود ${f(c.probProfit * 100, 1)}٪ · افت ۹۵٪ ${f(c.dd95, 2)} · احتمال سقف افت ${c.pRuin === null ? "—" : f(c.pRuin * 100, 1) + "٪"}`]));
+  if (s.forward.goal) { const g = s.forward.goal; rows.push(["امکان‌سنجی هدف", `احتمال ${f(g.pBase * 100, 0)}٪ (سناریوی ضعیف ${f(g.pStress * 100, 0)}٪) در ${g.horizon} معامله`]); }
+  return rows;
+}
+
+function NmStrategicEnginePanel({ trades, startingBalance }) {
+  const [tab, setTab] = React.useState("story");
+  const [rules, setRules] = React.useState(nmStrLoadRules);
+  const [showRules, setShowRules] = React.useState(false);
+  const start = Number(startingBalance) > 0 ? Number(startingBalance) : 0;
+  const [goalT, setGoalT] = React.useState(start > 0 ? "10" : "");
+  const [goalH, setGoalH] = React.useState("100");
+  const fm = React.useMemo(() => nmAdvancedFinancialModel(trades, startingBalance), [trades, startingBalance]);
+  const s = React.useMemo(() => nmStrategicEngine(trades, startingBalance, { rules, fm, goal: { target: goalT === "" ? null : Number(goalT), horizon: Number(goalH) } }), [trades, startingBalance, rules, fm, goalT, goalH]);
+  const tones = { good: "#34D399", warn: "#F59E0B", bad: "#F87171", info: "var(--text-primary)" };
+  const ACC = "#06B6D4";
+  const box = { className: "rounded-2xl p-3 mt-3", style: { background: "color-mix(in srgb, " + ACC + " 6%, var(--bg-card))", border: "1px solid color-mix(in srgb, " + ACC + " 34%, var(--border-1))" } };
+  const f = nmFmN;
+  const head = React.createElement("div", null,
+    React.createElement("div", { className: "flex items-center justify-between gap-2" },
+      React.createElement("div", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "موتور تحلیل استراتژیک"),
+      React.createElement("span", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, `${s.n} معامله`)),
+    React.createElement("div", { className: "text-[9px] leading-5 mt-0.5", style: { color: "var(--text-muted)" } }, "Edge شرطی · رفتار و انضباط · Attribution سیستم · سناریو و هدف · روایت استراتژیک (قاعده‌محور و قابل ردیابی)"));
+  if (!s.ready) return React.createElement("div", box, head, React.createElement("div", { className: "text-[10px] leading-5 mt-2", style: { color: "var(--text-muted)" } }, `برای اجرای موتور استراتژیک حداقل ۸ معامله بسته‌شده لازم است. تعداد فعلی: ${s.n}`));
+  const u = s.unit;
+  const badge = (v) => {
+    const m = { sig_pos: ["معنادار +", "#34D399"], sig_neg: ["معنادار −", "#F87171"], pos: ["مثبت", "#34D39999"], neg: ["منفی", "#F8717199"], neutral: ["خنثی", "var(--text-muted)"] }[v] || ["", "var(--text-muted)"];
+    return React.createElement("span", { className: "text-[8px] font-bold px-1.5 py-0.5 rounded-full shrink-0", style: { background: "color-mix(in srgb, " + m[1] + " 16%, transparent)", color: m[1] } }, m[0]);
+  };
+  const sub = (title, children, key) => React.createElement("div", { key: key || title, className: "mt-3" }, React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--accent-gold)" } }, title), children);
+  const note = (text, k) => React.createElement("div", { key: k, className: "text-[9px] leading-5", style: { color: "var(--text-muted)" } }, text);
+  const item = (x, i, color) => React.createElement("div", { key: i, className: "rounded-lg px-2.5 py-2 mb-1.5", style: { background: "var(--bg-card2)", borderInlineStart: "3px solid " + (color || ACC) } },
+    React.createElement("div", { className: "text-[11px] leading-6", style: { color: "var(--text-primary)" } }, x.text),
+    React.createElement("div", { className: "text-[9px] leading-4 mt-0.5", style: { color: "var(--text-muted)" } }, "چرا؟ ", x.why));
+  const listOf = (arr, color) => arr.length ? arr.map((x, i) => item(x, i, color)) : note("موردی ثبت نشد.");
+  const grid = (cells) => React.createElement("div", { className: "grid grid-cols-2 gap-2" }, cells);
+  const card = (title, value, subtext, tone) => React.createElement("div", { key: title, className: "rounded-xl p-2", style: { background: "var(--bg-card2)", borderInlineStart: "3px solid " + (tones[tone || "info"]) } },
+    React.createElement("div", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, title),
+    React.createElement("div", { className: "text-[14px] font-bold", style: { color: tones[tone || "info"], fontFamily: "JetBrains Mono,monospace", direction: "ltr", textAlign: "right" } }, value),
+    subtext ? React.createElement("div", { className: "text-[9px] leading-4 mt-0.5", style: { color: "var(--text-muted)" } }, subtext) : null);
+  const groupRow = (g, i) => React.createElement("div", { key: g.name + i, className: "flex items-center gap-2 rounded-lg px-2 py-1.5 mb-1", style: { background: "var(--bg-card2)" } },
+    React.createElement("div", { className: "flex-1 min-w-0 text-[10px]", style: { color: "var(--text-primary)", overflowWrap: "anywhere" } }, g.name, React.createElement("span", { style: { color: "var(--text-muted)" } }, ` · n=${g.n} · Win ${f(g.win * 100, 0)}٪`)),
+    React.createElement("div", { className: "text-[11px] font-bold", style: { color: g.mean > 0 ? "#34D399" : g.mean < 0 ? "#F87171" : "var(--text-primary)", fontFamily: "JetBrains Mono,monospace", direction: "ltr" } }, f(g.mean, 2) + u),
+    badge(g.verdict));
+  const tabs = [["story", "روایت"], ["regime", "Edge شرطی"], ["behavior", "رفتار"], ["strategy", "سیستم"], ["forward", "سناریو و هدف"]];
+  const tabBar = React.createElement("div", { className: "flex gap-1 mt-3 w-full" }, tabs.map(([k, l]) => React.createElement("button", { key: k, type: "button", onClick: () => setTab(k), className: "flex-1 min-w-0 px-1 py-1.5 rounded-full text-[10px] whitespace-nowrap text-center", style: { background: tab === k ? "var(--accent-gold)" : "var(--bg-card)", color: tab === k ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid var(--border-1)" } }, l)));
+  let body = null;
+  if (tab === "story") {
+    const st = s.narrative.status, c = tones[st.tone];
+    body = React.createElement("div", null,
+      React.createElement("div", { className: "rounded-xl p-3 mt-3", style: { background: "color-mix(in srgb, " + c + " 9%, var(--bg-card))", border: "1px solid color-mix(in srgb, " + c + " 45%, var(--border-1))" } },
+        React.createElement("div", { className: "text-[12px] font-extrabold", style: { color: c } }, st.title),
+        React.createElement("div", { className: "text-[11px] leading-6 mt-1", style: { color: "var(--text-primary)" } }, st.text)),
+      s.narrative.strengths.length ? sub("نقاط قوت", listOf(s.narrative.strengths, "#34D399")) : null,
+      sub("بزرگ‌ترین نشت‌ها (Leaks)", listOf(s.narrative.leaks, "#F87171")),
+      sub("رژیم‌ها و ترکیب‌هایی که باید از آن‌ها اجتناب کرد", listOf(s.narrative.avoid, "#F59E0B")),
+      sub("اقدامات کوتاه‌مدت", listOf(s.narrative.short, ACC)),
+      sub("اقدامات میان‌مدت", listOf(s.narrative.mid, "#A78BFA")));
+  } else if (tab === "regime") {
+    body = React.createElement("div", null,
+      s.regime.alerts.length ? sub("هشدار رژیم", listOf(s.regime.alerts.map(a => ({ text: a.text, why: a.evidence })), "#F59E0B")) : sub("هشدار رژیم", note("هنوز رژیمی با Edge مثبت و منفی هم‌زمان (با حداقل نمونه) پیدا نشد.")),
+      s.regime.dims.length ? s.regime.dims.map(d => sub(d.title, d.groups.map(groupRow), d.key)) : note("داده کافی برای بخش‌بندی وجود ندارد؛ ثبت نشست، ساعت و وضعیت بازار را کامل کن."),
+      note(`میانگین بر حسب ${s.useR ? "R" : "پول"} است. فقط موارد «معنادار» (n ≥ 8 و |t| ≥ 1.96) قابل اتکاترند؛ بخش‌بندی روی نمونه کوچک ممکن است تصادفی باشد (Overfitting).`));
+  } else if (tab === "behavior") {
+    const b = s.behavior, a = b.attribution;
+    const tl = v => v === null ? "info" : v < 25 ? "good" : v < 50 ? "warn" : "bad";
+    body = React.createElement("div", null,
+      sub("شاخص‌های رفتاری", grid([
+        card("Tilt Score (کل)", String(b.tiltAll), "۰ = آرام · ۱۰۰ = تیلت کامل", tl(b.tiltAll)),
+        card("Tilt Score (۲۰ معامله اخیر)", b.tiltNow === null ? "—" : String(b.tiltNow), b.tiltNow !== null && b.tiltNow > b.tiltAll + 10 ? "اخیراً بدتر شده" : "وضعیت پویا", tl(b.tiltNow)),
+        card("Discipline Score", String(b.disciplineScore), b.avgReady !== null ? `میانگین آمادگی ستاپ ${f(b.avgReady, 0)}٪` : "بر پایه اشتباهات ثبت‌شده", b.disciplineScore >= 80 ? "good" : b.disciplineScore >= 60 ? "warn" : "bad"),
+        card("زیان رفتاری", a.behShare === null ? "—" : f(a.behShare * 100, 0) + "٪", a.behShare === null ? "" : `از کل زیان‌ها (واریانس طبیعی ${f((1 - a.behShare) * 100, 0)}٪)`, a.behShare === null ? "info" : a.behShare > 0.5 ? "bad" : a.behShare > 0.3 ? "warn" : "good")])),
+      sub("الگوهای رفتاری شناسایی‌شده", b.patterns.map(p => React.createElement("div", { key: p.key, className: "rounded-lg px-2.5 py-2 mb-1.5", style: { background: "var(--bg-card2)", borderInlineStart: "3px solid " + (p.n >= 3 && p.worse ? "#F87171" : "var(--border-2)") } },
+        React.createElement("div", { className: "flex items-center justify-between gap-2" },
+          React.createElement("span", { className: "text-[11px] font-semibold", style: { color: "var(--text-primary)" } }, p.title),
+          React.createElement("span", { className: "text-[10px]", style: { color: "var(--text-muted)", fontFamily: "JetBrains Mono,monospace", direction: "ltr" } }, `${p.n} (${f(p.share * 100, 0)}٪)`)),
+        React.createElement("div", { className: "text-[9px] leading-4", style: { color: "var(--text-muted)" } }, p.desc),
+        p.n >= 3 ? React.createElement("div", { className: "text-[10px] leading-5 mt-0.5", style: { color: "var(--text-secondary)" } }, `میانگین: ${f(p.meanFlag, 2)}${u} در برابر ${f(p.meanClean, 2)}${u} · هزینه تجمعی ${f(p.costPnl, 2)}`) : React.createElement("div", { className: "text-[9px] mt-0.5", style: { color: "var(--text-muted)" } }, "نمونه کافی نیست")))),
+      a.cleanMean !== null && a.flaggedMean !== null ? sub("Attribution: مهارت در برابر رفتار", React.createElement("div", { className: "text-[10px] leading-6", style: { color: "var(--text-secondary)" } }, `معاملات بدون الگوی رفتاری (n=${a.cleanN}): میانگین ${f(a.cleanMean, 2)}${u} · معاملات دارای الگوی رفتاری (n=${a.flaggedN}): ${f(a.flaggedMean, 2)}${u}. ${a.cleanMean > a.flaggedMean ? "اختلاف نشان می‌دهد بخشی از افت عملکرد از رفتار است، نه واریانس بازار." : "رفتار پرخطر تاکنون هزینه آماری روشنی نداشته است."}`)) : null,
+      b.psych.length ? sub("وضعیت روانی ثبت‌شده در برابر عملکرد", b.psych.map(groupRow)) : null,
+      b.readyCmp ? sub("آمادگی ستاپ ≥ ۷۵٪ در برابر کمتر", note(`آمادگی بالا: ${f(b.readyCmp.hi.mean, 2)}${u} (n=${b.readyCmp.hi.n}) · آمادگی پایین: ${f(b.readyCmp.lo.mean, 2)}${u} (n=${b.readyCmp.lo.n})`)) : null,
+      React.createElement("div", { className: "mt-3" }, React.createElement("button", { type: "button", onClick: () => setShowRules(v => !v), className: "text-[10px] px-2 py-1 rounded-lg", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, showRules ? "بستن قوانین من" : "قوانین رفتاری من (قابل تنظیم)")),
+      showRules ? React.createElement("div", { className: "rounded-xl p-2.5 mt-2 grid grid-cols-2 gap-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } }, [
+        ["revengeMin", "پنجره Revenge (دقیقه)"], ["overStreak", "حداقل بردهای متوالی"], ["sizeMult", "ضریب افزایش سایز"], ["minGroup", "حداقل نمونه هر گروه"]
+      ].map(([k, l]) => React.createElement("label", { key: k, className: "text-[9px]", style: { color: "var(--text-muted)" } }, l, React.createElement("input", { type: "number", min: "1", step: k === "sizeMult" ? "0.05" : "1", value: rules[k], onChange: e => { const v = Number(e.target.value); if (!(v > 0)) return; const nx = Object.assign({}, rules, { [k]: v }); setRules(nx); nmStrSaveRules(nx); }, className: "w-full mt-1 rounded px-2 py-1 text-[11px] bg-transparent", style: { border: "1px solid var(--border-1)", color: "var(--text-primary)", direction: "ltr" } })))) : null);
+  } else if (tab === "strategy") {
+    const st = s.strategy, stTone = { decay: "bad", improving: "good", stable: "info" }, stLbl = { decay: "در حال تضعیف", improving: "در حال بهبود", stable: "پایدار" };
+    const inter = (x, i) => item({ text: `«${x.system}» × «${x.ctx}» (${x.ctxTitle}) — میانگین ${f(x.mean, 2)}${u} در n=${x.n}`, why: `انتظار مدل جمعی ${f(x.expected, 2)}${u} · اثر تعامل ${f(x.effect, 2)}${u}${x.rescue ? " · سیستم به‌تنهایی منفی است" : ""}` }, i, x.effect > 0 ? "#34D399" : "#F87171");
+    body = React.createElement("div", null,
+      sub("Attribution سطح سیستم / ستاپ", st.systems.length ? st.systems.map(groupRow) : note("برای هر سیستم حداقل نمونه لازم است.")),
+      sub("تعامل‌های مثبت (ترکیب‌های برنده)", st.posInter.length ? st.posInter.map(inter) : note("ترکیب معناداری یافت نشد.")),
+      sub("تعامل‌های منفی (ترکیب‌های زیان‌ده)", st.negInter.length ? st.negInter.map(inter) : note("ترکیب معناداری یافت نشد.")),
+      sub("تشخیص افت Edge (Rolling Expectancy)", React.createElement("div", null,
+        st.decayAll ? grid([card("کل معاملات", stLbl[st.decayAll.status], `${f(st.decayAll.prior, 2)} ← ${f(st.decayAll.last, 2)}${u} · پنجره ${st.decayAll.W}`, stTone[st.decayAll.status])].concat(st.decaySys.slice(0, 5).map(d => card(d.name, stLbl[d.status], `${f(d.prior, 2)} ← ${f(d.last, 2)}${u} · n=${d.n}`, stTone[d.status])))) : note("حداقل ۱۲ معامله لازم است."))));
+  } else {
+    const fw = s.forward;
+    const pcx = v => v === null || v === undefined ? "—" : f(v * 100, 1) + "٪";
+    const row = (c, name, k) => React.createElement("div", { key: k, className: "rounded-lg px-2.5 py-2 mb-1.5", style: { background: "var(--bg-card2)" } },
+      React.createElement("div", { className: "text-[10px] font-semibold", style: { color: "var(--text-primary)" } }, name),
+      React.createElement("div", { className: "text-[9px] leading-5 mt-0.5", style: { color: "var(--text-secondary)" } }, `احتمال سود ${pcx(c.probProfit)} · میانه ${f(c.median, 0)} · بازه ۹۰٪ ${f(c.p5, 0)} تا ${f(c.p95, 0)} · افت ۹۵٪-ام ${f(c.dd95, 0)} · احتمال سقف افت `, React.createElement("b", { style: { color: c.pRuin !== null && c.pRuin > 0.05 ? "#F87171" : "#34D399" } }, pcx(c.pRuin))));
+    const g = fw.goal;
+    body = React.createElement("div", null,
+      sub(`تحلیل سناریو (${fw.horizon} معامله آینده، ۲۵۰۰ مسیر؛ واحد پولی)`, fw.scenarios.map((c, i) => row(c, c.name, "sc" + i))),
+      sub("سایزینگ و ریسک نابودی", React.createElement("div", null, fw.sizing.map((c, i) => row(c, "ریسک ×" + c.factor, "sz" + i)), note("سقف افت: " + fw.ruinBasis + "."))),
+      sub("امکان‌سنجی هدف (Goal Feasibility)", React.createElement("div", null,
+        React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+          React.createElement("label", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, fw.start > 0 ? "هدف سود (٪ سرمایه اولیه)" : "هدف سود (مبلغ)", React.createElement("input", { type: "number", min: "0", value: goalT, onChange: e => setGoalT(e.target.value), className: "w-full mt-1 rounded px-2 py-1 text-[11px] bg-transparent", style: { border: "1px solid var(--border-1)", color: "var(--text-primary)", direction: "ltr" } })),
+          React.createElement("label", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, "افق (تعداد معامله)", React.createElement("input", { type: "number", min: "10", max: "500", value: goalH, onChange: e => setGoalH(e.target.value), className: "w-full mt-1 rounded px-2 py-1 text-[11px] bg-transparent", style: { border: "1px solid var(--border-1)", color: "var(--text-primary)", direction: "ltr" } }))),
+        g ? grid([
+          card("احتمال رسیدن به هدف", pcx(g.pBase), `در ${g.horizon} معامله`, g.pBase >= 0.6 ? "good" : g.pBase >= 0.3 ? "warn" : "bad"),
+          card("در سناریوی ضعیف", pcx(g.pStress), "Win Rate ۱۰ واحد کمتر", g.pStress >= 0.5 ? "good" : g.pStress >= 0.25 ? "warn" : "bad"),
+          card("لازم در هر معامله", f(g.needPerTrade, 2), `میانگین فعلی ${f(g.meanPnl, 2)}`, g.meanPnl >= g.needPerTrade ? "good" : "warn"),
+          card("معاملات لازم با Edge فعلی", g.tradesNeeded === null ? "ناممکن" : String(g.tradesNeeded), g.tradesNeeded === null ? "امید ریاضی مثبت نیست" : "تخمین خطی", g.tradesNeeded === null ? "bad" : "info")]) : note("برای محاسبه، هدف سود را وارد کن.")) ),
+      fw.capacity ? sub("ظرفیت و حساسیت به حجم", note(`ثلث لات‌های کوچک (تا ${f(fw.capacity.smallLot, 2)}): ${f(fw.capacity.small.mean, 2)}${u} · ثلث لات‌های بزرگ (تا ${f(fw.capacity.bigLot, 2)}): ${f(fw.capacity.big.mean, 2)}${u}${fw.capacity.degrade ? " — Edge با افزایش حجم تضعیف شده است." : "."}`)) : null,
+      note("شبیه‌سازی‌ها بر پایه معاملات گذشته شماست و تضمینی برای آینده نیستند."));
+  }
+  return React.createElement("div", box, head, tabBar, body,
+    React.createElement("div", { className: "text-[8px] leading-4 mt-3", style: { color: "var(--text-muted)" } }, "همه نتایج قاعده‌محور و قابل ردیابی‌اند (زیر هر یافته دلیل آن آمده)، توصیه سرمایه‌گذاری نیستند و داده‌ها از دستگاه شما خارج نمی‌شوند."));
+}
+
 function nmExitInsight(t){
  const e=Number(t?.exitEfficiency),r=nmDashR(t),m=Number(t?.mfe);if(!Number.isFinite(e))return 'داده خروج کافی نیست';
  if(e<25 && Number.isFinite(m)&&m>0) return 'خروج زودهنگام / بخش بزرگی از حرکت از دست رفته';
@@ -5852,6 +6273,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        filterPanel,
        React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
        RE(NmAdvancedFinancialPanel,{trades:filtered,startingBalance:startingBalance}),
+       RE(NmStrategicEnginePanel,{trades:filtered,startingBalance:startingBalance}),
        React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #8B5CF6 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 35%, var(--border-1))"}},
          React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی ارزیابی پیشرفته"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"فقط شاخص‌های ریسک، خروج، Edge، Discipline و Planهای ارزیابی پیشرفته")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
@@ -8484,7 +8906,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.9</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.10</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9214,7 +9636,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.9</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.10</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9292,9 +9714,9 @@ function App() {
     }
     function exportDashboardStatisticalExcel(){ nmPatchExportEngine();const d=dashboardStatExportData(),wb=XLSX.utils.book_new(),mk=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["پارامتر","سودآوری"],...a.map(x=>[x.name,x.value])]),n.slice(0,31));[["سودآوری-لات",d.byLot],["سودآوری-ریسک-دلاری",d.byRiskDollar],["سودآوری-احتمال-ذهنی",d.bySubjectiveSuccessProb],["سودآوری-احتمال-محاسباتی",d.byCalculatedSuccessProb],["سودآوری-جهت",d.byDirection],["سودآوری-نماد",d.byPair],["سودآوری-واگرایی-اصلی",d.byDivergenceMain],["سودآوری-واگرایی-ورود",d.byDivergenceEntry],["سودآوری-روزهفته",d.byWeekday],["سودآوری-سیستم",d.bySystem],["سودآوری-نشست",d.bySession],["سودآوری-روند",d.byTrend],["سودآوری-RR",d.byRR],["سودآوری-آمادگی-ستاپ",d.bySetupReadiness],["سودآوری-ارزیابی-چارت",d.byChartReadiness],["سودآوری-برنامه-روزانه",d.byDayPlanReadiness],["سودآوری-بایاس",d.byBias],["سودآوری-فراکتال",d.byFractal],["سودآوری-شرایط",d.byCondition],["سودآوری-Trig",d.byTrig],["سودآوری-Target",d.byTarget],["سودآوری-Stop",d.byStop],["سودآوری-خبر",d.byNews],["سودآوری-مدت",d.byDuration],["ترکیب-سیستم-روز",d.bySystemWeekday],["ترکیب-نشست-لات",d.bySessionLot]].forEach(x=>mk(x[0],x[1]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["حساب‌های مبنا"],...(dashboardSelectedAccounts||[]).map(c=>[c])]),"حساب‌های مبنا");XLSX.writeFile(wb,`namello-statistical-dashboard-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardStatisticalPdf(){const d=dashboardStatExportData(),sec=(n,a)=>({name:n,header:["پارامتر","سودآوری"],rows:a.map(x=>[x.name,x.value])});exportMultiTablesAsPdf("خروجی تحلیل آماری",[{name:"حساب‌های مبنا",header:["حساب"],rows:(dashboardSelectedAccounts||[]).map(c=>[c])},sec("سودآوری بر اساس لات",d.byLot),sec("سودآوری بر اساس ریسک دلاری",d.byRiskDollar),sec("سودآوری بر اساس احتمال موفقیت ذهنی",d.bySubjectiveSuccessProb),sec("سودآوری بر اساس احتمال موفقیت محاسباتی",d.byCalculatedSuccessProb),sec("سودآوری بر اساس جهت معامله",d.byDirection),sec("سودآوری بر اساس نماد",d.byPair),sec("سودآوری بر اساس واگرایی تایم اصلی",d.byDivergenceMain),sec("سودآوری بر اساس واگرایی تایم ورود",d.byDivergenceEntry),sec("سودآوری بر اساس روز هفته",d.byWeekday),sec("سودآوری بر اساس سیستم",d.bySystem),sec("سودآوری بر اساس نشست",d.bySession),sec("سودآوری بر اساس روند",d.byTrend),sec("سودآوری بر اساس R:R",d.byRR),sec("سودآوری بر اساس آمادگی ستاپ",d.bySetupReadiness),sec("سودآوری بر اساس ارزیابی چارت",d.byChartReadiness),sec("سودآوری بر اساس آمادگی برنامه روزانه",d.byDayPlanReadiness),sec("سودآوری بر اساس بایاس",d.byBias),sec("سودآوری بر اساس فراکتال",d.byFractal),sec("سودآوری بر اساس شرایط بازار",d.byCondition),sec("سودآوری بر اساس ورود/TP/SL",d.byTrig.concat(d.byTarget,d.byStop)),sec("سودآوری بر اساس خبر",d.byNews),sec("سودآوری بر اساس مدت معامله",d.byDuration)])}
-    function dashboardAdvancedExportData(){const src=(dashboardSelectedTrades||[]).filter(t=>t.status==="closed"),m=nmDashMetrics(src,dashboardStartingBalance),a=nmAdvancedStats(src,dashboardStartingBalance),x=src.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae))),eff=src.filter(t=>Number.isFinite(Number(t.exitEfficiency))),mistakes={};src.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>mistakes[k]=(mistakes[k]||0)+1));const edge=fn=>{const map={};src.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return[name,ts.length,mm.pnl,mm.winRate,mm.expectancy]})};return{src,m,a,fm:nmAdvancedFinancialModel(src,dashboardStartingBalance),avgM:x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA:x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null,mistakes,session:edge(nmDashSession),setup:edge(nmDashSetup)}}
-    function exportDashboardAdvancedExcel(){ nmPatchExportEngine();const d=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("شاخص‌های ارزیابی",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Ulcer",d.a.ulcer],["Avg Hold (min)",d.a.avgHold??"—"],["میانگین آمادگی ستاپ (%)",d.a.avgSetupReadiness??"—"],["میانگین ارزیابی چارت (%)",d.a.avgChartReadiness??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"],["Early Exit",d.a.exits.early],["Round-trip",d.a.exits.roundTrip],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]);add("تحلیل مالی پیشرفته",[["شاخص","مقدار"],...nmFmExportRows(d.fm)]);add("Session Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.session]);add("Setup Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(d.mistakes)]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Chart Plans",[["Chart Plan","تعداد شروط"],...(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات ارزیابی",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...d.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-advanced-evaluation-${activeAccount}-${todayStr}.xlsx`)}
-    function exportDashboardAdvancedPdf(){const d=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی ارزیابی پیشرفته",[{name:"شاخص‌های ریسک و خروج",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"]]},{name:"تحلیل مالی پیشرفته",header:["شاخص","مقدار"],rows:nmFmExportRows(d.fm)},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(d.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
+    function dashboardAdvancedExportData(){const src=(dashboardSelectedTrades||[]).filter(t=>t.status==="closed"),m=nmDashMetrics(src,dashboardStartingBalance),a=nmAdvancedStats(src,dashboardStartingBalance),x=src.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae))),eff=src.filter(t=>Number.isFinite(Number(t.exitEfficiency))),mistakes={};src.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>mistakes[k]=(mistakes[k]||0)+1));const edge=fn=>{const map={};src.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return[name,ts.length,mm.pnl,mm.winRate,mm.expectancy]})};const fmX=nmAdvancedFinancialModel(src,dashboardStartingBalance);return{src,m,a,fm:fmX,str:nmStrategicEngine(src,dashboardStartingBalance,{rules:nmStrLoadRules(),fm:fmX,goal:{target:Number(dashboardStartingBalance)>0?10:null,horizon:100}}),avgM:x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA:x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null,mistakes,session:edge(nmDashSession),setup:edge(nmDashSetup)}}
+    function exportDashboardAdvancedExcel(){ nmPatchExportEngine();const d=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("شاخص‌های ارزیابی",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Ulcer",d.a.ulcer],["Avg Hold (min)",d.a.avgHold??"—"],["میانگین آمادگی ستاپ (%)",d.a.avgSetupReadiness??"—"],["میانگین ارزیابی چارت (%)",d.a.avgChartReadiness??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"],["Early Exit",d.a.exits.early],["Round-trip",d.a.exits.roundTrip],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]);add("تحلیل مالی پیشرفته",[["شاخص","مقدار"],...nmFmExportRows(d.fm)]);add("موتور استراتژیک",[["شاخص","مقدار"],...nmStrExportRows(d.str)]);add("Session Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.session]);add("Setup Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(d.mistakes)]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Chart Plans",[["Chart Plan","تعداد شروط"],...(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات ارزیابی",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...d.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-advanced-evaluation-${activeAccount}-${todayStr}.xlsx`)}
+    function exportDashboardAdvancedPdf(){const d=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی ارزیابی پیشرفته",[{name:"شاخص‌های ریسک و خروج",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"]]},{name:"تحلیل مالی پیشرفته",header:["شاخص","مقدار"],rows:nmFmExportRows(d.fm)},{name:"موتور استراتژیک",header:["شاخص","مقدار"],rows:nmStrExportRows(d.str)},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(d.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
     function exportDashboardComprehensiveExcel(){ nmPatchExportEngine();const st=dashboardStatExportData(),ad=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("خلاصه داشبورد",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"]]);add("ارزیابی پیشرفته",[["Session","تعداد","P&L","Win Rate","Expectancy"],...ad.session]);add("Edge Setup",[["Setup","تعداد","P&L","Win Rate","Expectancy"],...ad.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(ad.mistakes)]);add("تحلیل-سیستم",[["پارامتر","سودآوری"],...st.bySystem.map(x=>[x.name,x.value])]);add("تحلیل-نشست",[["پارامتر","سودآوری"],...st.bySession.map(x=>[x.name,x.value])]);add("تحلیل-RR",[["پارامتر","سودآوری"],...st.byRR.map(x=>[x.name,x.value])]);add("تحلیل-آمادگی-ستاپ",[["پارامتر","سودآوری"],...st.bySetupReadiness.map(x=>[x.name,x.value])]);add("تحلیل-ارزیابی-چارت",[["پارامتر","سودآوری"],...st.byChartReadiness.map(x=>[x.name,x.value])]);add("تحلیل-روند",[["پارامتر","سودآوری"],...st.byTrend.map(x=>[x.name,x.value])]);add("تحلیل-لات",[["پارامتر","سودآوری"],...st.byLot.map(x=>[x.name,x.value])]);add("تحلیل-روز",[["پارامتر","سودآوری"],...st.byWeekday.map(x=>[x.name,x.value])]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات داشبورد",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...ad.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-comprehensive-dashboard-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardComprehensivePdf(){const st=dashboardStatExportData(),ad=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی جامع داشبورد",[{name:"خلاصه داشبورد",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",ad.a.avgDayPlanReadiness??"—"]]},{name:"تحلیل آماری - سیستم",header:["پارامتر","سودآوری"],rows:st.bySystem.map(x=>[x.name,x.value])},{name:"تحلیل آماری - نشست",header:["پارامتر","سودآوری"],rows:st.bySession.map(x=>[x.name,x.value])},{name:"تحلیل آماری - R:R",header:["پارامتر","سودآوری"],rows:st.byRR.map(x=>[x.name,x.value])},{name:"تحلیل آماری - روند",header:["پارامتر","سودآوری"],rows:st.byTrend.map(x=>[x.name,x.value])},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(ad.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
     /* ---------------- combined full export ---------------- */
@@ -9615,8 +10037,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.9", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.9"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.10", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.10"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),

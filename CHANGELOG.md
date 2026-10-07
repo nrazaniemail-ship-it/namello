@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.10 — Strategic Analysis Engine (Advanced Evaluation)
+- New «موتور تحلیل استراتژیک» panel under Dashboard → Advanced Evaluation (pure JS, rule-based, deterministic, on-device):
+  - Narrative engine: status, strengths, leaks, regimes/combos to avoid, short- and mid-term actions — every finding shows its numeric evidence («چرا؟»).
+  - Conditional edge by session, weekday, entry-hour block, market condition, trend alignment and pair, with t-statistic and «significant / preliminary» labels (n ≥ 8, |t| ≥ 1.96) and regime alerts.
+  - Behavioural engine: Revenge Trading, Overconfidence, size escalation after a loss, Overtrade, dynamic Tilt Score (all / last 20), Discipline Score, behavioural-vs-natural-variance loss attribution, psychology-state vs performance. User-tunable rules (revenge window, win streak, size multiplier, minimum group size).
+  - Strategy attribution: per-system edge, system × context interaction effects, edge-decay detection via rolling expectancy.
+  - Forward-looking: scenario analysis (win-rate −10 pts, avg win −20 %, avg loss +20 %, combined), position-size table with ruin probability, goal feasibility (target % / horizon), size-capacity sensitivity.
+- Advanced financial model Monte Carlo upgraded from 1000 to 5000 paths.
+- Advanced Evaluation Excel/PDF export now includes the strategic-engine sheet.
+- Not included (by design): LLM layer (phase 2) and OHLC-based volatility/HMM regime detection (needs bridge data).
+- Unified package, PWA manifests and Service Worker version to 1.0.10 / Version Code 11.
+
 ## 1.0.9 — Journal checklist taps, Finance period chips, News rabbit animation
 - Journal: checklist items 6 (آمادگی برنامه روزانه), 7 (ارزیابی چارت) and 32 (آمادگی ستاپ) in «ثبت ورود» / «ویرایش معامله» now toggle when the user taps anywhere on the condition row (including its title), not only the small tick box. Keyboard (Space/Enter) supported.
 - Finance: the period chips (Daily, Weekly, Monthly, Quarterly, Yearly, All) are smaller and share the row width equally, so all of them — including Yearly — fit fully inside the screen without scrolling.
