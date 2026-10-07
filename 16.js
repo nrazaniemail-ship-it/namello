@@ -1790,6 +1790,265 @@ function Field({ label, children }) {
 /* آپلود عکسِ اسکرین‌شات چارت به‌صورت data URL (base64) داخل خودِ رکورد معامله ذخیره می‌شود — بدون
    نیاز به سرور جدا. عکس به همان اندازه‌ی اصلی روی گوشی معمولاً چند صد کیلوبایته که برای ذخیره‌ی
    محلی مشکلی نداره؛ اگه لازم شد بعداً می‌شه قبل از ذخیره کوچیکش کرد (resize روی canvas). */
+/* ---------- Namello Chart Vision (v1.0.23) ----------
+   پردازش تصویر آفلاین (بدون کتابخانه‌ی خارجی) برای اسکرین‌شات چارت MT5 موبایل: کادرهای رنگی قیمت روی
+   محور راست (آبی=ورود، سبز=TP، نارنجی/قرمز=SL) پیدا و با تطبیق قالب ارقام خوانده می‌شن؛ محور قیمت برای
+   اعتبارسنجی کالیبره می‌شه. خروجی: قیمت ورود/TP/SL، R-multiple و ریسک دلاری. */
+/* Namello Chart Vision — MT5 (mobile) price-tag reader. Pure JS, offline, no external libs. */
+var NmChartVision = (function () {
+  'use strict';
+  var GW = 10, GH = 16;
+  var TEMPLATES = {}; // injected: char -> [{f:Float32Array, a:number}]
+  function hsv(r, g, b) {
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, h = 0;
+    if (d) { if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+    return [h, mx ? d / mx : 0, mx / 255];
+  }
+  // 1 entry(blue) 2 TP(green) 3 SL(orange/red) 4 current-price(magenta)
+  function cls(r, g, b) {
+    var c = hsv(r, g, b), h = c[0], s = c[1], v = c[2];
+    if (s < 0.38 || v < 0.45) return 0;
+    if (h <= 50 || h >= 345) return 3;
+    if (h >= 80 && h <= 165) return 2;
+    if (h >= 195 && h <= 250) return 1;
+    if (h >= 275 && h <= 335) return 4;
+    return 0;
+  }
+  function findSeparator(img) {
+    var W = img.width, H = img.height, d = img.data;
+    var y0 = Math.floor(H * 0.12), y1 = Math.floor(H * 0.9), best = -1, bestScore = 0;
+    for (var x = Math.floor(W * 0.6); x < Math.floor(W * 0.97); x++) {
+      var cnt = 0, tot = 0;
+      for (var y = y0; y < y1; y += 2) {
+        var i = (y * W + x) * 4, r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+        tot++; if (mx - mn < 24 && mx >= 45 && mx <= 170) cnt++;
+      }
+      var sc = cnt / tot; if (sc > bestScore) { bestScore = sc; best = x; }
+    }
+    if (best < 0 || bestScore < 0.5) return null;
+    function isLine(y) { var i = (y * W + best) * 4, r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b); return mx - mn < 24 && mx >= 45 && mx <= 170; }
+    var top = Math.floor(H * 0.5), gap = 0, y;
+    for (y = top; y > 0; y--) { if (isLine(y)) { top = y; gap = 0; } else if (++gap > 40) break; }
+    var bot = Math.floor(H * 0.5); gap = 0;
+    for (y = bot; y < H; y++) { if (isLine(y)) { bot = y; gap = 0; } else if (++gap > 40) break; }
+    return { x: best, top: top, bottom: bot, score: bestScore };
+  }
+  function components(mask, w, h) {
+    var lab = new Int32Array(w * h), comps = [], n = 0, stack = [];
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      var p = y * w + x; if (!mask[p] || lab[p]) continue;
+      n++; var x0 = x, x1 = x, y0 = y, y1 = y, cnt = 0; stack.length = 0; stack.push(p); lab[p] = n;
+      while (stack.length) {
+        var q = stack.pop(), qx = q % w, qy = (q - qx) / w; cnt++;
+        if (qx < x0) x0 = qx; if (qx > x1) x1 = qx; if (qy < y0) y0 = qy; if (qy > y1) y1 = qy;
+        for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue; var nx = qx + dx, ny = qy + dy; if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          var np = ny * w + nx; if (mask[np] && !lab[np]) { lab[np] = n; stack.push(np); }
+        }
+      }
+      comps.push({ id: n, x0: x0, x1: x1, y0: y0, y1: y1, w: x1 - x0 + 1, h: y1 - y0 + 1, count: cnt });
+    }
+    return { lab: lab, comps: comps };
+  }
+  function otsu(vals) {
+    var hist = new Array(256).fill(0), n = vals.length, i;
+    for (i = 0; i < n; i++) hist[vals[i]]++;
+    var sum = 0; for (i = 0; i < 256; i++) sum += i * hist[i];
+    var sB = 0, wB = 0, mx = -1, th = 128;
+    for (i = 0; i < 256; i++) { wB += hist[i]; if (!wB) continue; var wF = n - wB; if (!wF) break; sB += i * hist[i]; var mB = sB / wB, mF = (sum - sB) / wF, v = wB * wF * (mB - mF) * (mB - mF); if (v > mx) { mx = v; th = i; } }
+    return th;
+  }
+  // ink mask of a rectangle: ink = minority side of an Otsu split on luminance
+  function inkMask(img, rx, ry, rw, rh) {
+    var W = img.width, d = img.data, lum = new Uint8Array(rw * rh), i = 0, x, y;
+    for (y = 0; y < rh; y++) for (x = 0; x < rw; x++) { var p = ((ry + y) * W + rx + x) * 4; lum[i++] = (0.299 * d[p] + 0.587 * d[p + 1] + 0.114 * d[p + 2]) | 0; }
+    var th = otsu(lum), hi = 0; for (i = 0; i < lum.length; i++) if (lum[i] > th) hi++;
+    var inkIsHigh = hi < lum.length / 2, mask = new Uint8Array(rw * rh);
+    for (i = 0; i < lum.length; i++) mask[i] = inkIsHigh ? (lum[i] > th ? 1 : 0) : (lum[i] <= th ? 1 : 0);
+    return { mask: mask, w: rw, h: rh };
+  }
+  function normGlyph(mask, w, c) {
+    var f = new Float32Array(GW * GH), sw = c.w, sh = c.h;
+    for (var gy = 0; gy < GH; gy++) for (var gx = 0; gx < GW; gx++) {
+      var xa = c.x0 + gx * sw / GW, xb = c.x0 + (gx + 1) * sw / GW, ya = c.y0 + gy * sh / GH, yb = c.y0 + (gy + 1) * sh / GH, s = 0, a = 0;
+      for (var y = Math.floor(ya); y < Math.ceil(yb); y++) for (var x = Math.floor(xa); x < Math.ceil(xb); x++) {
+        var ox = Math.min(x + 1, xb) - Math.max(x, xa), oy = Math.min(y + 1, yb) - Math.max(y, ya); if (ox <= 0 || oy <= 0) continue;
+        var wgt = ox * oy; a += wgt; if (c.lab[y * w + x] === c.id) s += wgt;
+      }
+      f[gy * GW + gx] = a ? s / a : 0;
+    }
+    return { f: f, a: sw / sh };
+  }
+  // segment a text rectangle into glyph descriptors
+  function segment(img, rx, ry, rw, rh) {
+    var ink = inkMask(img, rx, ry, rw, rh), cc = components(ink.mask, rw, rh), comps = cc.comps.filter(function (c) { return c.count >= 3; });
+    if (!comps.length) return [];
+    var maxH = 0; comps.forEach(function (c) { if (c.h > maxH) maxH = c.h; });
+    comps = comps.filter(function (c) { return c.h >= maxH * 0.18 || c.w >= 2; });
+    comps.sort(function (a, b) { return a.x0 - b.x0; });
+    return comps.map(function (c) {
+      c.lab = cc.lab; var small = c.h < maxH * 0.35 && c.w < maxH * 0.35;
+      var dash = !small && c.h < maxH * 0.3 && c.w > c.h * 1.5;
+      var g = { c: c, kind: small ? 'dot' : (dash ? 'dash' : 'glyph'), maxH: maxH };
+      if (g.kind === 'glyph') { var n = normGlyph(cc.lab ? ink.mask : ink.mask, rw, c); g.f = n.f; g.a = n.a; }
+      return g;
+    });
+  }
+  function classify(g) {
+    var best = null, bd = 1e9, second = 1e9;
+    for (var ch in TEMPLATES) {
+      var arr = TEMPLATES[ch], m = 1e9;
+      for (var k = 0; k < arr.length; k++) {
+        var t = arr[k], s = 0; for (var i = 0; i < g.f.length; i++) { var df = g.f[i] - t.f[i]; s += df * df; }
+        s = s / g.f.length + 0.6 * (g.a - t.a) * (g.a - t.a); if (s < m) m = s;
+      }
+      if (m < bd) { second = bd; bd = m; best = ch; } else if (m < second) second = m;
+    }
+    return { ch: best, d: bd, margin: second - bd };
+  }
+  function readText(img, rx, ry, rw, rh) {
+    var segs = segment(img, rx, ry, rw, rh), out = '', worst = 0;
+    segs.forEach(function (g) {
+      if (g.kind === 'dot') { out += '.'; return; }
+      if (g.kind === 'dash') { out += '-'; return; }
+      var r = classify(g); out += r.ch || '?'; if (r.d > worst) worst = r.d;
+    });
+    return { text: out, worst: worst, count: segs.length };
+  }
+  function findBoxes(img, sep) {
+    var W = img.width, H = img.height, d = img.data;
+    var x0 = Math.min(W - 10, sep.x + 3), w = W - x0, y0 = sep.top, h = sep.bottom - sep.top + 1;
+    var res = {};
+    for (var c = 1; c <= 3; c++) {
+      var mask = new Uint8Array(w * h);
+      for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) { var p = ((y0 + y) * W + x0 + x) * 4; if (cls(d[p], d[p + 1], d[p + 2]) === c) mask[y * w + x] = 1; }
+      var dm = new Uint8Array(w * h);
+      for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) { if (!mask[yy * w + xx]) continue; for (var ay = -1; ay <= 1; ay++) for (var ax = -1; ax <= 1; ax++) { var ny = yy + ay, nx = xx + ax; if (ny >= 0 && nx >= 0 && ny < h && nx < w) dm[ny * w + nx] = 1; } }
+      var cc = components(dm, w, h), best = null;
+      cc.comps.forEach(function (k) {
+        if (k.h < Math.max(14, H * 0.008) || k.w < k.h * 2 || k.w > W * 0.4) return;
+        if (k.count < 1.6 * (k.w + k.h)) return;
+        if (!best || k.w * k.h > best.w * best.h) best = k;
+      });
+      if (best) res[c] = { x: x0 + best.x0, y: y0 + best.y0, w: best.w, h: best.h };
+    }
+    return res;
+  }
+
+  // text lines of the (white/gray) price-axis labels
+  function findAxisLines(img, sep) {
+    var W = img.width, d = img.data, x0 = Math.min(W - 10, sep.x + 3), w = W - x0, rows = [], y, x;
+    for (y = sep.top; y <= sep.bottom; y++) {
+      var cnt = 0, xa = 1e9, xb = -1;
+      for (x = 0; x < w; x++) { var p = (y * W + x0 + x) * 4, r = d[p], g = d[p + 1], b = d[p + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx >= 120 && mx - mn < 40) { cnt++; if (x < xa) xa = x; if (x > xb) xb = x; } }
+      rows.push(cnt >= 2 ? [xa, xb] : null);
+    }
+    var lines = [], cur = null;
+    for (var i = 0; i <= rows.length; i++) {
+      var r0 = i < rows.length ? rows[i] : null;
+      if (r0) { if (!cur) cur = { ya: i, yb: i, xa: r0[0], xb: r0[1] }; else { cur.yb = i; cur.xa = Math.min(cur.xa, r0[0]); cur.xb = Math.max(cur.xb, r0[1]); } }
+      else if (cur) { lines.push(cur); cur = null; }
+    }
+    var minH = Math.max(12, img.height * 0.007);
+    return lines.filter(function (l) { return l.yb - l.ya + 1 >= minH; }).map(function (l) { return { x: x0 + Math.max(0, l.xa - 2), y: sep.top + l.ya - 2, w: l.xb - l.xa + 5, h: l.yb - l.ya + 5 }; });
+  }
+  function readBox(img, b) {
+    var inset = Math.max(3, Math.round(b.h * 0.14));
+    return readText(img, b.x + inset, b.y + inset, Math.max(4, b.w - inset * 2), Math.max(4, b.h - inset * 2));
+  }
+
+  function loadTemplates(obj) {
+    for (var ch in obj) TEMPLATES[ch] = obj[ch].map(function (t) { var f = new Float32Array(t[1].length); for (var i = 0; i < f.length; i++) f[i] = +t[1].charAt(i) / 9; return { f: f, a: t[0] }; });
+  }
+  function calibrate(img, sep, decimals) {
+    var lines = findAxisLines(img, sep), pts = [];
+    lines.forEach(function (l) {
+      var r = readText(img, l.x, l.y, l.w, l.h);
+      if (!/^\d+\.\d+$/.test(r.text) || r.worst > 0.3) return;
+      if (decimals !== null && r.text.split('.')[1].length !== decimals) return;
+      pts.push({ y: l.y + l.h / 2, v: parseFloat(r.text) });
+    });
+    var best = null, i, j, k;
+    for (i = 0; i < pts.length; i++) for (j = i + 1; j < pts.length; j++) {
+      if (Math.abs(pts[j].y - pts[i].y) < 20 || pts[j].v === pts[i].v) continue;
+      var a = (pts[j].v - pts[i].v) / (pts[j].y - pts[i].y), b = pts[i].v - a * pts[i].y, inl = [];
+      for (k = 0; k < pts.length; k++) if (Math.abs(pts[k].v - (a * pts[k].y + b)) <= 3 * Math.abs(a)) inl.push(pts[k]);
+      if (!best || inl.length > best.inl.length) best = { a: a, b: b, inl: inl };
+    }
+    if (!best || best.inl.length < 3) return null;
+    var n = best.inl.length, sy = 0, sv = 0, syy = 0, syv = 0;
+    best.inl.forEach(function (p) { sy += p.y; sv += p.v; syy += p.y * p.y; syv += p.y * p.v; });
+    var den = n * syy - sy * sy; if (!den) return null;
+    var A = (n * syv - sy * sv) / den, B = (sv - A * sy) / n;
+    return { a: A, b: B, n: n };
+  }
+  var NAMES = { 1: 'entry', 2: 'tp', 3: 'sl' };
+  function analyze(img) {
+    var sep = findSeparator(img);
+    if (!sep) return { ok: false, error: 'ستون قیمت سمت راست چارت MT5 پیدا نشد. اسکرین‌شات کامل صفحه‌ی چارت (با محور قیمت) لازمه.' };
+    var boxes = findBoxes(img, sep), values = {}, warnings = [], dec = null, c;
+    for (c = 1; c <= 3; c++) {
+      if (!boxes[c]) continue;
+      var r = readBox(img, boxes[c]);
+      if (/^\d+\.\d+$/.test(r.text)) {
+        values[NAMES[c]] = { value: parseFloat(r.text), text: r.text, worst: r.worst, box: boxes[c] };
+        if (dec === null) dec = r.text.split('.')[1].length;
+      } else warnings.push('عدد کادر ' + NAMES[c].toUpperCase() + ' خوانا نبود (' + (r.text || 'خالی') + ').');
+    }
+    if (!values.entry) return { ok: false, error: 'کادر آبی «قیمت ورود» روی محور قیمت پیدا نشد. مطمئن شو معامله‌ی بازِ خط ورود روی چارت دیده می‌شه.', warnings: warnings };
+    var cal = calibrate(img, sep, dec);
+    if (cal) {
+      ['entry', 'tp', 'sl'].forEach(function (k) {
+        var v = values[k]; if (!v) return;
+        var pred = cal.a * (v.box.y + v.box.h / 2) + cal.b;
+        if (Math.abs(pred - v.value) > 6 * Math.abs(cal.a)) warnings.push('مقدار ' + k.toUpperCase() + ' (' + v.text + ') با محور قیمت هم‌خوانی نداره؛ دستی چک کن.');
+      });
+    }
+    ['entry', 'tp', 'sl'].forEach(function (k) { if (values[k] && values[k].worst > 0.3) warnings.push('دقت خوندن ' + k.toUpperCase() + ' پایینه؛ مقدار رو چک کن.'); });
+    return { ok: true, values: values, warnings: warnings, calibrated: !!cal };
+  }
+  function compute(res, ctx) {
+    var v = res.values, e = v.entry.value, out = { entry: e };
+    var lot = parseFloat(ctx && ctx.lot);
+    if (v.tp) out.tp = v.tp.value; if (v.sl) out.sl = v.sl.value;
+    if (v.tp && v.sl) {
+      var risk = Math.abs(e - v.sl.value), reward = Math.abs(v.tp.value - e);
+      var buy = v.tp.value > e && v.sl.value < e, sell = v.tp.value < e && v.sl.value > e;
+      if (!buy && !sell) out.warning = 'ترتیب ورود/TP/SL منطقی نیست (TP و SL باید دو طرف ورود باشن).';
+      else if (risk > 0) {
+        out.direction = buy ? 'buy' : 'sell';
+        out.rr = Math.round(reward / risk * 100) / 100;
+        if (lot > 0 && ctx.pipSize && ctx.pipValue) {
+          var ps = ctx.pipSize(ctx.pair), pv = ctx.pipValue(ctx.pair);
+          out.riskUsd = Math.round(risk / ps * pv * lot * 100) / 100;
+          out.rewardUsd = Math.round(reward / ps * pv * lot * 100) / 100;
+        }
+      }
+    }
+    return out;
+  }
+  function loadImageData(src, maxW) {
+    return new Promise(function (resolve, reject) {
+      var im = new Image();
+      im.onload = function () {
+        var sc = Math.min(1, (maxW || 1400) / im.naturalWidth), w = Math.max(1, Math.round(im.naturalWidth * sc)), h = Math.max(1, Math.round(im.naturalHeight * sc));
+        var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        var cx = cv.getContext('2d', { willReadFrequently: true }); cx.drawImage(im, 0, 0, w, h);
+        try { resolve(cx.getImageData(0, 0, w, h)); } catch (err) { reject(err); }
+      };
+      im.onerror = function () { reject(new Error('تصویر بارگذاری نشد.')); };
+      im.src = src;
+    });
+  }
+  function processImage(src, ctx) {
+    return loadImageData(src, 1400).then(function (img) {
+      var res = analyze(img); if (!res.ok) return res;
+      res.calc = compute(res, ctx || {}); return res;
+    });
+  }
+  return { loadTemplates: loadTemplates, analyze: analyze, compute: compute, process: processImage, _T: TEMPLATES, cls: cls, hsv: hsv, findSeparator: findSeparator, components: components, segment: segment, readText: readText, findBoxes: findBoxes, findAxisLines: findAxisLines, readBox: readBox, GW: GW, GH: GH };
+})();
+NmChartVision.loadTemplates({"0":[[0.62,"0025995300058888896128710017933930000395780000008998000000899800000089980000008998000000899800000089980000008998000000895930000089397100179316962269610038999600"],[0.62,"0025998300058888896128710017933930000395780000008998000000899800000089980000008998000000899800000089980000008998000000895930000089397100179316962269610038999600"],[0.62,"0038998300059888896128710017935950000399981000008998000000899800000089980000008998000000899800000089980000008998100000895950000399397100179316984269610069999600"]],"1":[[0.32,"3333399999888888999900000079990000007999000000799900000079990000007999000000799900000079990000007999000000799900000079990000007999000000799900000079990000007999"]],"2":[[0.62,"0038998300169888896169710017939800000595870000028900000005930000000683000000597000000397100000187100000177100000187000000189300000289400000089932222229999999999"],[0.62,"0038998300169888896169710017939800000595870000028900000005930000000683000000597000000397100000187100000177100000187000000189300000289400000089932262269999999999"],[0.62,"0038998300169888896169710017939800000593870000028700000005930000000683000000597000000397100000187100000177100000187000000189300000289400000089932222229999999999"],[0.65,"0149996200169888882079600029709700000893860000089400000008820000004960000001792000001794000000795000000295000000298200000289300000289300000089988888849999999999"]],"3":[[0.62,"0038995300169888896169710017939800000593320000059300000005930000002871000566863000056689300000002683000000028632000000899800000089982000059338862268610369999600"],[0.62,"0038995300169888895069710017829800000593320000059300000005930000002871000566863000056689300000002683000000028632000000899800000089682000059338862268610369999600"],[0.62,"0038995300169888895039710017829800000593320000059300000005930000002871000566863000056689300000002683000000028632000000899800000089682000059338862268610369999600"]],"4":[[0.72,"0000018930000004993000002999300000685930000492393000078039300058203930018600393006810039302850003930593111794199999999991111114941000000393000000039300000003930"]],"5":[[0.6,"1799999993397333333139600000003960000000396000000039324822003999999940996200689337000006970000000099000000009941000000999800000199993000069638943389820259999520"],[0.58,"1799999993399888888339710000003960000000396000000039604430004998999810999533998279400028951200000199000000009933000000999900000099993000179638982289820299999520"],[0.6,"0699999993287333333139600000003960000000396000000039324822003999999940996200689337000006970000000099000000009941000000999800000199993000069638943389820259999520"]],"6":[[0.62,"0025998300028988881028730000005930000000980000000098014440009858889820996311498298000005939400000188980000008998000000899800000395397100179316962269610069998300"],[0.65,"0003899710005988882005940000001870000000493000000049304440005958879830999320398299300003948930000178493000007949300000793940000285079200069402883259610039999410"],[0.65,"0003899410005988882005940000001870000000493000000049304440004958879830799320398249300003944810000178493000007949300000793940000285079200069402883259610039999410"]],"7":[[0.68,"9999999999333333338900000003940000001771000000571000000185000000049100000017400000003940000000880000000088000000028500000004930000000493000000049300000004930000"]],"8":[[0.62,"0038998300169888896139710017933950000395395000008939500005931683113883006977963003686689303862002583982000008998000000899800000089695000028938862268830369999630"],[0.62,"0038998300169888896139910017933950000599395000059939500005961783223883036999963003986689303882002683982000028998000000899800000089995000028938862268830369999930"],[0.62,"0035998300169888896139710017933950000395395000008939500005931683113883006977963003686689303862002583982000008998000000899800000089695000028938862268830369999630"]],"9":[[0.62,"0038995200169888885039710017829800000593980000018798000000899800000089980000008979600006991697777899014899508900011101870000000593000000178206522489500799998300"]]});
 async function nmLoadTesseract() {
     if (window.Tesseract) return window.Tesseract;
     await new Promise((resolve, reject) => {
@@ -1835,9 +2094,14 @@ async function nmExtractChartPrices(image, direction) {
     }
     return { entry: entry?.n ?? null, target: target?.n ?? null, stop: stop?.n ?? null, candidates: uniq.slice(0, 8).map(x=>x.n) };
 }
-function ChartImageField({ label, value, onChange, onPriceExtract, direction }) {
+function ChartImageField({ label, value, onChange, onPriceExtract, direction, vision }) {
     const inputRef = useRef(null);
     const [ocrBusy, setOcrBusy] = useState(false);
+    const [cvBusy, setCvBusy] = useState(false);
+    const [cvMsg, setCvMsg] = useState(null);
+    const [cvOn, setCvOn] = useState(() => { try { return localStorage.getItem('ns_namello_chart_vision_enabled_v1') !== '0'; } catch (e) { return true; } });
+    useEffect(() => { setCvMsg(null); }, [value]);
+    function toggleCv() { const nv = !cvOn; setCvOn(nv); try { localStorage.setItem('ns_namello_chart_vision_enabled_v1', nv ? '1' : '0'); } catch (e) {} }
     function handleFile(e) {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
@@ -1853,12 +2117,42 @@ function ChartImageField({ label, value, onChange, onPriceExtract, direction }) 
         catch (e) { onPriceExtract({ error: e?.message || 'استخراج قیمت ناموفق بود.' }); }
         finally { setOcrBusy(false); }
     }
+    async function runVision() {
+        if (!value || !vision || !cvOn || cvBusy) return;
+        setCvBusy(true); setCvMsg(null);
+        try {
+            const ctx = vision.getCtx();
+            const res = await NmChartVision.process(value, ctx);
+            if (!res.ok) { setCvMsg({ kind: 'err', lines: [res.error].concat(res.warnings || []) }); return; }
+            const c = res.calc || {}, v = res.values, lines = [], warn = (res.warnings || []).slice();
+            vision.onApply(res);
+            lines.push('قیمت ورود (آیتم ۲۷): ' + v.entry.text);
+            if (v.tp || v.sl) lines.push('TP: ' + (v.tp ? v.tp.text : '—') + '  |  SL: ' + (v.sl ? v.sl.text : '—'));
+            if (c.rr !== undefined) lines.push('R-multiple (آیتم ۲۵): 1:' + c.rr);
+            if (c.riskUsd !== undefined) lines.push('ریسک معامله (آیتم ۲۶): $' + c.riskUsd + '  (لات ' + ctx.lot + ' ← آیتم ۲۸)');
+            else if (c.rr !== undefined) warn.push('برای محاسبه‌ی ریسک دلاری، لات (آیتم ۲۸) رو وارد کن و دوباره پردازش بزن.');
+            if (!v.tp || !v.sl) warn.push('کادر ' + (!v.tp ? 'TP' : 'SL') + ' روی چارت پیدا نشد؛ فقط قیمت ورود پر شد.');
+            if (c.warning) warn.push(c.warning);
+            if (c.direction && ctx.direction && c.direction !== String(ctx.direction).toLowerCase()) warn.push('جهت روی چارت ' + (c.direction === 'buy' ? 'خرید' : 'فروش') + ' به نظر می‌رسه ولی آیتم ۳۳ چیز دیگه‌ای انتخاب شده.');
+            setCvMsg({ kind: warn.length ? 'warn' : 'ok', lines: lines.concat(warn.map(w => '⚠ ' + w)) });
+        } catch (e) { setCvMsg({ kind: 'err', lines: [e?.message || 'پردازش تصویر ناموفق بود.'] }); }
+        finally { setCvBusy(false); }
+    }
+    const cvColor = cvMsg ? (cvMsg.kind === 'ok' ? '#34D399' : cvMsg.kind === 'warn' ? '#FBBF24' : '#F87171') : '#60A5FA';
+    const visionBar = (value && vision) ? React.createElement('div', { style: { borderTop: '1px solid var(--border-2)', background: 'var(--bg-card2)', padding: '8px 10px' } },
+        React.createElement('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+            React.createElement('span', { className: 'text-[11px]', style: { color: 'var(--text-secondary)' } }, 'پردازش خودکار تصویر (آیتم ۲۵، ۲۶ و ۲۷)'),
+            React.createElement('button', { type: 'button', role: 'switch', 'aria-checked': cvOn, onClick: toggleCv, style: { width: 38, height: 22, borderRadius: 999, position: 'relative', flexShrink: 0, background: cvOn ? '#34D399' : 'var(--border-2)', transition: 'background .15s' } },
+                React.createElement('span', { style: { position: 'absolute', top: 2, left: cvOn ? 18 : 2, width: 18, height: 18, borderRadius: 999, background: '#fff', transition: 'left .15s' } }))),
+        React.createElement('button', { type: 'button', onClick: runVision, disabled: !cvOn || cvBusy, className: 'w-full py-2 rounded-lg text-[12px] font-semibold', style: { background: cvOn ? 'color-mix(in srgb, #60A5FA 16%, var(--bg-card2))' : 'var(--bg-card2)', color: cvOn ? '#60A5FA' : 'var(--text-muted)', border: '1px solid ' + (cvOn ? 'color-mix(in srgb, #60A5FA 35%, var(--border-2))' : 'var(--border-2)'), opacity: cvOn ? 1 : 0.55 } }, cvBusy ? 'در حال پردازش تصویر…' : (cvOn ? 'پردازش تصویر' : 'پردازش غیرفعاله')),
+        cvMsg ? React.createElement('div', { className: 'text-[11px] mt-2 mono', dir: 'auto', style: { color: cvColor, whiteSpace: 'pre-line', lineHeight: 1.7, border: '1px solid ' + cvColor + '55', borderRadius: 8, padding: '6px 8px', background: cvColor + '12' } }, cvMsg.lines.join('\n')) : null) : null;
     const preview = value ? React.createElement('div',{className:'relative rounded-lg overflow-hidden',style:{border:'1px solid var(--border-2)'}},
         React.createElement('img',{src:value,alt:label,className:'w-full object-cover',style:{maxHeight:160}}),
         React.createElement('div',{className:'absolute top-1.5 left-1.5 flex gap-1.5'},
             React.createElement('button',{type:'button',onClick:()=>inputRef.current&&inputRef.current.click(),className:'p-1.5 rounded-lg',style:{background:'#0B0E11CC'}},React.createElement(Edit3,{size:13,color:'var(--text-primary)'})),
             React.createElement('button',{type:'button',onClick:()=>onChange(''),className:'p-1.5 rounded-lg',style:{background:'#0B0E11CC'}},React.createElement(Trash2,{size:13,color:'#F87171'}))),
-        onPriceExtract ? React.createElement('button',{type:'button',onClick:runOcr,disabled:ocrBusy,className:'w-full py-2 text-[11px] font-semibold',style:{background:'color-mix(in srgb, #60A5FA 12%, var(--bg-card2))',color:'#60A5FA',borderTop:'1px solid color-mix(in srgb, #60A5FA 28%, var(--border-2))'}},ocrBusy?'در حال پردازش تصویر…':'استخراج Entry / TP / SL از چارت') : null
+        onPriceExtract ? React.createElement('button',{type:'button',onClick:runOcr,disabled:ocrBusy,className:'w-full py-2 text-[11px] font-semibold',style:{background:'color-mix(in srgb, #60A5FA 12%, var(--bg-card2))',color:'#60A5FA',borderTop:'1px solid color-mix(in srgb, #60A5FA 28%, var(--border-2))'}},ocrBusy?'در حال پردازش تصویر…':'استخراج Entry / TP / SL از چارت') : null,
+        visionBar
     ) : null;
     return React.createElement('div',{className:'mb-2'},
         React.createElement('label',{className:'text-[11px] block mb-1',style:{color:'var(--text-muted)'}},label),
@@ -2625,19 +2919,15 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.22";
-const NM_VERSION_CODE = 23;
+const NM_VERSION_NAME = "1.0.23";
+const NM_VERSION_CODE = 24;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_022_NOTE = "نسخه 1.0.22: بازطراحی بخش ارزیابی پیشرفته با شماره‌گذاری، جمع/بازشدن مستقل و راهنمای کامل هر قسمت؛ موتورهای تحلیل استراتژیک در دو سطر مرتب شدند.";
-const NM_VERSION_DATE = "بازطراحی ارزیابی پیشرفته داشبورد و چیدمان موتورهای تحلیل استراتژیک";
+const NM_VERSION_023_NOTE = "نسخه 1.0.23: افزودن پردازش تصویر چارت MT5 در ثبت ورود؛ با دکمه پردازش (قابل فعال/غیرفعال) قیمت ورود، R-multiple و ریسک دلاری به‌صورت خودکار پر می‌شود.";
+const NM_VERSION_DATE = "پردازش تصویر چارت MT5 و پر شدن خودکار آیتم‌های ۲۵، ۲۶ و ۲۷ ژورنال";
 const NM_CHANGELOG = [
-    "نسخه 1.0.22: بازطراحی ارزیابی پیشرفته به ۶ بخش مستقل و شماره‌گذاری‌شده با جمع/بازشدن جداگانه، راهنمای کامل هر بخش با دکمه سه‌نقطه و چیدمان موتورهای تحلیل استراتژیک در دو سطر.",
-    "نسخه 1.0.21: افزودن Strategic LLM Copilot روی خروجی ساختاریافته و قابل‌ردیابی موتور Rule-Based؛ بدون ارسال داده خام معاملات مگر با انتخاب کاربر.",
-    "نسخه 1.0.11: به ارزیابی پیشرفته داشبورد «موتور تحلیل استراتژیک» اضافه شد: روایت استراتژیک قاعده‌محور (نقاط قوت، نشت‌ها، موارد اجتناب، اقدامات کوتاه‌مدت و میان‌مدت) که زیر هر یافته دلیل عددی آن را نشان می‌دهد.",
-    "نسخه 1.0.11: Edge شرطی بر اساس نشست، روز هفته، ساعت ورود، وضعیت بازار، هم‌راستایی با روند و جفت‌ارز با آماره t و برچسب «معنادار/مقدماتی» و هشدار رژیم (مثبت در یک رژیم، منفی در دیگری).",
-    "نسخه 1.0.11: موتور رفتاری: Revenge Trading، Overconfidence، افزایش سایز پس از باخت، Overtrade، Tilt Score پویا، Discipline Score، تفکیک زیان رفتاری از واریانس طبیعی و همبستگی وضعیت روانی با عملکرد؛ با قوانین رفتاری قابل تنظیم توسط کاربر.",
-    "نسخه 1.0.11: Attribution سیستم، اثر تعامل سیستم با شرایط (نشست/بازار/روند/روز) و تشخیص افت Edge با Rolling Expectancy.",
-    "نسخه 1.0.11: تحلیل سناریو (کاهش Win Rate و میانگین سود، افزایش زیان)، جدول سایزینگ و احتمال سقف افت، امکان‌سنجی هدف و حساسیت به حجم؛ مونت‌کارلوی تحلیل مالی به ۵۰۰۰ مسیر ارتقا یافت. خروجی Excel/PDF ارزیابی پیشرفته شامل موتور استراتژیک است.",
+    "نسخه 1.0.23: در ثبت ورود (آیتم ۳۵ ← چارت تایم ورود - شروع) دکمه «پردازش تصویر» با کلید فعال/غیرفعال اضافه شد.",
+    "نسخه 1.0.23: پردازش کاملاً آفلاین روی اسکرین‌شات MT5 موبایل: کادرهای آبی (ورود)، سبز (TP) و نارنجی (SL) روی محور قیمت پیدا و خوانده می‌شوند و با محور قیمت اعتبارسنجی می‌شوند.",
+    "نسخه 1.0.23: قیمت ورود (آیتم ۲۷)، R-multiple (آیتم ۲۵) و ریسک دلاری (آیتم ۲۶) بر اساس لات آیتم ۲۸ محاسبه و در فیلدها درج می‌شود؛ همه‌ی مقادیر قابل ویرایش‌اند.",
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -8981,6 +9271,22 @@ function App() {
         setOpenForm(f => ({ ...f, rrReward: v }));
         setNewRrText(v);
     }
+    function applyChartVision(res) {
+        const c = res.calc || {}, v = res.values || {};
+        const rr = c.rr !== undefined ? String(c.rr) : "";
+        if (rr && !rrOptions.includes(rr))
+            persistRrOptions([...rrOptions, rr]);
+        setOpenForm(f => ({
+            ...f,
+            entry: v.entry ? v.entry.text : f.entry,
+            plannedTargetPrice: v.tp && !c.warning ? v.tp.text : f.plannedTargetPrice,
+            plannedStopPrice: v.sl && !c.warning ? v.sl.text : f.plannedStopPrice,
+            rrReward: rr || f.rrReward,
+            riskDollar: c.riskUsd !== undefined ? String(c.riskUsd) : f.riskDollar,
+        }));
+        if (rr)
+            setNewRrText(rr);
+    }
     function addSuccessProbOptionInline() {
         const v = newSuccessProbText.trim();
         if (!v)
@@ -9350,7 +9656,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.22</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.23</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10080,7 +10386,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.22</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.23</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10481,8 +10787,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.22", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.22"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.23", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.23"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -12052,7 +12358,7 @@ function App() {
                     React.createElement("p", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u00AB\u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC\u00BB \u0648 \u00AB\u062E\u0631\u06CC\u062F/\u0641\u0631\u0648\u0634\u00BB \u062E\u0648\u062F\u06A9\u0627\u0631 \u0627\u0646\u062A\u062E\u0627\u0628 \u0645\u06CC\u200C\u0634\u0647\u061B \u0627\u06AF\u0647 \u0644\u0627\u0632\u0645 \u0628\u0648\u062F \u062F\u0633\u062A\u06CC \u0647\u0645 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0639\u0648\u0636\u0634 \u06A9\u0646\u06CC.")),
                 React.createElement(Field, { label: numLabel(35, hlLabel(appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله")) },
                     React.createElement(ChartImageField, { label: "چارت تایم اصلی", value: openForm.chartImageMain || "", onChange: v => setOpenForm({ ...openForm, chartImageMain: v }) }),
-                    React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }) })),
+                    React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }), vision: { getCtx: () => ({ pair: openForm.pair, lot: openForm.lot, direction: openForm.direction, pipSize: pipSize, pipValue: pipValuePerLot }), onApply: applyChartVision } })),
                 React.createElement(Field, { label: numLabel(36, hlLabel(appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله")) },
                     React.createElement(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت", value: openForm.voiceNoteBefore || "", onChange: v => setOpenForm({ ...openForm, voiceNoteBefore: v }) })),
                 RE(NmCustomFieldsFormSection, { values: openForm.customFields, onChange: v => setOpenForm({ ...openForm, customFields: v }) }),
