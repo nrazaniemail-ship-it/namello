@@ -77,3 +77,8 @@
 - TypeScript modules expanded for CSV import, Sync conflict helpers/history, psychology metrics, replay, portfolio and Prop Firm rules.
 - Unit-test coverage expanded for import/sync/psychology/replay/portfolio/prop contracts while preserving the existing PWA.
 - Version Code: 6.
+
+## 1.0.13
+- Regime Persistence: اندازه‌گیری ماندگاری و طول اجرای رژیم‌های OHLC/MT5.
+- Change Detection: شناسایی تغییرات شدید در ویژگی‌های OHLC بین معاملات متوالی.
+- Rolling Regime Edge: مقایسه Edge رژیم‌ها در پنجره جاری و پنجره قبلی برای تشخیص بهبود/افت.

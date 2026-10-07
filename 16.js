@@ -2625,8 +2625,8 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.12";
-const NM_VERSION_CODE = 13;
+const NM_VERSION_NAME = "1.0.13";
+const NM_VERSION_CODE = 14;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "موتور تحلیل استراتژیک در ارزیابی پیشرفته داشبورد";
 const NM_CHANGELOG = [
@@ -5578,6 +5578,82 @@ function nmStrOhlcRegimeFeatures(items){
   rows.forEach(r=>{r.volRegime=r.volatility<=v33?'Low Volatility':r.volatility>=v66?'High Volatility':'Medium Volatility';r.volRegimeFa=r.volRegime==='Low Volatility'?'نوسان کم':r.volRegime==='High Volatility'?'نوسان زیاد':'نوسان متوسط';r.trendRegime=r.efficiencyRatio>=Math.max(.35,er50)?'Trend':'Range';r.trendRegimeFa=r.trendRegime==='Trend'?'رونددار':'رنج';r.combinedRegime=`${r.volRegime} · ${r.trendRegime}`;r.combinedRegimeFa=`${r.volRegimeFa} · ${r.trendRegimeFa}`;r.volatilityPercentile=vols.filter(x=>x<=r.volatility).length/vols.length;r.atrPercentile=atrs.filter(x=>x<=r.avgTRPct).length/atrs.length;});
   return {available:true,coverage:rows.length,coveragePct:items.length?rows.length/items.length*100:0,rows,thresholds:{v33,v66,er50,a33,a66}};
 }
+function nmStrOhlcRegimePersistence(items, featureData, minG){
+  if(!featureData?.available) return {available:false,dimensions:[],changes:[],summary:null};
+  const rows=featureData.rows.slice().sort((a,b)=>a.index-b.index);
+  const defs=[
+    {key:'volatility',title:'رژیم نوسان',get:r=>r.volRegimeFa},
+    {key:'trend_range',title:'رژیم روند/رنج',get:r=>r.trendRegimeFa},
+    {key:'combined',title:'رژیم ترکیبی',get:r=>r.combinedRegimeFa}
+  ];
+  const dimensions=[];
+  const changes=[];
+  defs.forEach(d=>{
+    const seq=rows.map(r=>({index:r.index,label:d.get(r),date:items[r.index]?.t?.date||'',time:items[r.index]?.t?.time||''}));
+    let same=0, transitions=0, current=null, runs=[], runStart=0;
+    seq.forEach((x,i)=>{
+      if(i===0){current=x.label;runStart=i;return;}
+      if(x.label===current){same++;return;}
+      transitions++;runs.push({label:current,length:i-runStart,start:runStart,end:i-1});
+      changes.push({dimension:d.key,title:d.title,from:current,to:x.label,tradeIndex:x.index,date:x.date,time:x.time});
+      current=x.label;runStart=i;
+    });
+    if(seq.length) runs.push({label:current,length:seq.length-runStart,start:runStart,end:seq.length-1});
+    const lengths=runs.map(r=>r.length), avg=lengths.length?lengths.reduce((a,v)=>a+v,0)/lengths.length:0;
+    const max=lengths.length?Math.max(...lengths):0;
+    const persistence=seq.length>1?same/(seq.length-1):null;
+    const recent=seq.length?seq.slice(Math.max(0,seq.length-10)):[];
+    const recentLabel=recent.length?recent[recent.length-1].label:null;
+    const recentSame=recent.length>1?recent.slice(1).filter((x,i)=>x.label===recent[i].label).length/(recent.length-1):null;
+    dimensions.push({key:d.key,title:d.title,n:seq.length,transitions,changeRate:seq.length>1?transitions/(seq.length-1):null,persistence,avgRun:avg,maxRun:max,runs,recentLabel,recentPersistence:recentSame});
+  });
+  const last=changes.slice().sort((a,b)=>a.tradeIndex-b.tradeIndex).at(-1)||null;
+  return {available:true,dimensions,changes:changes.slice(-50),summary:{totalChanges:changes.length,lastChange:last}};
+}
+function nmStrOhlcChangeDetection(items, featureData){
+  if(!featureData?.available) return {available:false,signals:[],latest:null};
+  const rows=featureData.rows.slice().sort((a,b)=>a.index-b.index), signals=[];
+  const metrics=[['volatility','نوسان'],['avgTRPct','ATR٪'],['efficiencyRatio','Efficiency Ratio'],['autocorrelation','Autocorrelation']];
+  for(let i=1;i<rows.length;i++){
+    const a=rows[i-1],b=rows[i];
+    metrics.forEach(([key,title])=>{
+      const av=Number(a[key]),bv=Number(b[key]); if(!Number.isFinite(av)||!Number.isFinite(bv)) return;
+      const base=Math.max(1e-9,Math.abs(av));
+      const delta=(bv-av)/base;
+      if(Math.abs(delta)>=0.5) signals.push({index:b.index,metric:key,title,delta,value:bv,previous:av,severity:Math.abs(delta)>=1?'high':'medium',direction:delta>0?'up':'down'});
+    });
+  }
+  const latest=signals.slice().sort((a,b)=>a.index-b.index).at(-1)||null;
+  return {available:true,signals:signals.slice(-40),latest};
+}
+function nmStrRollingEdge(items, featureData, minG, windowSize){
+  if(!featureData?.available) return {available:false,window:windowSize,dimensions:[]};
+  const rows=featureData.rows.slice().sort((a,b)=>a.index-b.index), defs=[
+    {key:'volatility',title:'رژیم نوسان',get:r=>r.volRegimeFa},
+    {key:'trend_range',title:'رژیم روند/رنج',get:r=>r.trendRegimeFa},
+    {key:'combined',title:'رژیم ترکیبی',get:r=>r.combinedRegimeFa}
+  ];
+  const stat=vals=>{const s=nmStrStat(vals);return {n:vals.length,mean:s.mean,sd:s.sd,t:s.t,ci:s.ci,win:vals.length?vals.filter(v=>v>0).length/vals.length:0,verdict:s.verdict};};
+  const out=[];
+  defs.forEach(d=>{
+    const labels=rows.map(r=>d.get(r));
+    const curStart=Math.max(0,rows.length-windowSize), prevStart=Math.max(0,curStart-windowSize), prevEnd=curStart;
+    const current=rows.slice(curStart), previous=rows.slice(prevStart,prevEnd);
+    const names=[...new Set(rows.map(d.get))];
+    names.forEach(name=>{
+      const cv=current.filter((r,i)=>labels[curStart+i]===name).map(r=>items[r.index]?.v).filter(Number.isFinite);
+      const pv=previous.filter((r,i)=>labels[prevStart+i]===name).map(r=>items[r.index]?.v).filter(Number.isFinite);
+      if(cv.length>=minG) {
+        const cs=stat(cv), ps=pv.length>=minG?stat(pv):null;
+        const delta=ps?cs.mean-ps.mean:null;
+        out.push({dimension:d.key,title:d.title,name,nCurrent:cs.n,current:cs,previous:ps,delta,trend:delta===null?'unknown':delta>0?'improving':delta<0?'deteriorating':'flat'});
+      }
+    });
+  });
+  out.sort((a,b)=>Math.abs(b.delta??0)-Math.abs(a.delta??0));
+  return {available:true,window:windowSize,dimensions:out,latest:out[0]||null};
+}
+
 function nmStrOhlcGroups(items,minG,featureData){
   if(!featureData?.available)return [];
   const make=(name,filter)=>{const subset=featureData.rows.filter(filter).map(r=>items[r.index]).filter(Boolean);if(subset.length<minG)return null;const vals=subset.map(i=>i.v),st=nmStrStat(vals);return {name,n:subset.length,mean:st.mean,sd:st.sd,t:st.t,verdict:st.verdict,win:subset.filter(i=>i.v>0).length/subset.length,ci:st.ci};};
@@ -5613,6 +5689,10 @@ function nmStrategicEngine(trades, startingBalance, opts) {
   ];
   const dims = dimDefs.map(d => ({ key: d.key, title: d.title, groups: nmStrGroups(items, d.fn, minG) })).filter(d => d.groups.length >= 1);
   const ohlcRegime = nmStrOhlcRegimeFeatures(items);
+  const ohlcPersistence = nmStrOhlcRegimePersistence(items, ohlcRegime, minG);
+  const ohlcChanges = nmStrOhlcChangeDetection(items, ohlcRegime);
+  const rollingWindow = Math.max(10, Math.min(30, Number(rules.regimeRollingWindow) || 20));
+  const ohlcRolling = nmStrRollingEdge(items, ohlcRegime, minG, rollingWindow);
   if (ohlcRegime.available) {
     const og=nmStrOhlcGroups(items,minG,ohlcRegime);
     dims.push({key:'ohlc_volatility',title:'رژیم نوسان از OHLC/MT5',groups:og.filter(g=>/^نوسان (کم|متوسط|زیاد)$/.test(g.name)),source:'OHLC/MT5'});
@@ -5629,7 +5709,12 @@ function nmStrategicEngine(trades, startingBalance, opts) {
     }
   });
   regimeAlerts.sort((a, b) => (b.strong ? 1 : 0) - (a.strong ? 1 : 0));
-  out.regime = { dims, alerts: regimeAlerts, ohlc: ohlcRegime };
+  out.regime = { dims, alerts: regimeAlerts, ohlc: ohlcRegime, persistence: ohlcPersistence, changes: ohlcChanges, rolling: ohlcRolling };
+  if (ohlcRolling.latest && ohlcRolling.latest.trend === 'deteriorating') {
+    out.narrative = out.narrative || {strengths:[],leaks:[],avoid:[],short:[],mid:[]};
+    out.narrative.short = out.narrative.short || [];
+    out.narrative.short.unshift({text:`Edge رژیم «${ohlcRolling.latest.name}» در پنجره Rolling ${rollingWindow} معامله نسبت به پنجره قبل ضعیف شده است (${fmt(ohlcRolling.latest.delta,3)}${unit}).`,why:'Rolling Regime Edge'});
+  }
   /* ---------- Module 3: behavioural engine ---------- */
   const sizeOf = t => { const l = Number(t.lot), r = Number(t.riskDollar); return l > 0 ? l : (r > 0 ? r : null); };
   const flags = items.map(() => ({ revenge: false, overconf: false, lossEsc: false, overtrade: false, mistake: false }));
@@ -5907,6 +5992,9 @@ function NmStrategicEnginePanel({ trades, startingBalance }) {
         card("ترکیب رژیم", or?.available ? "Vol × Trend" : "—", or?.available ? "بدون HMM؛ rule-based و قابل توضیح" : "—", "info")
       ])),
       or?.available ? sub("ویژگی‌های محاسبه‌شده از OHLC", note(`Volatility = انحراف معیار بازده‌های لگاریتمی در مسیر معامله · ATR٪ = میانگین True Range نسبت به قیمت · Efficiency Ratio = حرکت خالص ÷ حرکت مطلق · Autocorrelation(1) نیز برای امتیاز Trend استفاده شده است. رژیم‌ها نسبی و درون همان نمونه معاملاتی هستند؛ بنابراین به‌صورت «Low/Medium/High» گزارش می‌شوند، نه یک آستانه ثابت برای همه نمادها.`)) : null,
+      or?.available ? sub("پایداری رژیم", grid((s.regime.persistence?.dimensions||[]).map(d => card(d.title, d.persistence===null?"—":`${f(d.persistence*100,0)}٪`, `میانگین طول رژیم ${f(d.avgRun,1)} معامله · بیشینه ${d.maxRun} · تغییرات ${d.transitions}`, d.persistence!==null&&d.persistence>=0.65?"good":d.persistence!==null&&d.persistence>=0.45?"warn":"bad")))) : null,
+      or?.available ? sub("Change Detection", (s.regime.changes?.signals||[]).length ? listOf((s.regime.changes.signals||[]).slice(-6).reverse().map(x=>({text:`${x.title}: ${x.direction==='up'?"افزایش":"کاهش"} ${(Math.abs(x.delta)*100).toFixed(0)}٪`,why:`Trade #${x.index+1} · ${x.severity==='high'?"تغییر شدید":"تغییر قابل توجه"}`})), "#A78BFA") : note("تغییر شدید بین کندل‌های متوالی معامله شناسایی نشد.")) : null,
+      or?.available ? sub("Rolling Regime Edge", (s.regime.rolling?.dimensions||[]).length ? listOf((s.regime.rolling.dimensions||[]).slice(0,6).map(x=>({text:`${x.title} · ${x.name}: ${f(x.current.mean,3)}${u}`,why:x.previous?`پنجره قبل: ${f(x.previous.mean,3)}${u} · تغییر ${f(x.delta,3)}${u} · ${x.trend==='deteriorating'?"در حال افت":"پایدار/بهبود"}`:`پنجره قبل نمونه کافی ندارد`})), "#34D399") : note("برای Rolling Edge هنوز نمونه کافی نیست.")) : null,
       s.regime.alerts.length ? sub("هشدار رژیم", listOf(s.regime.alerts.map(a => ({ text: a.text, why: `${a.evidence} · منبع: ${a.source}` })), "#F59E0B")) : sub("هشدار رژیم", note("هنوز رژیمی با Edge مثبت و منفی هم‌زمان (با حداقل نمونه) پیدا نشد.")),
       s.regime.dims.length ? s.regime.dims.map(d => sub(d.title, d.groups.map(groupRow), d.key)) : note("داده کافی برای بخش‌بندی وجود ندارد؛ ثبت نشست، ساعت و وضعیت بازار را کامل کن."),
       note(`میانگین بر حسب ${s.useR ? "R" : "پول"} است. فقط موارد «معنادار» (n ≥ 8 و |t| ≥ 1.96) قابل اتکاترند؛ رژیم OHLC نیز حداقل ۸ کندل در هر معامله و حداقل نمونه گروهی موتور را نیاز دارد. بخش‌بندی روی نمونه کوچک ممکن است تصادفی باشد (Overfitting).`));
