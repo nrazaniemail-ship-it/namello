@@ -4602,13 +4602,9 @@ function NmLayerHeading({ title, Icon, image, helpKey, hideHelp=false }) {
 
 
 function NmLayerHeadingSettings({ title, Icon, image, helpKey, hideHelp=false, settings=null, className="" }) {
-    return React.createElement("div", { className: "nm-layer-heading " + className },
-        React.createElement("div", { className: "nm-layer-heading-main" },
-            settings,
-            image ? React.createElement("span", { className: "nm-layer-heading-icon" }, React.createElement("img", { src: image, alt: title, loading: "lazy", decoding: "async", style: { width: 26, height: 26, borderRadius: 7, objectFit: "contain" } })) :
-            Icon ? React.createElement("span", { className: "nm-layer-heading-icon" }, React.createElement(Icon, { size: 17, color: "var(--accent-gold)" })) : null,
-            React.createElement("span", { className: "nm-layer-heading-title" }, title)),
-        !hideHelp && React.createElement(NmHeaderDots, { title: helpKey || title })
+    return React.createElement("div", { className: "flex items-center justify-between gap-2 " + className },
+        React.createElement(NmLayerHeading, { title, Icon, image, helpKey, hideHelp }),
+        settings
     );
 }
 
@@ -7837,7 +7833,8 @@ function App() {
     }
     /* ---------------- journal derived ---------------- */
     const derived = useMemo(() => computeDerived(trades, accSettings), [trades, accSettings]);
-    const closedTrades = trades.filter(t => t.status === "closed");
+    const journalTradesSafe = Array.isArray(trades) ? trades.filter(t => t && typeof t === "object") : [];
+    const closedTrades = journalTradesSafe.filter(t => t.status === "closed");
     const [journalSearch, setJournalSearch] = useState(() => { try { return localStorage.getItem("namello_journal_search_v1") || ""; } catch (e) { return ""; } });
     const [journalResultFilter, setJournalResultFilter] = useState("all");
     const [journalDirectionFilter, setJournalDirectionFilter] = useState("all");
@@ -7848,8 +7845,11 @@ function App() {
         const q = journalSearch.trim().toLowerCase();
         return closedTrades.filter(t => {
             const pnl = Number(t.pnl || 0);
-            const mistakes = (t.disciplineMistakes || t.review?.mistakes || []);
-            const hay = [t.pair, t.date, t.time, t.note, t.system, ...(t.systems || []), ...(t.tags || []).map(x => x.label), ...mistakes].filter(Boolean).join(" ").toLowerCase();
+            const mistakes = Array.isArray(t.disciplineMistakes) ? t.disciplineMistakes : (Array.isArray(t.review?.mistakes) ? t.review.mistakes : []);
+            const systems = Array.isArray(t.systems) ? t.systems : (t.systems ? [String(t.systems)] : []);
+            const tags = Array.isArray(t.tags) ? t.tags : [];
+            const tagText = tags.map(x => typeof x === "string" ? x : (x?.label || ""));
+            const hay = [t.pair, t.date, t.time, t.note, t.system, ...systems, ...tagText, ...mistakes].filter(Boolean).join(" ").toLowerCase();
             return (!q || hay.includes(q)) &&
                 (journalResultFilter === "all" || (journalResultFilter === "win" ? pnl > 0 : journalResultFilter === "loss" ? pnl < 0 : pnl === 0)) &&
                 (journalDirectionFilter === "all" || t.direction === journalDirectionFilter) &&
@@ -7870,7 +7870,7 @@ function App() {
         asc.forEach((t, i) => { map[t.id] = i + 1; });
         return map;
     }, [trades]);
-    const openTrades = trades.filter(t => t.status === "open");
+    const openTrades = journalTradesSafe.filter(t => t.status === "open");
     const customFieldDefsForStats = useCustomFieldDefs();
     const calcProbParams = useMemo(() => buildCalcProbParams(config, now.dst, customFieldDefsForStats), [config, now.dst, customFieldDefsForStats]);
     const [calAccountSelection, setCalAccountSelection] = useState(null);
