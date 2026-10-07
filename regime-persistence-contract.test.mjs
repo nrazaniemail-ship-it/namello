@@ -17,8 +17,8 @@ test('1.0.13 engine exposes persistence, change detection and rolling edge', () 
 
 test('1.0.13 version contract', () => {
   const v = JSON.parse(fs.readFileSync('version.json','utf8'));
-  assert.equal(v.version, '1.0.21');
-  assert.equal(v.versionCode, 22);
-  assert.match(js, /NM_VERSION_NAME = "1\.0\.21"/);
-  assert.match(js, /NM_VERSION_CODE = 22/);
+  assert.equal(v.version, '1.0.22');
+  assert.equal(v.versionCode, 23);
+  assert.match(js, /NM_VERSION_NAME = "1\.0\.22"/);
+  assert.match(js, /NM_VERSION_CODE = 23/);
 });
