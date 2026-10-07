@@ -1,3 +1,12 @@
+## 1.0.12 — OHLC/MT5 Regime Detection
+
+- افزودن تشخیص رژیم بازار مبتنی بر مسیر OHLC متصل‌شده از MT5.
+- Volatility Regime نسبی Low / Medium / High با صدک‌های 33/66.
+- Trend / Range با Efficiency Ratio و کمک Autocorrelation(1).
+- رژیم ترکیبی Volatility × Trend و Conditional Edge برای هر رژیم.
+- نمایش پوشش OHLC، منبع داده، آستانه‌ها و محدودیت نمونه برای Explainability.
+- افزایش Version Code به 13.
+
 # Changelog
 
 ## 1.0.11 — Strategic Analysis Engine Upgrade

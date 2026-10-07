@@ -2625,8 +2625,8 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.11";
-const NM_VERSION_CODE = 11;
+const NM_VERSION_NAME = "1.0.12";
+const NM_VERSION_CODE = 13;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "موتور تحلیل استراتژیک در ارزیابی پیشرفته داشبورد";
 const NM_CHANGELOG = [
@@ -5414,7 +5414,7 @@ function NmAdvancedFinancialPanel({trades,startingBalance}){
       group(`شبیه‌سازی Monte Carlo · ${mc.H} معامله آینده، ${mc.sims} مسیر`,mcCards)),
     summary);
 }
-/* ===== Strategic Analysis Engine (1.0.11) =====
+/* ===== Strategic Analysis Engine (1.0.12) =====
    Analytical + Interpretive + Prescriptive layers on top of nmAdvancedFinancialModel.
    Pure JS, rule-based, deterministic (seeded). Every finding carries an "evidence" string (explainability). */
 const NM_STR_DEFAULT_RULES = { revengeMin: 30, overStreak: 2, sizeMult: 1.25, minGroup: 5 };
@@ -5503,7 +5503,7 @@ function nmStrDecay(vals) {
   return { W, last, prior, slope, status, n };
 }
 
-/* ===== Strategic Analysis Engine v1.0.11 quantitative upgrade ===== */
+/* ===== Strategic Analysis Engine v1.0.12 · OHLC/MT5 Regime Detection ===== */
 function nmStrAdvancedRisk(vals, start, useR) {
   const n = vals.length;
   if (!n) return { profitFactor:null, maxDD:null, avgDD:null, timeUnderwater:null, maxTimeUnderwater:null, recoveryFactor:null, ulcerIndex:null, net:null };
@@ -5552,6 +5552,39 @@ function nmStrHealth(out) {
   return {score,reasons};
 }
 
+
+/* ---------- Module 2A: OHLC / MT5 regime feature engineering ---------- */
+function nmStrOhlcPath(t){
+  const p=t?.ohlcPath||t?.ohlc||t?.bars||t?.excursion?.ohlcPath;
+  if(!Array.isArray(p)) return [];
+  return p.map(r=>({open:Number(r?.open),high:Number(r?.high),low:Number(r?.low),close:Number(r?.close)})).filter(r=>[r.open,r.high,r.low,r.close].every(Number.isFinite)&&r.high>=r.low);
+}
+function nmStrOhlcFeatures(t){
+  const b=nmStrOhlcPath(t); if(b.length<8) return null;
+  const trs=[],rets=[],closes=b.map(x=>x.close);
+  for(let i=0;i<b.length;i++){const prev=i?b[i-1].close:b[i].open;trs.push(Math.max(b[i].high-b[i].low,Math.abs(b[i].high-prev),Math.abs(b[i].low-prev)));if(i)rets.push(Math.log(Math.max(1e-12,b[i].close)/Math.max(1e-12,b[i-1].close)));}
+  const mean=x=>x.length?x.reduce((a,v)=>a+v,0)/x.length:0, sd=x=>{if(x.length<2)return 0;const m=mean(x);return Math.sqrt(x.reduce((s,v)=>s+(v-m)**2,0)/(x.length-1));};
+  const avgTR=mean(trs),base=Math.max(1e-12,mean(b.map(x=>x.close))),vol=sd(rets)*Math.sqrt(Math.max(1,rets.length));
+  const pathMove=closes.slice(1).reduce((s,v,i)=>s+Math.abs(v-closes[i]),0),er=Math.abs(closes[closes.length-1]-closes[0])/Math.max(1e-12,pathMove);
+  let ac1=null;if(rets.length>=6){const m=mean(rets),den=rets.reduce((s,v)=>s+(v-m)**2,0);if(den>0)ac1=rets.slice(0,-1).reduce((s,v,i)=>s+(v-m)*(rets[i+1]-m),0)/den;}
+  const range=Math.max(...b.map(x=>x.high))-Math.min(...b.map(x=>x.low));
+  return {bars:b.length,volatility:vol,avgTRPct:avgTR/base,efficiencyRatio:er,autocorrelation:ac1,rangePct:range/base,trendScore:Math.min(1,Math.max(0,.65*er+.35*Math.max(0,Math.abs(ac1??0))))};
+}
+function nmStrQuantile(values,q){const a=values.filter(Number.isFinite).slice().sort((x,y)=>x-y);if(!a.length)return null;const pos=(a.length-1)*q,lo=Math.floor(pos),hi=Math.ceil(pos);return a[lo]+(a[hi]-a[lo])*(pos-lo);}
+function nmStrOhlcRegimeFeatures(items){
+  const rows=items.map((it,i)=>{const f=nmStrOhlcFeatures(it.t);return f?{...f,index:i}:null;}).filter(Boolean);
+  if(!rows.length)return {available:false,coverage:0,coveragePct:0,rows:[],thresholds:null};
+  const vols=rows.map(r=>r.volatility),ers=rows.map(r=>r.efficiencyRatio),atrs=rows.map(r=>r.avgTRPct),v33=nmStrQuantile(vols,.33),v66=nmStrQuantile(vols,.66),er50=nmStrQuantile(ers,.5),a33=nmStrQuantile(atrs,.33),a66=nmStrQuantile(atrs,.66);
+  rows.forEach(r=>{r.volRegime=r.volatility<=v33?'Low Volatility':r.volatility>=v66?'High Volatility':'Medium Volatility';r.volRegimeFa=r.volRegime==='Low Volatility'?'نوسان کم':r.volRegime==='High Volatility'?'نوسان زیاد':'نوسان متوسط';r.trendRegime=r.efficiencyRatio>=Math.max(.35,er50)?'Trend':'Range';r.trendRegimeFa=r.trendRegime==='Trend'?'رونددار':'رنج';r.combinedRegime=`${r.volRegime} · ${r.trendRegime}`;r.combinedRegimeFa=`${r.volRegimeFa} · ${r.trendRegimeFa}`;r.volatilityPercentile=vols.filter(x=>x<=r.volatility).length/vols.length;r.atrPercentile=atrs.filter(x=>x<=r.avgTRPct).length/atrs.length;});
+  return {available:true,coverage:rows.length,coveragePct:items.length?rows.length/items.length*100:0,rows,thresholds:{v33,v66,er50,a33,a66}};
+}
+function nmStrOhlcGroups(items,minG,featureData){
+  if(!featureData?.available)return [];
+  const make=(name,filter)=>{const subset=featureData.rows.filter(filter).map(r=>items[r.index]).filter(Boolean);if(subset.length<minG)return null;const vals=subset.map(i=>i.v),st=nmStrStat(vals);return {name,n:subset.length,mean:st.mean,sd:st.sd,t:st.t,verdict:st.verdict,win:subset.filter(i=>i.v>0).length/subset.length,ci:st.ci};};
+  const defs=[['نوسان کم',r=>r.volRegime==='Low Volatility'],['نوسان متوسط',r=>r.volRegime==='Medium Volatility'],['نوسان زیاد',r=>r.volRegime==='High Volatility'],['رونددار',r=>r.trendRegime==='Trend'],['رنج',r=>r.trendRegime==='Range'],['نوسان کم + رونددار',r=>r.combinedRegime==='Low Volatility · Trend'],['نوسان متوسط + رونددار',r=>r.combinedRegime==='Medium Volatility · Trend'],['نوسان زیاد + رونددار',r=>r.combinedRegime==='High Volatility · Trend'],['نوسان کم + رنج',r=>r.combinedRegime==='Low Volatility · Range'],['نوسان متوسط + رنج',r=>r.combinedRegime==='Medium Volatility · Range'],['نوسان زیاد + رنج',r=>r.combinedRegime==='High Volatility · Range']];
+  return defs.map(([n,f])=>make(n,f)).filter(Boolean).sort((a,b)=>b.mean-a.mean);
+}
+
 function nmStrategicEngine(trades, startingBalance, opts) {
   opts = opts || {};
   const rules = Object.assign({}, NM_STR_DEFAULT_RULES, opts.rules || {});
@@ -5574,22 +5607,29 @@ function nmStrategicEngine(trades, startingBalance, opts) {
     { key: "session", title: "نشست / کیل‌زون", fn: t => { const s = nmDashSession(t); return s === "نامشخص" || s === "بدون نشست" ? null : s; } },
     { key: "weekday", title: "روز هفته", fn: t => t.date && /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? NM_WEEKDAY_FA[new Date(t.date + "T12:00:00Z").getUTCDay()] : null },
     { key: "hour", title: "بلوک ساعتی ورود (NY)", fn: hourBlock },
-    { key: "condition", title: "وضعیت بازار (رونددار / رنج / پرنوسان)", fn: t => ({ trend: "رونددار", range: "رنج", volatile: "پرنوسان" })[t.marketCondition] || null },
+    { key: "condition", title: "وضعیت بازار (ثبت ژورنال)", fn: t => ({ trend: "رونددار", range: "رنج", volatile: "پرنوسان" })[t.marketCondition] || null },
     { key: "align", title: "هم‌راستایی با روند اصلی", fn: t => t.tradeDirectionRel === "with" ? "هم‌جهت با روند" : t.tradeDirectionRel === "against" ? "خلاف روند" : null },
     { key: "pair", title: "جفت‌ارز", fn: t => t.pair || null }
   ];
   const dims = dimDefs.map(d => ({ key: d.key, title: d.title, groups: nmStrGroups(items, d.fn, minG) })).filter(d => d.groups.length >= 1);
+  const ohlcRegime = nmStrOhlcRegimeFeatures(items);
+  if (ohlcRegime.available) {
+    const og=nmStrOhlcGroups(items,minG,ohlcRegime);
+    dims.push({key:'ohlc_volatility',title:'رژیم نوسان از OHLC/MT5',groups:og.filter(g=>/^نوسان (کم|متوسط|زیاد)$/.test(g.name)),source:'OHLC/MT5'});
+    dims.push({key:'ohlc_trend_range',title:'رژیم روند/رنج از OHLC/MT5',groups:og.filter(g=>g.name==='رونددار'||g.name==='رنج'),source:'OHLC/MT5'});
+    dims.push({key:'ohlc_combined',title:'رژیم ترکیبی نوسان × روند از OHLC/MT5',groups:og.filter(g=>g.name.includes(' + ')),source:'OHLC/MT5'});
+  }
   const regimeAlerts = [];
   dims.forEach(d => {
     if (d.groups.length < 2) return;
     const best = d.groups[0], worst = d.groups[d.groups.length - 1];
     if (best.mean > 0 && worst.mean < 0) {
       const strong = best.verdict === "sig_pos" || worst.verdict === "sig_neg";
-      regimeAlerts.push({ strong, title: d.title, text: `در «${d.title}»، Edge شما در «${best.name}» مثبت (${fmt(best.mean)}${unit}، n=${best.n}) و در «${worst.name}» منفی (${fmt(worst.mean)}${unit}، n=${worst.n}) است.`, evidence: `t(best)=${fmt(best.t)} · t(worst)=${fmt(worst.t)} · ${strong ? "معنادار آماری" : "مقدماتی؛ نیازمند نمونه بیشتر"}`, best, worst, dim: d.key });
+      regimeAlerts.push({ strong, title: d.title, text: `در «${d.title}»، Edge شما در «${best.name}» مثبت (${fmt(best.mean)}${unit}، n=${best.n}) و در «${worst.name}» منفی (${fmt(worst.mean)}${unit}، n=${worst.n}) است.`, evidence: `t(best)=${fmt(best.t)} · t(worst)=${fmt(worst.t)} · ${strong ? "معنادار آماری" : "مقدماتی؛ نیازمند نمونه بیشتر"}`, best, worst, dim: d.key, source:d.source||'Journal' });
     }
   });
   regimeAlerts.sort((a, b) => (b.strong ? 1 : 0) - (a.strong ? 1 : 0));
-  out.regime = { dims, alerts: regimeAlerts };
+  out.regime = { dims, alerts: regimeAlerts, ohlc: ohlcRegime };
   /* ---------- Module 3: behavioural engine ---------- */
   const sizeOf = t => { const l = Number(t.lot), r = Number(t.riskDollar); return l > 0 ? l : (r > 0 ? r : null); };
   const flags = items.map(() => ({ revenge: false, overconf: false, lossEsc: false, overtrade: false, mistake: false }));
@@ -5858,10 +5898,18 @@ function NmStrategicEnginePanel({ trades, startingBalance }) {
       sub("اقدامات کوتاه‌مدت", listOf(s.narrative.short, ACC)),
       sub("اقدامات میان‌مدت", listOf(s.narrative.mid, "#A78BFA")));
   } else if (tab === "regime") {
+    const or = s.regime.ohlc;
     body = React.createElement("div", null,
-      s.regime.alerts.length ? sub("هشدار رژیم", listOf(s.regime.alerts.map(a => ({ text: a.text, why: a.evidence })), "#F59E0B")) : sub("هشدار رژیم", note("هنوز رژیمی با Edge مثبت و منفی هم‌زمان (با حداقل نمونه) پیدا نشد.")),
+      sub("منبع OHLC / MT5", grid([
+        card("پوشش OHLC", or?.available ? `${f(or.coveragePct,0)}٪` : "۰٪", or?.available ? `${or.coverage} معامله دارای مسیر OHLC` : "برای این معاملات مسیر OHLC/MT5 در دسترس نیست", or?.available && or.coveragePct>=60 ? "good" : or?.available ? "warn" : "bad"),
+        card("رژیم نوسان", or?.available ? "Low / Mid / High" : "—", or?.available ? `آستانه‌ها از صدک 33/66 ساخته شده‌اند` : "نیازمند OHLC", "info"),
+        card("Trend / Range", or?.available ? "Efficiency Ratio" : "—", or?.available ? `میانه ER = ${f(or.thresholds.er50,3)}` : "نیازمند OHLC", "info"),
+        card("ترکیب رژیم", or?.available ? "Vol × Trend" : "—", or?.available ? "بدون HMM؛ rule-based و قابل توضیح" : "—", "info")
+      ])),
+      or?.available ? sub("ویژگی‌های محاسبه‌شده از OHLC", note(`Volatility = انحراف معیار بازده‌های لگاریتمی در مسیر معامله · ATR٪ = میانگین True Range نسبت به قیمت · Efficiency Ratio = حرکت خالص ÷ حرکت مطلق · Autocorrelation(1) نیز برای امتیاز Trend استفاده شده است. رژیم‌ها نسبی و درون همان نمونه معاملاتی هستند؛ بنابراین به‌صورت «Low/Medium/High» گزارش می‌شوند، نه یک آستانه ثابت برای همه نمادها.`)) : null,
+      s.regime.alerts.length ? sub("هشدار رژیم", listOf(s.regime.alerts.map(a => ({ text: a.text, why: `${a.evidence} · منبع: ${a.source}` })), "#F59E0B")) : sub("هشدار رژیم", note("هنوز رژیمی با Edge مثبت و منفی هم‌زمان (با حداقل نمونه) پیدا نشد.")),
       s.regime.dims.length ? s.regime.dims.map(d => sub(d.title, d.groups.map(groupRow), d.key)) : note("داده کافی برای بخش‌بندی وجود ندارد؛ ثبت نشست، ساعت و وضعیت بازار را کامل کن."),
-      note(`میانگین بر حسب ${s.useR ? "R" : "پول"} است. فقط موارد «معنادار» (n ≥ 8 و |t| ≥ 1.96) قابل اتکاترند؛ بخش‌بندی روی نمونه کوچک ممکن است تصادفی باشد (Overfitting).`));
+      note(`میانگین بر حسب ${s.useR ? "R" : "پول"} است. فقط موارد «معنادار» (n ≥ 8 و |t| ≥ 1.96) قابل اتکاترند؛ رژیم OHLC نیز حداقل ۸ کندل در هر معامله و حداقل نمونه گروهی موتور را نیاز دارد. بخش‌بندی روی نمونه کوچک ممکن است تصادفی باشد (Overfitting).`));
   } else if (tab === "behavior") {
     const b = s.behavior, a = b.attribution;
     const tl = v => v === null ? "info" : v < 25 ? "good" : v < 50 ? "warn" : "bad";
@@ -8991,7 +9039,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.11</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.12</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9721,7 +9769,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.11</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.12</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10122,8 +10170,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.11", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.11"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.12", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.12"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
