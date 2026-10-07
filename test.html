@@ -1,0 +1,9 @@
+<!doctype html><html><body><iframe id="f" src="index.html" style="width:100%;height:100vh;border:0"></iframe><pre id="out"></pre><script>
+const out=[]; window.onerror=(m,s,l,c,e)=>out.push('OUTER '+m+' '+s+':'+l+':'+c); 
+const f=document.getElementById('f');
+f.onload=()=>{let tries=0; const iv=setInterval(()=>{tries++; try{const w=f.contentWindow,d=f.contentDocument; out.push('try '+tries+' bodylen='+d.body.innerText.length); if(tries===10){
+ const texts=[...d.querySelectorAll('button')].map(b=>b.innerText.trim()).filter(Boolean); out.push('buttons='+JSON.stringify(texts.slice(0,80)));
+ const b=[...d.querySelectorAll('button')].find(x=>x.innerText.trim()==='اخبار'); if(b){b.click();out.push('clicked news');}
+ setTimeout(()=>{out.push('after news body='+d.body.innerText.slice(-3000)); const j=[...d.querySelectorAll('button')].find(x=>x.innerText.trim()==='ژورنال'); if(j){j.click();out.push('clicked journal');} setTimeout(()=>{out.push('after journal body='+d.body.innerText.slice(-3000)); document.getElementById('out').textContent=out.join('\n');},1500)},1500); clearInterval(iv); }
+}catch(e){out.push('ERR '+e.stack)}}},1000)};
+</script></body></html>

@@ -2386,31 +2386,12 @@ const NM_CHANGELOG = [
     "نسخه 1.15: موتور Trade/Day Plan و Checklist با Rule Compliance و Discipline اضافه شد."
 ];
 function nmMigrateTradeSchemaV2(list) {
-    // داده‌ی ژورنال باید همیشه یک آرایه از آبجکت‌های معتبر باشد؛ رکوردهای خراب
-    // نباید با یک map/filter پایین‌دستی کل لایه‌ی ژورنال را از رندر خارج کنند.
     if (!Array.isArray(list)) return [];
-    return list.filter(t => t && typeof t === "object" && !Array.isArray(t)).map(t => {
+    return list.map(t => {
+        if (!t || typeof t !== "object") return t;
         if (Number(t.schemaVersion || 1) >= 2) return t;
         return { ...t, schemaVersion: 2, review: t.review || null, mfe: t.mfe ?? null, mae: t.mae ?? null, bestExit: t.bestExit ?? null, exitEfficiency: t.exitEfficiency ?? null };
     });
-}
-function nmNormalizeNewsEvents(list) {
-    if (!Array.isArray(list)) return [];
-    return list.filter(e => e && typeof e === "object" && !Array.isArray(e)).map(e => ({
-        id: e.id || ("news-" + Date.now().toString(36) + "-" + Math.random().toString(16).slice(2)),
-        title: String(e.title || "خبر بدون عنوان"),
-        currency: String(e.currency || "USD"),
-        datetime: e.datetime || "",
-        impact: e.impact === "high" || e.impact === "medium" ? e.impact : "low",
-        alarmStart: !!e.alarmStart,
-        source: e.source || "manual",
-        previous: e.previous ?? "",
-        forecast: e.forecast ?? "",
-        actual: e.actual ?? ""
-    }));
-}
-function nmSafeStoredJson(raw, fallback) {
-    try { const v = JSON.parse(raw); return v == null ? fallback : v; } catch (e) { return fallback; }
 }
 const nmTint = (pct) => `color-mix(in srgb, var(--accent-gold) ${pct}%, transparent)`;
 const nmFmtKB = (bytes) => Math.max(1, Math.round((bytes || 0) / 1024)) + " KB";
@@ -5828,17 +5809,10 @@ function App() {
             catch (e) { }
             try {
                 const r = await window.storage.get("namello_news_events_v1");
-                if (r) {
-                    const parsed = nmSafeStoredJson(r.value, []);
-                    const safe = nmNormalizeNewsEvents(parsed);
-                    setNewsEvents(safe);
-                    // نسخه‌ی خام را فقط در صورت ناسازگاری نگه می‌داریم تا هیچ داده‌ای silently حذف نشود.
-                    if (!Array.isArray(parsed) || safe.length !== parsed.length) {
-                        try { await window.storage.set("namello_news_events_invalid_backup_v1", String(r.value || "")); } catch (backupErr) {}
-                    }
-                }
+                if (r)
+                    setNewsEvents(JSON.parse(r.value));
             }
-            catch (e) { setNewsEvents([]); }
+            catch (e) { }
             try {
                 const r = await window.storage.get("namello_news_pair_v1");
                 if (r)
@@ -5865,20 +5839,16 @@ function App() {
             catch (e) { }
             try {
                 const r = await window.storage.get("namello_accounts_v1");
-                if (r) {
-                    const parsed = nmSafeStoredJson(r.value, []);
-                    setAccounts(Array.isArray(parsed) ? parsed.filter(a => typeof a === "string" && a.trim()).map(a => a.trim()) : []);
-                }
+                if (r)
+                    setAccounts(JSON.parse(r.value));
             }
-            catch (e) { setAccounts([]); }
+            catch (e) { }
             try {
                 const r = await window.storage.get("namello_account_types_v1");
-                if (r) {
-                    const parsed = nmSafeStoredJson(r.value, {});
-                    setAccountTypes(parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {});
-                }
+                if (r)
+                    setAccountTypes(JSON.parse(r.value) || {});
             }
-            catch (e) { setAccountTypes({}); }
+            catch (e) { }
             try {
                 const r = await window.storage.get("namello_active_account_v1");
                 if (r)
@@ -5945,28 +5915,14 @@ function App() {
         (async () => {
             try {
                 const r = await window.storage.get(`namello_trades_${activeAccount}`);
-                if (!r) {
-                    setTrades([]);
-                } else {
-                    const parsed = nmSafeStoredJson(r.value, []);
-                    const safe = nmMigrateTradeSchemaV2(parsed);
-                    setTrades(safe);
-                    if (!Array.isArray(parsed) || safe.length !== parsed.length) {
-                        try { await window.storage.set(`namello_trades_invalid_backup_${activeAccount}_v1`, String(r.value || "")); } catch (backupErr) {}
-                    }
-                    // داده‌ی قدیمی فقط با همان schema موجود مهاجرت می‌شود؛ رکوردهای سالم حفظ می‌شوند.
-                    if (Array.isArray(parsed) && JSON.stringify(safe) !== JSON.stringify(parsed)) {
-                        try { await window.storage.set(`namello_trades_${activeAccount}`, JSON.stringify(safe)); } catch (migrationErr) {}
-                    }
-                }
+                setTrades(r ? JSON.parse(r.value) : []);
             }
             catch (e) {
                 setTrades([]);
             }
             try {
                 const r2 = await window.storage.get(`namello_statement_trades_${activeAccount}`);
-                if (!r2) setStatementTrades([]);
-                else setStatementTrades(nmMigrateTradeSchemaV2(nmSafeStoredJson(r2.value, [])));
+                setStatementTrades(r2 ? JSON.parse(r2.value) : []);
             }
             catch (e) {
                 setStatementTrades([]);
@@ -6061,12 +6017,10 @@ function App() {
         await window.storage.set("namello_manual_exit_reason_options_v1", JSON.stringify(next));
     }
     catch (e) { } }, []);
-    const persistNewsEvents = useCallback(async (next) => {
-        const safe = nmNormalizeNewsEvents(next);
-        setNewsEvents(safe);
-        try { await window.storage.set("namello_news_events_v1", JSON.stringify(safe)); }
-        catch (e) { }
-    }, []);
+    const persistNewsEvents = useCallback(async (next) => { setNewsEvents(next); try {
+        await window.storage.set("namello_news_events_v1", JSON.stringify(next));
+    }
+    catch (e) { } }, []);
     const persistNewsPair = useCallback(async (p) => { setNewsSelectedPair(p); try {
         await window.storage.set("namello_news_pair_v1", JSON.stringify(p));
     }
