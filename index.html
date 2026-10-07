@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.10</title>
+<title>Namello 1.0.11</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -106,7 +106,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.10…</div>
+<div id="boot-status">Loading Namello 1.0.11…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -3008,16 +3008,16 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.10";
+const NM_VERSION_NAME = "1.0.11";
 const NM_VERSION_CODE = 11;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_DATE = "موتور تحلیل استراتژیک در ارزیابی پیشرفته داشبورد";
 const NM_CHANGELOG = [
-    "نسخه 1.0.10: به ارزیابی پیشرفته داشبورد «موتور تحلیل استراتژیک» اضافه شد: روایت استراتژیک قاعده‌محور (نقاط قوت، نشت‌ها، موارد اجتناب، اقدامات کوتاه‌مدت و میان‌مدت) که زیر هر یافته دلیل عددی آن را نشان می‌دهد.",
-    "نسخه 1.0.10: Edge شرطی بر اساس نشست، روز هفته، ساعت ورود، وضعیت بازار، هم‌راستایی با روند و جفت‌ارز با آماره t و برچسب «معنادار/مقدماتی» و هشدار رژیم (مثبت در یک رژیم، منفی در دیگری).",
-    "نسخه 1.0.10: موتور رفتاری: Revenge Trading، Overconfidence، افزایش سایز پس از باخت، Overtrade، Tilt Score پویا، Discipline Score، تفکیک زیان رفتاری از واریانس طبیعی و همبستگی وضعیت روانی با عملکرد؛ با قوانین رفتاری قابل تنظیم توسط کاربر.",
-    "نسخه 1.0.10: Attribution سیستم، اثر تعامل سیستم با شرایط (نشست/بازار/روند/روز) و تشخیص افت Edge با Rolling Expectancy.",
-    "نسخه 1.0.10: تحلیل سناریو (کاهش Win Rate و میانگین سود، افزایش زیان)، جدول سایزینگ و احتمال سقف افت، امکان‌سنجی هدف و حساسیت به حجم؛ مونت‌کارلوی تحلیل مالی به ۵۰۰۰ مسیر ارتقا یافت. خروجی Excel/PDF ارزیابی پیشرفته شامل موتور استراتژیک است.",
+    "نسخه 1.0.11: به ارزیابی پیشرفته داشبورد «موتور تحلیل استراتژیک» اضافه شد: روایت استراتژیک قاعده‌محور (نقاط قوت، نشت‌ها، موارد اجتناب، اقدامات کوتاه‌مدت و میان‌مدت) که زیر هر یافته دلیل عددی آن را نشان می‌دهد.",
+    "نسخه 1.0.11: Edge شرطی بر اساس نشست، روز هفته، ساعت ورود، وضعیت بازار، هم‌راستایی با روند و جفت‌ارز با آماره t و برچسب «معنادار/مقدماتی» و هشدار رژیم (مثبت در یک رژیم، منفی در دیگری).",
+    "نسخه 1.0.11: موتور رفتاری: Revenge Trading، Overconfidence، افزایش سایز پس از باخت، Overtrade، Tilt Score پویا، Discipline Score، تفکیک زیان رفتاری از واریانس طبیعی و همبستگی وضعیت روانی با عملکرد؛ با قوانین رفتاری قابل تنظیم توسط کاربر.",
+    "نسخه 1.0.11: Attribution سیستم، اثر تعامل سیستم با شرایط (نشست/بازار/روند/روز) و تشخیص افت Edge با Rolling Expectancy.",
+    "نسخه 1.0.11: تحلیل سناریو (کاهش Win Rate و میانگین سود، افزایش زیان)، جدول سایزینگ و احتمال سقف افت، امکان‌سنجی هدف و حساسیت به حجم؛ مونت‌کارلوی تحلیل مالی به ۵۰۰۰ مسیر ارتقا یافت. خروجی Excel/PDF ارزیابی پیشرفته شامل موتور استراتژیک است.",
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -5797,7 +5797,7 @@ function NmAdvancedFinancialPanel({trades,startingBalance}){
       group(`شبیه‌سازی Monte Carlo · ${mc.H} معامله آینده، ${mc.sims} مسیر`,mcCards)),
     summary);
 }
-/* ===== Strategic Analysis Engine (1.0.10) =====
+/* ===== Strategic Analysis Engine (1.0.11) =====
    Analytical + Interpretive + Prescriptive layers on top of nmAdvancedFinancialModel.
    Pure JS, rule-based, deterministic (seeded). Every finding carries an "evidence" string (explainability). */
 const NM_STR_DEFAULT_RULES = { revengeMin: 30, overStreak: 2, sizeMult: 1.25, minGroup: 5 };
@@ -5885,6 +5885,56 @@ function nmStrDecay(vals) {
   const status = (prior > 0 && (last < prior * 0.5 || last < 0)) ? "decay" : (last > 0 && (prior <= 0 || last > prior * 1.5)) ? "improving" : "stable";
   return { W, last, prior, slope, status, n };
 }
+
+/* ===== Strategic Analysis Engine v1.0.11 quantitative upgrade ===== */
+function nmStrAdvancedRisk(vals, start, useR) {
+  const n = vals.length;
+  if (!n) return { profitFactor:null, maxDD:null, avgDD:null, timeUnderwater:null, maxTimeUnderwater:null, recoveryFactor:null, ulcerIndex:null, net:null };
+  const net = vals.reduce((a,b)=>a+b,0), wins = vals.filter(v=>v>0), losses = vals.filter(v=>v<0);
+  const grossWin = wins.reduce((a,b)=>a+b,0), grossLoss = -losses.reduce((a,b)=>a+b,0);
+  let eq=0, peak=0, maxDD=0, curUW=0, maxUW=0, sumDD=0, ddCount=0;
+  const ddPct=[];
+  vals.forEach(v=>{
+    eq += v;
+    if(eq >= peak){ peak=eq; curUW=0; }
+    else { curUW++; maxUW=Math.max(maxUW,curUW); const dd=peak-eq; maxDD=Math.max(maxDD,dd); sumDD+=dd; ddCount++; ddPct.push(start>0 ? (dd/Math.max(start, start+peak))*100 : dd); }
+  });
+  const avgDD = ddCount ? sumDD/ddCount : 0;
+  const ulcerIndex = ddPct.length ? Math.sqrt(ddPct.reduce((a,b)=>a+b*b,0)/ddPct.length) : 0;
+  const recoveryFactor = maxDD>0 ? net/maxDD : (net>0 ? Infinity : null);
+  return { profitFactor:grossLoss>0?grossWin/grossLoss:null, maxDD, avgDD, timeUnderwater:curUW, maxTimeUnderwater:maxUW, recoveryFactor, ulcerIndex, net, grossWin, grossLoss };
+}
+function nmStrKelly(vals) {
+  const n=vals.length, wins=vals.filter(v=>v>0), losses=vals.filter(v=>v<0);
+  if(!n || !wins.length || !losses.length) return { kelly:null, halfKelly:null, quarterKelly:null, payoff:null, p:null };
+  const p=wins.length/n, q=1-p, avgW=wins.reduce((a,b)=>a+b,0)/wins.length, avgL=Math.abs(losses.reduce((a,b)=>a+b,0)/losses.length);
+  const b=avgL>0?avgW/avgL:null, k=b?((b*p-q)/b):null;
+  return { p, payoff:b, kelly:Number.isFinite(k)?k:null, halfKelly:Number.isFinite(k)?k/2:null, quarterKelly:Number.isFinite(k)?k/4:null };
+}
+function nmStrDataQuality(items, vals) {
+  const n=items.length, pct=(fn)=>n?items.filter(fn).length/n:0;
+  const parts={ outcome:1, r:pct(i=>nmDashR(i.t)!==null), setup:pct(i=>nmDashSetup(i.t) && nmDashSetup(i.t)!=='نامشخص'), time:pct(i=>!!i.t.time), lot:pct(i=>Number(i.t.lot)>0), mfeMae:pct(i=>Number.isFinite(Number(i.t.mfe))||Number.isFinite(Number(i.t.mae))), psychology:pct(i=>Array.isArray(i.t.psychology)&&i.t.psychology.length>0) };
+  const score=Math.round(100*(0.20*parts.outcome+0.20*parts.r+0.15*parts.setup+0.10*parts.time+0.10*parts.lot+0.15*parts.mfeMae+0.10*parts.psychology));
+  return {score, parts, missing:score<70};
+}
+function nmStrConfidence(all, fm, dataQuality) {
+  const sample=Math.min(1,all.n/100), stat=fm&&fm.pPos!==null?Math.max(0,Math.min(1,Math.abs(fm.pPos-0.5)*2)):0.35, quality=dataQuality.score/100;
+  const level=Math.round(100*(0.45*sample+0.35*stat+0.20*quality));
+  return {score:level, label:level>=75?'بالا':level>=50?'متوسط':'پایین', sample, statistical:stat, dataQuality:quality};
+}
+function nmStrHealth(out) {
+  let score=50, reasons=[];
+  const a=out.all, c=out.confidence, b=out.behavior, d=out.strategy&&out.strategy.decayAll, pf=out.risk&&out.risk.profitFactor;
+  if(a.mean>0){score+=12;reasons.push('امید ریاضی مثبت')} else {score-=15;reasons.push('امید ریاضی غیرمثبت')}
+  if(out.fm&&out.fm.pPos>=0.95){score+=12;reasons.push('شواهد آماری قوی')} else if(out.fm&&out.fm.pPos<0.60){score-=6;reasons.push('شواهد آماری ضعیف')}
+  if(pf!==null&&pf>=1.5){score+=6;reasons.push('Profit Factor مناسب')} else if(pf!==null&&pf<1){score-=10;reasons.push('Profit Factor کمتر از 1')}
+  if(b&&b.disciplineScore>=80){score+=7;reasons.push('انضباط خوب')} else if(b&&b.disciplineScore<60){score-=7;reasons.push('نشت انضباطی')}
+  if(d&&d.status==='decay'){score-=10;reasons.push('Edge در حال تضعیف')} else if(d&&d.status==='improving'){score+=5;reasons.push('Edge در حال بهبود')}
+  if(c&&c.score<50) score-=5;
+  score=Math.max(0,Math.min(100,Math.round(score)));
+  return {score,reasons};
+}
+
 function nmStrategicEngine(trades, startingBalance, opts) {
   opts = opts || {};
   const rules = Object.assign({}, NM_STR_DEFAULT_RULES, opts.rules || {});
@@ -6012,7 +6062,7 @@ function nmStrategicEngine(trades, startingBalance, opts) {
   const avgLoss = losses.length ? Math.abs(losses.reduce((a, b) => a + b, 0) / losses.length) : 0;
   const ruinLimit = start > 0 ? start * 0.3 : (avgLoss > 0 ? avgLoss * 20 : 0);
   let seed = (n * 2654435761) >>> 0; pnl.forEach(v => { seed = (Math.imul(seed ^ (Math.round(v * 100) | 0), 16777619)) >>> 0; });
-  const mk = extra => nmStrMonte(pnl, Object.assign({ H: 100, sims: 2500, seed, ruinLimit }, extra));
+  const mk = extra => nmStrMonte(pnl, Object.assign({ H: 100, sims: 5000, seed, ruinLimit }, extra));
   const scenarios = [
     ["وضع فعلی", {}],
     ["Win Rate ۱۰ واحد درصد کمتر", { winShift: -0.10 }],
@@ -6026,8 +6076,8 @@ function nmStrategicEngine(trades, startingBalance, opts) {
   const tgtRaw = Number(goalIn.target);
   if (Number.isFinite(tgtRaw) && tgtRaw > 0) {
     const tgt = start > 0 ? start * tgtRaw / 100 : tgtRaw;
-    const base = nmStrMonte(pnl, { H: horizon, sims: 3000, seed: seed ^ 0x9e3779b1, ruinLimit, target: tgt });
-    const stress = nmStrMonte(pnl, { H: horizon, sims: 3000, seed: seed ^ 0x9e3779b1, ruinLimit, target: tgt, winShift: -0.10 });
+    const base = nmStrMonte(pnl, { H: horizon, sims: 5000, seed: seed ^ 0x9e3779b1, ruinLimit, target: tgt });
+    const stress = nmStrMonte(pnl, { H: horizon, sims: 5000, seed: seed ^ 0x9e3779b1, ruinLimit, target: tgt, winShift: -0.10 });
     const meanPnl = pnl.reduce((a, b) => a + b, 0) / pnl.length;
     goal = { target: tgt, targetRaw: tgtRaw, pct: start > 0, horizon, pBase: base.pTarget, pStress: stress.pTarget, pRuin: base.pRuin, medianEnd: base.median, tradesNeeded: meanPnl > 0 ? Math.ceil(tgt / meanPnl) : null, needPerTrade: tgt / horizon, meanPnl };
   }
@@ -6078,6 +6128,27 @@ function nmStrategicEngine(trades, startingBalance, opts) {
   if (!short.length) short.push({ text: "قوانین فعلی را ثابت نگه دار و ثبت کامل ژورنال (MFE/MAE، ساعت بسته‌شدن، حجم) را ادامه بده تا موتور دقیق‌تر شود.", why: "الگوی رفتاری پرهزینه‌ای شناسایی نشد" });
   out.narrative = { status, strengths, leaks, avoid, short, mid };
   out.fmReady = !!fm;
+  /* ---------- Module 6: quantitative risk, confidence, explainability ---------- */
+  const dq = nmStrDataQuality(items, vals);
+  const risk = nmStrAdvancedRisk(items.map(i=>i.pnl), start, false);
+  const kelly = nmStrKelly(vals);
+  const confidence = nmStrConfidence(all, fm, dq);
+  out.dataQuality = dq;
+  out.risk = Object.assign(risk, {
+    unit: 'پول',
+    kelly: kelly.kelly, halfKelly: kelly.halfKelly, quarterKelly: kelly.quarterKelly, payoffRatio: kelly.payoff,
+    ruinThreshold: start>0 ? start*0.30 : null
+  });
+  out.confidence = confidence;
+  out.audit = [];
+  const auditPush=(id,rule,result,evidence)=>out.audit.push({id,rule,result,evidence});
+  auditPush('sample','حداقل ۸ معامله برای اجرای موتور',n>=8,n>=8?`n=${n}`:`n=${n}`);
+  auditPush('edge','Edge مثبت',all.mean>0,`Expectancy=${fmt(all.mean,3)}${unit}`);
+  auditPush('significance','شواهد مثبت آماری',!!(fm&&fm.pPos>=0.95),fm&&fm.pPos!==null?`P(Edge>0)≈${Math.round(fm.pPos*100)}٪`:'در دسترس نیست');
+  auditPush('discipline','انضباط ≥ 80',out.behavior.disciplineScore>=80,`Discipline=${out.behavior.disciplineScore}/100`);
+  auditPush('data-quality','کیفیت داده ≥ 70',dq.score>=70,`Data Quality=${dq.score}/100`);
+  auditPush('decay','Edge بدون تضعیف',!(decayAll&&decayAll.status==='decay'),decayAll?`${decayAll.prior} → ${decayAll.last}`:'داده کافی نیست');
+  out.health = nmStrHealth(out);
   return out;
 }
 function nmStrExportRows(s) {
@@ -6150,9 +6221,23 @@ function NmStrategicEnginePanel({ trades, startingBalance }) {
       React.createElement("div", { className: "rounded-xl p-3 mt-3", style: { background: "color-mix(in srgb, " + c + " 9%, var(--bg-card))", border: "1px solid color-mix(in srgb, " + c + " 45%, var(--border-1))" } },
         React.createElement("div", { className: "text-[12px] font-extrabold", style: { color: c } }, st.title),
         React.createElement("div", { className: "text-[11px] leading-6 mt-1", style: { color: "var(--text-primary)" } }, st.text)),
+      sub("وضعیت استراتژیک", grid([
+        card("Strategic Health", `${s.health.score}/100`, s.health.reasons.slice(0,2).join(" · "), s.health.score>=75?"good":s.health.score>=50?"warn":"bad"),
+        card("Confidence", `${s.confidence.score}/100`, s.confidence.label, s.confidence.score>=75?"good":s.confidence.score>=50?"warn":"bad"),
+        card("Profit Factor", s.risk.profitFactor===null?"—":f(s.risk.profitFactor,2), "بر پایه سود/زیان تحقق‌یافته", s.risk.profitFactor!==null&&s.risk.profitFactor>=1.5?"good":s.risk.profitFactor!==null&&s.risk.profitFactor>=1?"warn":"bad"),
+        card("Max Drawdown", f(s.risk.maxDD,2), `Time Underwater: ${s.risk.maxTimeUnderwater} معامله`, "warn")
+      ])),
+      sub("هسته تحلیلی", grid([
+        card("Expectancy", `${f(s.all.mean,3)}${u}`, `CI: ${f(s.all.lo,3)} تا ${f(s.all.hi,3)}`, s.all.mean>0?"good":"bad"),
+        card("Half-Kelly", s.risk.halfKelly===null?"—":`${f(s.risk.halfKelly*100,1)}٪`, "برای استفاده محافظه‌کارانه", "info"),
+        card("Recovery Factor", s.risk.recoveryFactor===null?"—":(Number.isFinite(s.risk.recoveryFactor)?f(s.risk.recoveryFactor,2):"∞"), "Net / Max DD", s.risk.recoveryFactor!==null&&s.risk.recoveryFactor>1?"good":"warn"),
+        card("Ulcer Index", f(s.risk.ulcerIndex,2), "بر پایه Drawdown پولی", s.risk.ulcerIndex<5?"good":s.risk.ulcerIndex<10?"warn":"bad")
+      ])),
       s.narrative.strengths.length ? sub("نقاط قوت", listOf(s.narrative.strengths, "#34D399")) : null,
       sub("بزرگ‌ترین نشت‌ها (Leaks)", listOf(s.narrative.leaks, "#F87171")),
       sub("رژیم‌ها و ترکیب‌هایی که باید از آن‌ها اجتناب کرد", listOf(s.narrative.avoid, "#F59E0B")),
+      sub("چرا موتور به این نتیجه رسید؟", s.audit.slice(0,6).map((a,i)=>item({text:`${a.rule}: ${a.result?"تأیید شد":"تأیید نشد"}`,why:a.evidence},i,a.result?"#34D399":"#F59E0B"))),
+      sub("کیفیت داده", note(`امتیاز کیفیت داده ${s.dataQuality.score}/100 است. کامل‌بودن R: ${f(s.dataQuality.parts.r*100,0)}٪ · Setup: ${f(s.dataQuality.parts.setup*100,0)}٪ · MFE/MAE: ${f(s.dataQuality.parts.mfeMae*100,0)}٪. کیفیت پایین‌تر یعنی Confidence را محافظه‌کارانه‌تر تفسیر کن.`)),
       sub("اقدامات کوتاه‌مدت", listOf(s.narrative.short, ACC)),
       sub("اقدامات میان‌مدت", listOf(s.narrative.mid, "#A78BFA")));
   } else if (tab === "regime") {
@@ -9289,7 +9374,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.10</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.11</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10019,7 +10104,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.10</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.11</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10420,8 +10505,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.10", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.10"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.11", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.11"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.11 — Strategic Analysis Engine Upgrade
+- ارتقای موتور تحلیل استراتژیک نسخه 1.0.10 بدون تغییر در منطق Journal و منبع/حساب Dashboard.
+- لایه Analytical جدید: Profit Factor، Recovery Factor، Max/Average Drawdown، Time Underwater، Ulcer Index، Payoff Ratio و Half/Quarter Kelly.
+- Confidence Framework و Data Quality Score برای جلوگیری از تفسیر بیش‌ازحد نتایج نمونه‌های کوچک.
+- Strategic Health Score با دلایل قابل ردیابی؛ خروجی هر نتیجه همراه Audit Rule و Evidence است.
+- Monte Carlo موتور استراتژیک به حداقل 5000 مسیر یکپارچه شد؛ سناریو و Goal نیز با 5000 مسیر اجرا می‌شوند.
+- روایت استراتژیک اکنون سه لایه را روشن‌تر جدا می‌کند: Analytical → Interpretive → Prescriptive.
+- UI ارزیابی پیشرفته: وضعیت استراتژیک، Confidence، Profit Factor، Max DD، Expectancy CI، Half-Kelly، Recovery Factor، Ulcer Index، کیفیت داده و Audit قابل مشاهده است.
+- LLM و OHLC/HMM همچنان عمداً خارج از این نسخه هستند تا هسته آماری و قابل‌ممیزی پایدار بماند.
+- Unified package, PWA manifests and Service Worker version to 1.0.11 / Version Code 12.
+
 ## 1.0.10 — Strategic Analysis Engine (Advanced Evaluation)
 - New «موتور تحلیل استراتژیک» panel under Dashboard → Advanced Evaluation (pure JS, rule-based, deterministic, on-device):
   - Narrative engine: status, strengths, leaks, regimes/combos to avoid, short- and mid-term actions — every finding shows its numeric evidence («چرا؟»).
