@@ -1,6 +1,8 @@
 # Changelog
 
 ## 1.0.8 — Layer header actions & Advanced Evaluation analytics
+- Settings: the help dots button of «رنگ زمینه برنامه» now sits on the same row as its title, like the other cards.
+- Dashboard: unified colour design for the section boxes (Statistical Analysis, Advanced Evaluation, Trading Psychology, Portfolio, Comprehensive Export): near-neutral body, soft gradient header, slim accent stripe and an icon chip in the section accent colour.
 - Economic News: the refresh button now shows the Namello logo (rabbit & snail) running — front arms and back legs swing — while news is updating, on a green background. When the update finishes the motion stops and green stays; on failure the background turns red and the motion stops.
 - Sessions, Economic News and Trading Calendar: the Settings button now sits inside the layer title box, on its left side. Economic News gets a title box matching the other layers.
 - Journal: the «ثبت ورود» button now spans the full width of its card; the extra title/description text was removed.

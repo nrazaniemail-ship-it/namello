@@ -2634,10 +2634,10 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
                     : q.items.map((txt, i) => React.createElement("p", { key: i, className: "text-[11px] leading-6 mb-1.5", style: { color: "var(--text-secondary)" } }, "• ", txt))
             ))
         );
-    return React.createElement("section", { className: "rounded-2xl mb-3", style: { background: "color-mix(in srgb, #14B8A6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #14B8A6 28%, var(--border-1))", overflow: "hidden" } },
-        React.createElement("button", { type: "button", onClick: () => setShowPsychology(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #14B8A6 10%, var(--bg-card))", borderBottom: showPsychology ? "1px solid color-mix(in srgb, #14B8A6 28%, var(--border-1))" : "none" }, "aria-expanded": showPsychology },
+    return React.createElement("section", { className: "rounded-2xl mb-3", style: nmDashBoxStyle(NM_DASH_ACCENT.psych) },
+        React.createElement("button", { type: "button", onClick: () => setShowPsychology(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: nmDashHeadStyle(NM_DASH_ACCENT.psych, showPsychology), "aria-expanded": showPsychology },
             React.createElement("div", { className: "flex items-center gap-2 min-w-0" },
-                React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "روانشناسی ترید"),RE(NmHeaderDots,{title:"روانشناسی ترید"}),
+                nmDashChip(NM_DASH_ACCENT.psych, "🧠"),React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "روانشناسی ترید"),RE(NmHeaderDots,{title:"روانشناسی ترید"}),
                 React.createElement("span", { className: "text-[9px]", style: { color: "var(--text-muted)" } }, "منبع ارزیابی، الگوهای رفتاری، نقاط قوت، ضعف، تهدیدها و فرصت‌ها")
             ),
             React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showPsychology ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))
@@ -3025,6 +3025,12 @@ function nmMigrateTradeSchemaV2(list) {
     });
 }
 const nmTint = (pct) => `color-mix(in srgb, var(--accent-gold) ${pct}%, transparent)`;
+// طراحی یکپارچه‌ی باکس‌های داشبورد: هر بخش یک رنگ تأکیدی ملایم (هم‌روشنایی) دارد؛ بدنه تقریباً خنثی،
+// هدر با گرادیان محو، نوار رنگی باریک سمت راست و چیپ آیکون هم‌رنگ.
+const NM_DASH_ACCENT = { stats: "#60A5FA", adv: "#A78BFA", psych: "#2DD4BF", port: "#FBBF24", exp: "#34D399" };
+const nmDashBoxStyle = (a) => ({ background: `color-mix(in srgb, ${a} 4%, var(--bg-card))`, border: `1px solid color-mix(in srgb, ${a} 24%, var(--border-1))`, borderRight: `4px solid ${a}`, overflow: "hidden" });
+const nmDashHeadStyle = (a, open) => ({ background: `linear-gradient(270deg, color-mix(in srgb, ${a} 15%, var(--bg-card)) 0%, color-mix(in srgb, ${a} 3%, var(--bg-card)) 100%)`, borderBottom: open ? `1px solid color-mix(in srgb, ${a} 22%, var(--border-1))` : "none" });
+const nmDashChip = (a, icon) => React.createElement("span", { "aria-hidden": true, style: { width: 32, height: 32, minWidth: 32, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 16, background: `color-mix(in srgb, ${a} 16%, var(--bg-card2))`, border: `1px solid color-mix(in srgb, ${a} 38%, var(--border-2))` } }, icon);
 const nmFmtKB = (bytes) => Math.max(1, Math.round((bytes || 0) / 1024)) + " KB";
 function nmToast(msg) { try { window.dispatchEvent(new CustomEvent("namello-toast", { detail: msg })); } catch (e) { } }
 function nmFaDateTime(iso) {
@@ -3263,18 +3269,18 @@ function NmHelpCenter(){
 }
 
 /* ---------------- اجزای مشترکِ رابط ---------------- */
-function NmCollapsible({ title, subtitle, badge, defaultOpen, children, icon, helpKey }) {
+function NmCollapsible({ title, subtitle, badge, defaultOpen, children, icon, helpKey, accent }) {
     const [open, setOpen] = useState(!!defaultOpen);
     const guideTitle = helpKey || title;
-    return RE("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+    return RE("div", { className: accent ? "rounded-2xl p-3 mb-3" : "rounded-xl p-3 mb-3", style: accent ? nmDashBoxStyle(accent) : { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
         RE("div", { className: "nm-collapsible-row" },
             RE("button", { type: "button", onClick: () => setOpen(o => !o), className: "nm-collapsible-toggle", style: { background: "none", border: "none", color: "inherit", padding: 0 }, "aria-expanded": open, "aria-label": (open ? "بستن " : "باز کردن ") + title },
                 RE("span", { className: "nm-settings-chevron nm-collapsible-chevron shrink-0", "aria-hidden": true },
                     open ? RE(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : RE(ChevronDown, { size: 14, color: "var(--accent-gold)" })),
                 RE("div", { className: "nm-collapsible-copy" },
                     RE("div", { className: "flex items-center gap-2 flex-wrap" },
-                        icon && RE("span", { style: { fontSize: 15 } }, icon),
-                        RE("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, title),
+                        icon && (accent ? nmDashChip(accent, icon) : RE("span", { style: { fontSize: 15 } }, icon)),
+                        RE("h3", { className: accent ? "text-[15px] font-extrabold" : "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, title),
                         badge && RE("span", { className: "text-[10px] px-2 py-0.5 rounded-full", style: { background: nmTint(15), color: "var(--accent-gold)" } }, badge)),
                     subtitle && RE("div", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, open ? "برای بستن لیست کلیک کنید" : subtitle))),
             RE(NmHeaderDots, { title: guideTitle })
@@ -6111,7 +6117,7 @@ function NmPortfolioView({accounts,accountTypes,activeAccount,accountTradesMap})
  const total=rows.reduce((s,r)=>s+r.pnl,0);
  const weightedCount=rows.reduce((s,r)=>s+r.count,0);
  const weighted=rows.reduce((s,r)=>s+(r.count*(r.winRate||0)),0);
- return RE(NmCollapsible,{title:"نمای پرتفوی و چندحسابی",subtitle:"P&L، نرخ برد و سهم هر حساب",icon:"📊",defaultOpen:false},
+ return RE(NmCollapsible,{title:"نمای پرتفوی و چندحسابی",subtitle:"P&L، نرخ برد و سهم هر حساب",icon:"📊",accent:NM_DASH_ACCENT.port,defaultOpen:false},
    RE("div",null,
      RE("div",{className:"grid grid-cols-2 gap-2 mb-2"},
        [["حساب‌ها",rows.length],["P&L کل",nmDashPnl(total)],["Win Rate وزنی",weightedCount?(weighted/weightedCount).toFixed(1)+"%":"—"],["حساب فعال",activeAccount||"—"]].map(([k,v])=>
@@ -6219,9 +6225,9 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  return React.createElement("div",{className:"nm-dashboard px-4 mt-4 pb-24"},
    React.createElement("div",{className:"mb-3"},RE(NmLayerHeading,{title:"داشبورد عملکرد",image:"icon-dashboard-logo.png"}),React.createElement("div",{className:"text-[10px] mt-1",style:{color:"var(--text-muted)"}},`${filtered.length} معامله در فیلتر`)),
    statisticalAnalysisSection,
-   React.createElement("section",{className:"rounded-2xl mb-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))",overflow:"hidden"}},
-     React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #8B5CF6 13%, var(--bg-card))",borderBottom:"1px solid color-mix(in srgb, #8B5CF6 28%, var(--border-1))"},"aria-expanded":showAdvanced},
-       React.createElement("div",{className:"flex items-center gap-2 min-w-0"},React.createElement("span",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),RE(NmHeaderDots,{title:"ارزیابی پیشرفته"}),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")), 
+   React.createElement("section",{className:"rounded-2xl mb-3",style:nmDashBoxStyle(NM_DASH_ACCENT.adv)},
+     React.createElement("button",{type:"button",onClick:()=>setShowAdvanced(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:nmDashHeadStyle(NM_DASH_ACCENT.adv, showAdvanced),"aria-expanded":showAdvanced},
+       React.createElement("div",{className:"flex items-center gap-2 min-w-0"},nmDashChip(NM_DASH_ACCENT.adv,"🎯"),React.createElement("span",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"ارزیابی پیشرفته"),RE(NmHeaderDots,{title:"ارزیابی پیشرفته"}),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"فیلتر، Plan، ریسک، Edge و جزئیات معاملات")), 
        React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},showAdvanced?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))),
      showAdvanced&&React.createElement("div",{className:"pt-2"},
        React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},window.nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
@@ -6238,9 +6244,9 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        )),
        React.createElement(PsychologyLayer,{journalTrades:closed,statementTrades:statementTrades,source:psychologyDataSource,setSource:setPsychologyDataSource,psychOptions:psychOptions,activeAccount:activeAccount,statementImporting:statementImporting,statementImportError:statementImportError,onImportDashboardStatementFiles:onImportDashboardStatementFiles,onClearDashboardStatement:onClearDashboardStatement,dashboardStatementTrades:dashboardStatementTrades,baseAccounts:baseAccounts,selectedBaseAccounts:selectedBaseAccounts,onToggleBaseAccount:onToggleBaseAccount,onSelectBaseType:onSelectBaseType,onToggleAllBaseAccounts:onToggleAllBaseAccounts,accountTypeOf:accountTypeOf}),
        RE(NmPortfolioView,{accounts:selectedBaseAccounts,accountTypes,activeAccount,accountTradesMap}),
-React.createElement("section",{className:"rounded-2xl mt-3 mb-3",style:{background:"color-mix(in srgb, #10B981 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))",overflow:"hidden"}},
-         React.createElement("button",{type:"button",onClick:()=>setShowComprehensive(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:{background:"color-mix(in srgb, #10B981 11%, var(--bg-card))",borderBottom:showComprehensive?"1px solid color-mix(in srgb, #10B981 35%, var(--border-1))":"none"},"aria-expanded":showComprehensive},
-           React.createElement("div",null,React.createElement("div",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"Excel و PDF جامع داشبورد")),
+React.createElement("section",{className:"rounded-2xl mt-3 mb-3",style:nmDashBoxStyle(NM_DASH_ACCENT.exp)},
+         React.createElement("button",{type:"button",onClick:()=>setShowComprehensive(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:nmDashHeadStyle(NM_DASH_ACCENT.exp, showComprehensive),"aria-expanded":showComprehensive},
+           React.createElement("div",{className:"flex items-center gap-2 min-w-0"},nmDashChip(NM_DASH_ACCENT.exp,"📤"),React.createElement("div",null,React.createElement("div",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"Excel و PDF جامع داشبورد"))),
            React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},showComprehensive?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))),
          showComprehensive&&React.createElement("div",{className:"p-3"},
            React.createElement("div",{className:"flex items-center justify-end mb-2"},React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
@@ -9778,9 +9784,9 @@ function App() {
     }
     const nmStatisticalAnalysisSection = (() => {
         const { byLot, byWeekday, bySystem, bySession, byTrend, byRR, byBias, byFractal, byMainTrend, byDailyTrend, byDailyCandle, bySystemsMulti, byEntryTimeSystemsMulti, byMainGuideLevelsMulti, byEntryGuideLevelsMulti, byCondition, byWave, byTrig, byTarget, byStop, byNews, bySystemWeekday, bySessionLot, byReversalPattern, bySuccessProb, byPsychology, byDuration, bySetupReadiness, byChartReadiness, byDayPlanReadiness, byRiskDollar, bySubjectiveSuccessProb, byCalculatedSuccessProb, byDirection, byPair, byDivergenceMain, byDivergenceEntry, rows3d } = nmBuildDashboardStatisticalData(dashboardStatisticalSelectedTrades, param3dX, param3dY);
-        return React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: { background: "color-mix(in srgb, #3B82F6 7%, var(--bg-card))", border: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))", overflow: "hidden" } },
-        React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: { background: "color-mix(in srgb, #3B82F6 13%, var(--bg-card))", borderBottom: "1px solid color-mix(in srgb, #3B82F6 28%, var(--border-1))" }, "aria-expanded": showStatisticalAnalysis },
-            React.createElement("div", { className: "flex items-center gap-2 min-w-0" },React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),RE(NmHeaderDots,{title:"تحلیل آماری"})),
+        return React.createElement("section", { className: "nm-statistical-analysis mb-3 rounded-2xl", style: nmDashBoxStyle(NM_DASH_ACCENT.stats) },
+        React.createElement("button", { type: "button", onClick: () => setShowStatisticalAnalysis(v => !v), className: "w-full flex items-center justify-between rounded-t-2xl px-4 py-3", style: nmDashHeadStyle(NM_DASH_ACCENT.stats, showStatisticalAnalysis), "aria-expanded": showStatisticalAnalysis },
+            React.createElement("div", { className: "flex items-center gap-2 min-w-0" },nmDashChip(NM_DASH_ACCENT.stats, "📈"),React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),RE(NmHeaderDots,{title:"تحلیل آماری"})),
             React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-2" },
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
@@ -10914,7 +10920,7 @@ function App() {
                         React.createElement(Plus, { size: 14 }),
                         " \u0630\u062E\u06CC\u0631\u0647 \u062A\u0646\u0638\u06CC\u0645\u0627\u062A \u0641\u0639\u0644\u06CC"))))),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
-                React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, t("settings_theme")),RE(NmHeaderDots,{title:"تنظیمات ظاهری"}),
+                React.createElement("div", { className: "nm-collapsible-row mb-2" }, RE(NmHeaderDots,{title:"تنظیمات ظاهری"}), React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)", flex: 1, minWidth: 0 } }, t("settings_theme"))),
                 React.createElement("div", { className: "flex gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode("dark"), className: "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[12px] font-medium", style: { background: themeMode === "dark" ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: themeMode === "dark" ? "var(--accent-gold)" : "var(--text-secondary)", border: `1px solid ${themeMode === "dark" ? "color-mix(in srgb, var(--accent-gold) 33%, transparent)" : "var(--border-2)"}` } },
                         React.createElement(Moon, { size: 13 }),
