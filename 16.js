@@ -2625,12 +2625,12 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.20";
-const NM_VERSION_CODE = 21;
+const NM_VERSION_NAME = "1.0.21";
+const NM_VERSION_CODE = 22;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "موتور تحلیل استراتژیک در ارزیابی پیشرفته داشبورد";
+const NM_VERSION_DATE = "LLM Strategic Copilot روی خروجی ساختاریافته موتور Rule-Based";
 const NM_CHANGELOG = [
-    "نسخه 1.0.20: تکمیل موتور آماری و Rule-Based تطبیقی: Transition رژیم، Forecast احتمالی، ریسک مشروط، Strategy Fit، تشخیص Decay، Regime × Psychology و مرکز تصمیم‌یار توضیح‌پذیر.",
+    "نسخه 1.0.21: افزودن Strategic LLM Copilot روی خروجی ساختاریافته و قابل‌ردیابی موتور Rule-Based؛ بدون ارسال داده خام معاملات مگر با انتخاب کاربر.",
     "نسخه 1.0.11: به ارزیابی پیشرفته داشبورد «موتور تحلیل استراتژیک» اضافه شد: روایت استراتژیک قاعده‌محور (نقاط قوت، نشت‌ها، موارد اجتناب، اقدامات کوتاه‌مدت و میان‌مدت) که زیر هر یافته دلیل عددی آن را نشان می‌دهد.",
     "نسخه 1.0.11: Edge شرطی بر اساس نشست، روز هفته، ساعت ورود، وضعیت بازار، هم‌راستایی با روند و جفت‌ارز با آماره t و برچسب «معنادار/مقدماتی» و هشدار رژیم (مثبت در یک رژیم، منفی در دیگری).",
     "نسخه 1.0.11: موتور رفتاری: Revenge Trading، Overconfidence، افزایش سایز پس از باخت، Overtrade، Tilt Score پویا، Discipline Score، تفکیک زیان رفتاری از واریانس طبیعی و همبستگی وضعیت روانی با عملکرد؛ با قوانین رفتاری قابل تنظیم توسط کاربر.",
@@ -6006,10 +6006,65 @@ function nmStrExportRows(s) {
   return rows;
 }
 
+
+/* ---------- Module 14: Strategic LLM Copilot (1.0.21) ---------- */
+const NM_LLM_CFG_KEY = "namello_llm_config_v1";
+const NM_LLM_DEFAULT = { enabled:false, mode:"backend", baseUrl:"", endpoint:"", apiKey:"", model:"", temperature:0.2, includeTradeRows:false };
+function nmLlmCfg(){ try{return {...NM_LLM_DEFAULT,...JSON.parse(localStorage.getItem(NM_LLM_CFG_KEY)||"{}")} }catch(e){return {...NM_LLM_DEFAULT};} }
+function nmLlmSaveCfg(v){ try{localStorage.setItem(NM_LLM_CFG_KEY,JSON.stringify(v));}catch(e){} }
+function nmLlmSafe(v, fallback=null){ return v===undefined||v===null||Number.isNaN(v)?fallback:v; }
+function nmLlmBuildPayload(s){
+  const regime=s?.regime||{};
+  const payload={schema:"namello-strategic-llm-v1",version:NM_VERSION_NAME,generatedAt:new Date().toISOString(),
+    objective:"تفسیر و اولویت‌بندی خروجی موتور آماری/Rule-Based؛ بدون پیش‌بینی قطعی بازار و بدون ساخت داده.",
+    health:{score:s?.health?.score,confidence:s?.confidence?.score,dataQuality:s?.dataQuality?.score,n:s?.n},
+    performance:{unit:s?.unit,expectancy:s?.all?.mean,ci:[s?.all?.lo,s?.all?.hi],profitFactor:s?.risk?.profitFactor,maxDrawdown:s?.risk?.maxDD,halfKelly:s?.risk?.halfKelly},
+    decision:s?.decision||{},
+    regime:{dims:(regime.dims||[]).map(d=>({key:d.key,title:d.title,source:d.source,groups:(d.groups||[]).map(g=>({name:g.name,n:g.n,mean:g.mean,win:g.win,t:g.t,verdict:g.verdict}))})),
+      persistence:regime.persistence||null,changes:regime.changes||null,rolling:regime.rolling||null,transition:regime.transition||null,risk:regime.risk||null,forecast:regime.forecast||null,adaptiveDecay:regime.adaptiveDecay||null,psychology:regime.psychology||null},
+    strategy:{systems:(s?.strategy?.systems||[]).map(x=>({name:x.name,n:x.n,mean:x.mean,win:x.win,t:x.t})),adaptive:s?.strategy?.adaptive||null,interactions:(s?.strategy?.interactions||[]).slice(0,20),decaySys:s?.strategy?.decaySys||[]},
+    narrative:{status:s?.narrative?.status||null,strengths:s?.narrative?.strengths||[],leaks:s?.narrative?.leaks||[],avoid:s?.narrative?.avoid||[],short:s?.narrative?.short||[],mid:s?.narrative?.mid||[]},
+    forward:s?.forward||null,
+    audit:(s?.audit||[]).slice(0,20)
+  };
+  return payload;
+}
+function nmLlmSystemPrompt(){ return `تو Strategic Copilot ناملو هستی. فقط بر اساس JSON داده‌شده تحلیل کن. هیچ عدد، معامله، رژیم، علت یا نتیجه‌ای را که در داده نیست اختراع نکن. اگر نمونه کم، CI ضعیف، یا نتیجه مقدماتی است صریحاً بگو. خروجی باید تصمیم‌یار باشد نه توصیه قطعی خرید/فروش یا تضمین سود. تفاوت بین «داده»، «استنباط Rule-Based» و «تفسیر LLM» را حفظ کن. اولویت با Transition/Regime، Edge، Risk، Strategy Fit، Decay و Psychology است. پاسخ را JSON معتبر با این کلیدها بده: summary (string), regime (string), edge (string), risk (string), strategy (string), psychology (string), actions (array of strings), warnings (array of strings), confidence (number 0..100), rationale (array of strings). فارسی و کوتاه اما دقیق بنویس.`; }
+function nmLlmExtractText(body){
+  return body?.output_text || body?.choices?.[0]?.message?.content || body?.choices?.[0]?.text || body?.response || body?.content || "";
+}
+function nmLlmParse(text){
+  if(typeof text!=="string") return null;
+  const cleaned=text.replace(/^```json\s*/i,"").replace(/^```\s*/i,"").replace(/\s*```$/i,"").trim();
+  try{return JSON.parse(cleaned);}catch(e){
+    const a=cleaned.indexOf("{"); const b=cleaned.lastIndexOf("}");
+    if(a>=0&&b>a){try{return JSON.parse(cleaned.slice(a,b+1));}catch(_){}}
+  }
+  return null;
+}
+async function nmLlmGenerate(s,cfg){
+  const payload=nmLlmBuildPayload(s); const system=nmLlmSystemPrompt();
+  const user=`این خروجی ساختاریافته موتور Rule-Based ناملو است. آن را تفسیر کن:\n${JSON.stringify(payload)}`;
+  if(cfg.mode==="backend"){
+    const body=await nmBackendRequest("/v1/llm/strategic",{method:"POST",body:JSON.stringify({model:cfg.model||undefined,temperature:Number(cfg.temperature)||0.2,system,user,data:payload})});
+    const text=nmLlmExtractText(body); const parsed=nmLlmParse(text); if(!parsed) throw new Error("پاسخ LLM قابل تبدیل به JSON نبود."); return {parsed,raw:text,model:body.model||cfg.model||"backend"};
+  }
+  const endpoint=String(cfg.endpoint||cfg.baseUrl||"").trim(); if(!endpoint) throw new Error("Endpoint مدل LLM را وارد کن.");
+  if(!cfg.apiKey) throw new Error("API Key برای حالت مستقیم وارد نشده است.");
+  const r=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+cfg.apiKey},body:JSON.stringify({model:cfg.model,messages:[{role:"system",content:system},{role:"user",content:user}],temperature:Number(cfg.temperature)||0.2,response_format:{type:"json_object"}})});
+  let body=null;try{body=await r.json();}catch(e){}
+  if(!r.ok) throw new Error(body?.error?.message||body?.error||`LLM HTTP ${r.status}`);
+  const text=nmLlmExtractText(body); const parsed=nmLlmParse(text); if(!parsed) throw new Error("پاسخ LLM قابل تبدیل به JSON نبود."); return {parsed,raw:text,model:body.model||cfg.model||"direct"};
+}
+
 function NmStrategicEnginePanel({ trades, startingBalance }) {
   const [tab, setTab] = React.useState("story");
   const [rules, setRules] = React.useState(nmStrLoadRules);
   const [showRules, setShowRules] = React.useState(false);
+  const [llmCfg, setLlmCfg] = React.useState(nmLlmCfg);
+  const [llmBusy, setLlmBusy] = React.useState(false);
+  const [llmResult, setLlmResult] = React.useState(null);
+  const [llmError, setLlmError] = React.useState("");
   const start = Number(startingBalance) > 0 ? Number(startingBalance) : 0;
   const [goalT, setGoalT] = React.useState(start > 0 ? "10" : "");
   const [goalH, setGoalH] = React.useState("100");
@@ -6045,7 +6100,7 @@ function NmStrategicEnginePanel({ trades, startingBalance }) {
     React.createElement("div", { className: "flex-1 min-w-0 text-[10px]", style: { color: "var(--text-primary)", overflowWrap: "anywhere" } }, g.name, React.createElement("span", { style: { color: "var(--text-muted)" } }, ` · n=${g.n} · Win ${f(g.win * 100, 0)}٪`)),
     React.createElement("div", { className: "text-[11px] font-bold", style: { color: g.mean > 0 ? "#34D399" : g.mean < 0 ? "#F87171" : "var(--text-primary)", fontFamily: "JetBrains Mono,monospace", direction: "ltr" } }, f(g.mean, 2) + u),
     badge(g.verdict));
-  const tabs = [["story", "روایت"], ["regime", "Edge شرطی"], ["behavior", "رفتار"], ["strategy", "سیستم"], ["forward", "سناریو و هدف"], ["command", "مرکز تصمیم"]];
+  const tabs = [["story", "روایت"], ["regime", "Edge شرطی"], ["behavior", "رفتار"], ["strategy", "سیستم"], ["forward", "سناریو و هدف"], ["command", "مرکز تصمیم"], ["llm", "LLM"]];
   const tabBar = React.createElement("div", { className: "flex gap-1 mt-3 w-full" }, tabs.map(([k, l]) => React.createElement("button", { key: k, type: "button", onClick: () => setTab(k), className: "flex-1 min-w-0 px-1 py-1.5 rounded-full text-[10px] whitespace-nowrap text-center", style: { background: tab === k ? "var(--accent-gold)" : "var(--bg-card)", color: tab === k ? "var(--bg-page)" : "var(--text-secondary)", border: "1px solid var(--border-1)" } }, l)));
   let body = null;
   if (tab === "story") {
@@ -6101,6 +6156,22 @@ function NmStrategicEnginePanel({ trades, startingBalance }) {
       s.regime.psychology?.length ? sub("Regime × Psychology",listOf(s.regime.psychology.map(x=>({text:`${x.name}: Edge ${f(x.edge,3)}${u} · رفتار پرریسک ${f(x.behaviorRate*100,0)}٪`,why:x.behaviorEdge===null?`n=${x.n}`:`Edge معاملات دارای رفتار ${f(x.behaviorEdge,3)}${u} · n=${x.n}`})),"#F59E0B")):null,
       s.regime.adaptiveDecay?.dimensions?.length ? sub("Adaptive Edge / Decay",listOf(s.regime.adaptiveDecay.dimensions.map(x=>({text:`${x.title} · ${x.name}: ${x.status}`,why:x.delta===null?`نمونه قبل کافی نیست`:`تغییر ${f(x.delta,3)}${u}`})),"#F87171")):null
     );
+  } else if (tab === "llm") {
+    const lr=llmResult?.parsed||null;
+    const saveCfg=(patch)=>{const nx={...llmCfg,...patch};setLlmCfg(nx);nmLlmSaveCfg(nx);};
+    const run=async()=>{setLlmBusy(true);setLlmError("");try{const out=await nmLlmGenerate(s,llmCfg);setLlmResult({...out,at:new Date().toISOString()});}catch(e){setLlmError(e?.message||"خطای LLM");}finally{setLlmBusy(false);}};
+    const aiItem=(title,text,color)=>React.createElement("div",{className:"rounded-xl p-2.5 mb-2",style:{background:"var(--bg-card2)",borderInlineStart:"3px solid "+color}},React.createElement("div",{className:"text-[10px] font-semibold mb-1"},title),React.createElement("div",{className:"text-[10px] leading-5",style:{color:"var(--text-secondary)"}},text||"—"));
+    body=React.createElement("div",null,
+      sub("Strategic LLM Copilot",note("LLM فقط خروجی ساختاریافته موتور Rule-Based را تفسیر می‌کند؛ داده خام معاملات، نام حساب و یادداشت‌های شخصی به‌صورت پیش‌فرض ارسال نمی‌شوند.")),
+      React.createElement("div",{className:"rounded-xl p-2.5 mt-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-1)"}},
+        React.createElement("div",{className:"grid grid-cols-2 gap-2"},
+          React.createElement("label",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"حالت اتصال",React.createElement("select",{value:llmCfg.mode,onChange:e=>saveCfg({mode:e.target.value}),className:"w-full mt-1 rounded px-2 py-1 text-[10px] bg-transparent",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)"}},React.createElement("option",{value:"backend"},"Backend امن (پیشنهادی)"),React.createElement("option",{value:"direct"},"مستقیم از دستگاه"))),
+          React.createElement("label",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"Model",React.createElement("input",{value:llmCfg.model||"",onChange:e=>saveCfg({model:e.target.value}),placeholder:"نام مدل",className:"w-full mt-1 rounded px-2 py-1 text-[10px] bg-transparent",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)",direction:"ltr"}}))),
+        llmCfg.mode==="direct"?React.createElement("div",{className:"grid grid-cols-1 gap-2 mt-2"},React.createElement("label",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"Endpoint سازگار با Chat Completions",React.createElement("input",{value:llmCfg.endpoint||"",onChange:e=>saveCfg({endpoint:e.target.value}),placeholder:"https://.../chat/completions",className:"w-full mt-1 rounded px-2 py-1 text-[10px] bg-transparent",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)",direction:"ltr"}})),React.createElement("label",{className:"text-[9px]",style:{color:"var(--text-muted)"}},"API Key",React.createElement("input",{type:"password",value:llmCfg.apiKey||"",onChange:e=>saveCfg({apiKey:e.target.value}),placeholder:"در حافظه محلی دستگاه ذخیره می‌شود",className:"w-full mt-1 rounded px-2 py-1 text-[10px] bg-transparent",style:{border:"1px solid var(--border-1)",color:"var(--text-primary)",direction:"ltr"}}))):React.createElement("div",{className:"text-[9px] leading-5 mt-2",style:{color:"var(--text-muted)"}},"حالت Backend کلید مدل را در مرورگر نگه نمی‌دارد. آدرس Backend از تنظیمات اتصال Namello استفاده می‌شود و باید Endpoint مدل در سرور تنظیم شده باشد."),
+        React.createElement("div",{className:"flex items-center gap-2 mt-2"},React.createElement("button",{type:"button",disabled:llmBusy,onClick:run,className:"px-3 py-1.5 rounded-lg text-[10px] font-bold",style:{background:"var(--accent-gold)",color:"var(--bg-page)",opacity:llmBusy?.6:1}},llmBusy?"در حال تحلیل…":"اجرای تحلیل LLM"),React.createElement("button",{type:"button",onClick:()=>{setLlmResult(null);setLlmError("");},className:"px-2 py-1.5 rounded-lg text-[9px]",style:{background:"var(--bg-card)",color:"var(--text-secondary)",border:"1px solid var(--border-1)"}},"پاک کردن نتیجه"))),
+      llmError?React.createElement("div",{className:"rounded-lg p-2 mt-2 text-[10px] leading-5",style:{background:"#F8717112",color:"#F87171"}},llmError):null,
+      lr?React.createElement("div",{className:"mt-3"},aiItem("جمع‌بندی",lr.summary,"#06B6D4"),aiItem("رژیم و Transition",lr.regime,"#A78BFA"),aiItem("Edge",lr.edge,"#34D399"),aiItem("ریسک",lr.risk,"#F59E0B"),aiItem("Strategy Fit",lr.strategy,"#60A5FA"),aiItem("Psychology",lr.psychology,"#F472B6"),sub("اقدامات پیشنهادی",listOf((lr.actions||[]).map(x=>({text:String(x),why:"تفسیر LLM از خروجی Rule-Based؛ قبل از اجرا با داده اصلی بررسی شود."})),"#34D399")),sub("هشدارها",listOf((lr.warnings||[]).map(x=>({text:String(x),why:"هشدار تولیدشده بر پایه داده ساختاریافته."})),"#F87171")),sub("منطق و شواهد",listOf((lr.rationale||[]).map(x=>({text:String(x),why:"باید با داده‌های نمایش‌داده‌شده در Namello قابل تطبیق باشد."})),"#A78BFA")),card("اعتماد LLM",`${Math.max(0,Math.min(100,Number(lr.confidence)||0))}/100`,llmResult?.model?`مدل: ${llmResult.model}`:"",Number(lr.confidence)>=75?"good":Number(lr.confidence)>=50?"warn":"bad"),React.createElement("div",{className:"text-[8px] leading-4 mt-2",style:{color:"var(--text-muted)"}},`آخرین اجرا: ${llmResult.at||"—"}`)):note("برای شروع، اتصال را تنظیم و «اجرای تحلیل LLM» را بزن."),
+      note("LLM منبع حقیقت داده نیست؛ محاسبات اصلی، Edge، ریسک و Regime از موتور آماری Namello می‌آیند. خروجی LLM برای تفسیر، اولویت‌بندی و توضیح انسانی است."));
   } else if (tab === "behavior") {
     const b = s.behavior, a = b.attribution;
     const tl = v => v === null ? "info" : v < 25 ? "good" : v < 50 ? "warn" : "bad";
@@ -6155,7 +6226,7 @@ function NmStrategicEnginePanel({ trades, startingBalance }) {
       note("شبیه‌سازی‌ها بر پایه معاملات گذشته شماست و تضمینی برای آینده نیستند."));
   }
   return React.createElement("div", box, head, tabBar, body,
-    React.createElement("div", { className: "text-[8px] leading-4 mt-3", style: { color: "var(--text-muted)" } }, "همه نتایج قاعده‌محور و قابل ردیابی‌اند (زیر هر یافته دلیل آن آمده)، توصیه سرمایه‌گذاری نیستند و داده‌ها از دستگاه شما خارج نمی‌شوند."));
+    React.createElement("div", { className: "text-[8px] leading-4 mt-3", style: { color: "var(--text-muted)" } }, "محاسبات اصلی قاعده‌محور و قابل ردیابی‌اند. LLM فقط در تب LLM و پس از اجرای دستی استفاده می‌شود؛ داده خام معاملات به‌صورت پیش‌فرض ارسال نمی‌شود."));
 }
 
 function nmExitInsight(t){

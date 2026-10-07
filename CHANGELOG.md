@@ -1,3 +1,11 @@
+## 1.0.21 — Strategic LLM Copilot
+
+- افزودن LLM Copilot روی خروجی ساختاریافته موتور Rule-Based.
+- حالت Backend امن با نگهداری کلید در سرور و حالت Direct اختیاری.
+- خروجی JSON شامل خلاصه، Regime/Transition، Edge، Risk، Strategy، Psychology، اقدامات، هشدارها و Confidence.
+- داده خام معاملات و یادداشت‌های شخصی به‌صورت پیش‌فرض به LLM ارسال نمی‌شوند.
+- LLM فقط تفسیرکننده است؛ محاسبات اصلی و تصمیم‌گیری پایه همچنان Rule-Based و قابل ردیابی می‌مانند.
+
 ## 1.0.20 — Adaptive Rule-Based Strategic Engine
 - Regime Transition, Forecast, Conditional Risk, Strategy Fit, Adaptive Decay, Regime × Psychology, Decision Center.
 

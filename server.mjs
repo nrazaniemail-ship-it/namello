@@ -190,6 +190,26 @@ app.post('/v1/auth/google/verify', async (req, res) => {
   }
 });
 app.post('/v1/auth/logout', auth, (req, res) => { db.prepare('DELETE FROM sessions WHERE token_hash=?').run(req.auth.tokenHash); res.status(204).end(); });
+const LLM_API_URL = String(env.NAMELLO_LLM_API_URL || '').trim();
+const LLM_API_KEY = String(env.NAMELLO_LLM_API_KEY || '').trim();
+const LLM_MODEL = String(env.NAMELLO_LLM_MODEL || '').trim();
+app.post('/v1/llm/strategic', auth, async (req, res) => {
+  if (!LLM_API_URL || !LLM_API_KEY) return res.status(503).json({ error: 'llm_not_configured' });
+  const data = req.body?.data;
+  if (!data || typeof data !== 'object') return res.status(400).json({ error: 'strategic_data_required' });
+  const system = typeof req.body?.system === 'string' ? req.body.system : '';
+  const user = typeof req.body?.user === 'string' ? req.body.user : JSON.stringify(data);
+  const model = typeof req.body?.model === 'string' && req.body.model.trim() ? req.body.model.trim() : LLM_MODEL;
+  if (!model) return res.status(503).json({ error: 'llm_model_not_configured' });
+  try {
+    const upstream = await fetch(LLM_API_URL, { method:'POST', headers:{'Content-Type':'application/json','Authorization': 'Bearer '+LLM_API_KEY}, body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:Number(req.body?.temperature)||0.2,response_format:{type:'json_object'}}) });
+    const text = await upstream.text();
+    let parsed=null; try{parsed=JSON.parse(text);}catch(e){}
+    if(!upstream.ok) return res.status(502).json({error:'llm_upstream_error',status:upstream.status,detail:parsed?.error?.message||text.slice(0,500)});
+    if(!parsed) return res.status(502).json({error:'llm_invalid_response'});
+    return res.json({...parsed,model});
+  } catch(e) { return res.status(502).json({error:'llm_unreachable',detail:e?.message||'upstream_failed'}); }
+});
 app.get('/v1/me', auth, (req, res) => res.json({ user: req.auth.user }));
 app.get('/v1/sync/latest', auth, (req, res) => {
   const row = latest(req.auth.userId);
