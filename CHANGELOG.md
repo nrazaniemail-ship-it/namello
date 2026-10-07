@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.8 — Layer header actions & Advanced Evaluation analytics
+- Sessions, Economic News and Trading Calendar: the Settings button now sits inside the layer title box, on its left side. Economic News gets a title box matching the other layers.
+- Journal: the «ثبت ورود» button now spans the full width of its card; the extra title/description text was removed.
+- Dashboard → Advanced Evaluation: new quantitative panel (SQN, expectancy confidence interval, Kelly, VaR/CVaR, skewness/kurtosis, drawdown, equity R², edge drift, Runs Test, profit concentration, seeded Monte Carlo bootstrap) with an «چکیده ارزیابی» summary (score + one technical/strategic recommendation). Also included in the Advanced Evaluation Excel/PDF export.
+- Unified package, PWA manifests and Service Worker version to 1.0.8 / Version Code 9.
+
 ## 1.0.7 — Journal layout redesign
 - Moved the «ثبت ورود» action into a dedicated card immediately before «معاملات باز».
 - Removed the adjacent Journal Excel export action from that area.

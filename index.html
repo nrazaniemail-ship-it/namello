@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.7</title>
+<title>Namello 1.0.8</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -99,6 +99,8 @@
   .nm-layer-heading-title { min-width: 0; font-size: 13px; line-height: 1.35; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nm-collapsible-row { width: 100%; display: flex; align-items: center; gap: 8px; direction: rtl; }
   .nm-layer-heading > .nm-header-dots { order: 0; }
+  .nm-layer-heading > .nm-layer-heading-action { order: -1; display: inline-flex; align-items: center; flex-shrink: 0; }
+  .nm-layer-heading-settings { width: 32px; height: 32px; min-width: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; padding: 0; cursor: pointer; background: color-mix(in srgb, var(--bg-card2) 88%, transparent); border: 1px solid color-mix(in srgb, var(--border-2) 90%, #fff 10%); }
   .nm-collapsible-toggle { min-width: 0; flex: 1; display: flex; align-items: center; gap: 9px; direction: ltr; text-align: start; }
   .nm-collapsible-copy { min-width: 0; flex: 1; direction: rtl; text-align: start; }
   .nm-collapsible-chevron { order: 0; flex: 0 0 28px; }
@@ -106,7 +108,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.7…</div>
+<div id="boot-status">Loading Namello 1.0.8…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -2903,10 +2905,8 @@ function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, curs
     const selectedDayMistakes = selectedClosedTrades.reduce((sum, t) => sum + ((t.disciplineMistakes || t.review?.mistakes || []).length), 0);
     return (React.createElement("div", { className: "px-4 mt-4" },
         topSlot,
-        React.createElement("div", { className: "flex items-center justify-between mb-2" },
-            RE(NmLayerHeading,{title:(lang === "en" ? "Trading Calendar" : "تقویم معاملاتی"),Icon:CalendarIcon}),
-            React.createElement("button", { onClick: () => setShowSettings(true), className: "p-2 rounded-lg", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": lang === "en" ? "Calendar Settings" : "تنظیمات تقویم" },
-                React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" }))),
+        RE(NmLayerHeading,{title:(lang === "en" ? "Trading Calendar" : "تقویم معاملاتی"),Icon:CalendarIcon,action:React.createElement("button", { type: "button", onClick: () => setShowSettings(true), className: "nm-layer-heading-settings", "aria-label": lang === "en" ? "Calendar Settings" : "تنظیمات تقویم" },
+                React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" }))}),
         sourceSlot,
         React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
             React.createElement("div", { className: "flex items-center justify-between mb-3" },
@@ -3004,20 +3004,14 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.7";
-const NM_VERSION_CODE = 8;
+const NM_VERSION_NAME = "1.0.8";
+const NM_VERSION_CODE = 9;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "بازطراحی لایه ژورنال و اصلاح چیدمان ثبت ورود";
+const NM_VERSION_DATE = "جابه‌جایی دکمه تنظیمات به باکس عنوان لایه‌ها و تقویت ارزیابی پیشرفته";
 const NM_CHANGELOG = [
-    "نسخه 1.0.7: تکمیل اعتبارسنجی CSV با تشخیص Mapping، خطاهای فیلدی و Duplicate Detection؛ بهبود Virtual List و کنترل Replay؛ تقویت وضعیت Conflict و تست‌های واحد قابلیت‌های پیشرفته.",
-    "نسخه 1.0.4: برای لایه‌ها و قابلیت‌های اصلی برنامه دکمه «راهنما» با آموزش مرحله‌ای، اصطلاحات تخصصی و نکات حرفه‌ای اضافه شد.",
-    "نسخه 1.0.3: قالب‌های استاندارد CSV بروکرهای رایج، راهنمای Import و Virtual List برای داده‌های حجیم اضافه شدند.",
-    "نسخه 1.0.3: Conflict Resolution در Sync با ادغام هوشمند و نمایش واضح Revision/Conflict/آخرین Sync تقویت شد.",
-    "نسخه 1.0.3: متریک‌های روانشناسی Tilt-like و Revenge Risk، نمای Portfolio چندحسابی و ماژول Prop Firm اضافه شدند.",
-    "نسخه 1.0.3: Trade Replay از OHLC دریافتی از MT5 Bridge و CSV سازگار با TradingView پشتیبانی می‌کند و مسیر مهاجرت تدریجی TypeScript/Vite و تست‌های واحد اضافه شد.",
-    "نسخه 1.0.2: خروجی‌های PDF و Excel به‌صورت دوزبانه فارسی/English برای گزارش‌های معاملاتی، تحلیل‌ها و ارزیابی‌ها توسعه داده شدند.",
-    "نسخه 1.0.2: برچسب‌ها و شاخص‌های تخصصی Trading، Risk Management، Performance و ICT در گزارش‌های خروجی استانداردسازی شدند.",
-    "نسخه 1.0.2: متن آزاد کاربر بدون تغییر باقی می‌ماند و عناوین و برچسب‌های گزارش‌ها به‌صورت فارسی/English نمایش داده می‌شوند."
+    "نسخه 1.0.8: دکمه تنظیمات لایه‌های نشست‌ها، اخبار اقتصادی و تقویم معاملاتی به سمت چپ داخل باکس عنوان منتقل شد و برای اخبار اقتصادی باکس عنوان هم‌سبک سایر لایه‌ها ایجاد شد.",
+    "نسخه 1.0.8: در لایه ژورنال، دکمه «ثبت ورود» به عرض کامل باکس خود درآمد و متن توضیحی اضافه حذف شد.",
+    "نسخه 1.0.8: ارزیابی پیشرفته داشبورد با مدل‌های کمی SQN، Kelly، بازه اطمینان، VaR/CVaR، Runs Test، آنالیز روند Edge و شبیه‌سازی Monte Carlo تقویت شد و در پایان «چکیده ارزیابی» با یک توصیه تکنیکال یا استراتژیک ارائه می‌شود؛ این تحلیل در خروجی Excel/PDF ارزیابی پیشرفته هم آمده است."
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -4591,13 +4585,14 @@ function NmStatementSyncCard({ statementTrades, journalTrades, persistTrades, ac
 /* ---------------- چیدمان نمایش منوی لایه‌ها (افقی/عمودی) ---------------- */
 const NM_DEFAULT_NAV_ORDER = ["dashboard","live","news","journal","marketeval","calendar","finance","systems","strategy","goals","lifegoals","gratitude" ,"exportall","library","settings","about"];
 
-function NmLayerHeading({ title, Icon, image, helpKey, hideHelp=false }) {
-    return React.createElement("div", { className: "nm-layer-heading" },
+function NmLayerHeading({ title, Icon, image, helpKey, hideHelp=false, action, style }) {
+    return React.createElement("div", { className: "nm-layer-heading", style: style },
         React.createElement("div", { className: "nm-layer-heading-main" },
             image ? React.createElement("span", { className: "nm-layer-heading-icon" }, React.createElement("img", { src: image, alt: title, loading: "lazy", decoding: "async", style: { width: 26, height: 26, borderRadius: 7, objectFit: "contain" } })) :
             Icon ? React.createElement("span", { className: "nm-layer-heading-icon" }, React.createElement(Icon, { size: 17, color: "var(--accent-gold)" })) : null,
             React.createElement("span", { className: "nm-layer-heading-title" }, title)),
-        !hideHelp && React.createElement(NmHeaderDots, { title: helpKey || title })
+        !hideHelp && React.createElement(NmHeaderDots, { title: helpKey || title }),
+        action ? React.createElement("span", { className: "nm-layer-heading-action" }, action) : null
     );
 }
 
@@ -5550,6 +5545,249 @@ function nmTagStats(trades){
  const map={};(trades||[]).forEach(t=>(t.tags||[]).forEach(tag=>{const k=typeof tag==='string'?tag:(tag?.label||'');if(!k)return;map[k]??={count:0,pnl:0,wins:0};map[k].count++;map[k].pnl+=Number(t.pnl)||0;if(Number(t.pnl)>0)map[k].wins++;}));
  return Object.entries(map).map(([name,v])=>({...v,name,win:v.count?v.wins/v.count*100:0})).sort((a,b)=>b.pnl-a.pnl);
 }
+/* ===== Advanced financial analytics model (1.0.8) ===== */
+function nmFmN(v,d=2){ return (v===null||v===undefined||!Number.isFinite(Number(v)))?"—":nmDashNum(Number(v),d); }
+function nmFmNormCdf(z){
+  const t=1/(1+0.2316419*Math.abs(z)),d=0.3989423*Math.exp(-z*z/2);
+  const p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+  return z>0?1-p:p;
+}
+function nmFmTCrit(df){ return df>=30?1.96:1.96+2.4/df+4/(df*df); }
+function nmFmQuantile(sorted,q){
+  if(!sorted.length)return null;
+  const pos=(sorted.length-1)*q,lo=Math.floor(pos),hi=Math.ceil(pos);
+  return sorted[lo]+(sorted[hi]-sorted[lo])*(pos-lo);
+}
+function nmFmRng(seed){ let a=seed>>>0; return function(){ let t=a+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return((t^t>>>14)>>>0)/4294967296; }; }
+function nmFmSqnLabel(s){
+  if(s===null||s===undefined)return "نامشخص";
+  if(s<0)return "منفی";
+  if(s<1.6)return "ضعیف";
+  if(s<2)return "زیر میانگین";
+  if(s<2.5)return "متوسط";
+  if(s<3)return "خوب";
+  if(s<5)return "عالی";
+  return "استثنایی";
+}
+function nmFmGroup(closed,keyFn){
+  const map={};
+  closed.forEach(t=>{const k=keyFn(t);if(!k)return;(map[k]=map[k]||[]).push(Number(t.pnl)||0);});
+  return Object.keys(map).map(name=>{const v=map[name],pnl=v.reduce((a,b)=>a+b,0);return{name,count:v.length,pnl,win:v.filter(z=>z>0).length/v.length*100};});
+}
+function nmAdvancedFinancialModel(trades,startingBalance){
+  const closed=(trades||[]).filter(t=>t&&t.status==="closed"&&Number.isFinite(Number(t.pnl))).slice().sort((a,b)=>`${a.date||""}T${a.time||""}`.localeCompare(`${b.date||""}T${b.time||""}`));
+  const n=closed.length;
+  const out={n,ready:n>=5,reliable:n>=30};
+  if(n<5)return out;
+  const sum=a=>a.reduce((s,v)=>s+v,0),avg=a=>a.length?sum(a)/a.length:0;
+  const start=Number(startingBalance)>0?Number(startingBalance):0;
+  const pnl=closed.map(t=>Number(t.pnl)||0);
+  const rAll=closed.map(nmDashR).filter(v=>v!==null&&Number.isFinite(v));
+  const useR=rAll.length>=Math.max(5,Math.ceil(n*0.7));
+  const x=useR?rAll:pnl.slice();
+  const nx=x.length,mean=avg(x);
+  const sd=nx>1?Math.sqrt(x.reduce((s,v)=>s+(v-mean)*(v-mean),0)/(nx-1)):0;
+  const se=sd>0?sd/Math.sqrt(nx):null;
+  const sqn=sd>0?mean/sd*Math.sqrt(Math.min(nx,100)):null;
+  const tStat=se?mean/se:null;
+  const pPos=tStat===null?null:nmFmNormCdf(tStat);
+  const tc=nmFmTCrit(Math.max(1,nx-1));
+  const ci=se!==null?[mean-tc*se,mean+tc*se]:null;
+  // win/loss structure
+  const wins=pnl.filter(v=>v>0),losses=pnl.filter(v=>v<0);
+  const winRate=wins.length/n;
+  const avgWin=avg(wins),avgLoss=Math.abs(avg(losses));
+  const payoff=avgLoss>0&&wins.length?avgWin/avgLoss:null;
+  const breakeven=payoff!==null?1/(1+payoff):null;
+  const kelly=payoff!==null&&payoff>0?winRate-(1-winRate)/payoff:null;
+  const z=1.96,pw=winRate,den=1+z*z/n;
+  const wCenter=(pw+z*z/(2*n))/den,wHalf=z*Math.sqrt((pw*(1-pw)+z*z/(4*n))/n)/den;
+  const winCI=[Math.max(0,wCenter-wHalf),Math.min(1,wCenter+wHalf)];
+  // distribution
+  const sorted=x.slice().sort((a,b)=>a-b);
+  const p5=nmFmQuantile(sorted,0.05),p95=nmFmQuantile(sorted,0.95);
+  const tailVals=sorted.filter(v=>v<=p5);
+  const cvar=tailVals.length?avg(tailVals):p5;
+  const m2=x.reduce((s,v)=>s+Math.pow(v-mean,2),0)/nx,m3=x.reduce((s,v)=>s+Math.pow(v-mean,3),0)/nx,m4=x.reduce((s,v)=>s+Math.pow(v-mean,4),0)/nx;
+  const skew=m2>0?m3/Math.pow(m2,1.5):null,kurt=m2>0?m4/(m2*m2)-3:null;
+  const tailRatio=p5<0&&p95>0?p95/Math.abs(p5):null;
+  // equity, drawdown, regression
+  let bal=start,peak=start,maxDD=0,maxDDPct=null,cum=0;const eq=[];
+  pnl.forEach(v=>{
+    bal+=v;cum+=v;eq.push(cum);if(bal>peak)peak=bal;
+    const d=peak-bal;if(d>maxDD)maxDD=d;
+    if(start>0&&peak>0){const pc=d/peak*100;if(maxDDPct===null||pc>maxDDPct)maxDDPct=pc;}
+  });
+  const curDD=peak-bal,curDDPct=start>0&&peak>0?curDD/peak*100:null;
+  const mx=(n+1)/2,my=avg(eq);let sxy=0,sxx=0,syy=0;
+  eq.forEach((y,i)=>{const dx=i+1-mx,dy=y-my;sxy+=dx*dy;sxx+=dx*dx;syy+=dy*dy;});
+  const slope=sxx>0?sxy/sxx:0,r2=sxx>0&&syy>0?sxy*sxy/(sxx*syy):null;
+  // streaks / runs test / autocorrelation
+  let curL=0,maxL=0,curW=0,maxW=0;
+  pnl.forEach(v=>{if(v>0){curW++;curL=0;}else if(v<0){curL++;curW=0;}else{curW=0;curL=0;}if(curL>maxL)maxL=curL;if(curW>maxW)maxW=curW;});
+  const lossRate=losses.length/n;
+  const expMaxL=lossRate>0&&lossRate<1?Math.max(1,Math.log(Math.max(1,n*(1-lossRate)))/Math.log(1/lossRate)):null;
+  const seq=pnl.filter(v=>v!==0).map(v=>v>0);
+  const n1=seq.filter(Boolean).length,n2=seq.length-n1;
+  let runs=seq.length?1:0;for(let i=1;i<seq.length;i++)if(seq[i]!==seq[i-1])runs++;
+  let runsZ=null;
+  if(n1>=3&&n2>=3){const mu=2*n1*n2/(n1+n2)+1,s2=(mu-1)*(mu-2)/(n1+n2-1);if(s2>0)runsZ=(runs-mu)/Math.sqrt(s2);}
+  let ac1=null;
+  if(nx>=8&&m2>0){let num=0;for(let i=0;i<nx-1;i++)num+=(x[i]-mean)*(x[i+1]-mean);ac1=num/(m2*nx);}
+  // drift (first vs second half)
+  let drift=null;
+  if(nx>=10){
+    const h=Math.floor(nx/2),first=avg(x.slice(0,h)),second=avg(x.slice(h));
+    drift={first,second,decay:first>0&&second<first*0.5,improve:second>0&&second>first&&(first<=0||second>first*1.5)};
+  }
+  // concentration & exits
+  const winsSorted=wins.slice().sort((a,b)=>b-a),grossWin=sum(wins);
+  const top3Share=wins.length>=4&&grossWin>0?sum(winsSorted.slice(0,3))/grossWin:null;
+  const adv=nmAdvancedStats(closed,start);
+  const effCount=closed.filter(t=>Number.isFinite(Number(t.exitEfficiency))).length;
+  const roundTripShare=adv.exits.roundTrip/n,earlyShare=effCount?adv.exits.early/effCount:null;
+  // Monte Carlo bootstrap (next 100 trades, 1000 paths, seeded => stable between renders)
+  const H=100,SIMS=1000;
+  let seed=(n*2654435761)>>>0;pnl.forEach(v=>{seed=(Math.imul(seed^(Math.round(v*100)|0),16777619))>>>0;});
+  const rnd=nmFmRng(seed||1),ruinLimit=start>0?start*0.3:(avgLoss>0?avgLoss*20:0);
+  const finals=[],dds=[];let prof=0,ruin=0;
+  for(let s=0;s<SIMS;s++){
+    let b=start,pk=start,md=0;
+    for(let i=0;i<H;i++){b+=pnl[Math.floor(rnd()*n)];if(b>pk)pk=b;const d=pk-b;if(d>md)md=d;}
+    finals.push(b-start);dds.push(md);if(b>start)prof++;if(ruinLimit>0&&md>=ruinLimit)ruin++;
+  }
+  finals.sort((a,b)=>a-b);dds.sort((a,b)=>a-b);
+  const mc={H,sims:SIMS,probProfit:prof/SIMS,median:nmFmQuantile(finals,0.5),p5:nmFmQuantile(finals,0.05),p95:nmFmQuantile(finals,0.95),ddMedian:nmFmQuantile(dds,0.5),dd95:nmFmQuantile(dds,0.95),pRuin:ruinLimit>0?ruin/SIMS:null,ruinBasis:start>0?"۳۰٪ سرمایه اولیه":"۲۰ برابر میانگین زیان",start};
+  mc.dd95Pct=start>0?mc.dd95/start*100:null;
+  // leak finder
+  const setups=nmFmGroup(closed,nmDashSetup).filter(g=>g.count>=3),sessions=nmFmGroup(closed,nmDashSession).filter(g=>g.count>=3);
+  const worstSetup=setups.filter(g=>g.pnl<0).sort((a,b)=>a.pnl-b.pnl)[0]||null,bestSetup=setups.filter(g=>g.pnl>0).sort((a,b)=>b.pnl-a.pnl)[0]||null;
+  const worstSession=sessions.filter(g=>g.pnl<0).sort((a,b)=>a.pnl-b.pnl)[0]||null;
+  // composite score
+  const edgeScore=mean>0?(sqn===null?15:Math.min(30,Math.max(0,sqn)/3*30)):0;
+  const confScore=pPos===null?0:20*Math.max(0,(pPos-0.5)*2);
+  const riskScore=20*(1-Math.min(1,(mc.pRuin===null?0.15:mc.pRuin)*3));
+  const consScore=slope>0&&r2!==null?15*r2:0;
+  let procScore=15;
+  if(runsZ!==null&&runsZ<-1.96)procScore-=5;
+  if(drift&&drift.decay)procScore-=6;
+  if(top3Share!==null&&top3Share>0.6)procScore-=3;
+  if(roundTripShare>0.2)procScore-=3;
+  if(expMaxL!==null&&maxL>=5&&maxL>expMaxL*2)procScore-=3;
+  procScore=Math.max(0,procScore);
+  const score=Math.round(Math.max(0,Math.min(100,edgeScore+confScore+riskScore+consScore+procScore)));
+  const grade=score>=75?{label:"قوی",tone:"good"}:score>=55?{label:"قابل قبول",tone:"warn"}:score>=35?{label:"ضعیف",tone:"bad"}:{label:"بحرانی",tone:"bad"};
+  // recommendation engine (technical / strategic)
+  const unit=useR?" R":"";
+  const kellyPct=kelly!==null&&kelly>0?kelly*100:null;
+  const recs=[];
+  if(!out.reliable)recs.push({type:"استراتژیک",text:`نمونه فعلی (${n} معامله) برای نتیجه‌گیری آماری کوچک است. تا رسیدن به حداقل ۳۰ معامله، ریسک هر معامله را ثابت و کوچک (حداکثر ۱٪ سرمایه) نگه دار و فقط ستاپ‌های تعریف‌شده را اجرا کن تا Edge قابل سنجش شود.`});
+  if(mean<=0){
+    let t=`امید ریاضی ${mean<0?"منفی":"صفر"} است (${nmFmN(mean,2)}${unit} در هر معامله).`;
+    if(worstSetup)t+=` بیشترین نشت مربوط به «${worstSetup.name}» (${worstSetup.count} معامله، ${nmFmN(worstSetup.pnl,2)}) است؛ آن را تعلیق کن یا قواعد ورودش را سخت‌تر کن`+(bestSetup?` و تمرکز را روی «${bestSetup.name}» بگذار.`:".");
+    else if(worstSession)t+=` ضعیف‌ترین نشست «${worstSession.name}» (${nmFmN(worstSession.pnl,2)}) است؛ معامله در آن را محدود کن.`;
+    else t+=" تا اصلاح قواعد ورود/خروج، ریسک را به حداقل برسان.";
+    recs.push({type:"استراتژیک",text:t});
+  }
+  if(mean>0&&out.reliable&&pPos!==null&&pPos<0.9)recs.push({type:"تکنیکال",text:`Edge مثبت است اما از نظر آماری هنوز قطعی نیست (احتمال مثبت‌بودن امید ریاضی ≈ ${Math.round(pPos*100)}٪). حجم پوزیشن را افزایش نده؛ ۲۰ تا ۳۰ معامله دیگر با همان قواعد ثبت کن و دوباره ارزیابی کن.`});
+  if(mean>0&&drift&&drift.decay)recs.push({type:"استراتژیک",text:`Edge در نیمه دوم معاملات افت کرده است (${nmFmN(drift.first,2)} ← ${nmFmN(drift.second,2)}${unit}). شرایط بازار و رفتار اجرایی را با نیمه اول مقایسه کن و تا بازگشت پایداری، ریسک را به حدود یک‌چهارم Kelly${kellyPct?` (≈ ${nmFmN(kellyPct/4,2)}٪)`:""} کاهش بده.`});
+  if((mc.pRuin!==null&&mc.pRuin>0.05)||(mc.dd95Pct!==null&&mc.dd95Pct>25))recs.push({type:"تکنیکال",text:`شبیه‌سازی مونت‌کارلو احتمال ${nmFmN((mc.pRuin||0)*100,1)}٪ برای رسیدن به سقف افت (${mc.ruinBasis}) نشان می‌دهد${mc.dd95Pct!==null?` و افت ۹۵٪-ام حدود ${nmFmN(mc.dd95Pct,1)}٪ است`:""}. ریسک هر معامله را کم کن و سقف ضرر روزانه/هفتگی تعریف کن.`});
+  if(maxDD>0&&curDD>0.7*maxDD&&n>=10)recs.push({type:"تکنیکال",text:`حساب در افت عمیق جاری است (${nmFmN(curDD/maxDD*100,0)}٪ بیشینه افت ثبت‌شده). تا خروج از افت، ریسک هر معامله را موقتاً نصف کن و فقط معاملات با بالاترین آمادگی ستاپ را بگیر.`});
+  if(roundTripShare>0.2)recs.push({type:"تکنیکال",text:`${nmFmN(roundTripShare*100,0)}٪ معاملات پس از رسیدن به سود با زیان بسته شده‌اند (Round-trip). پس از ۱R استاپ را به سر‌به‌سر ببر یا بخشی از پوزیشن را ببند.`});
+  if(earlyShare!==null&&earlyShare>0.4)recs.push({type:"تکنیکال",text:`${nmFmN(earlyShare*100,0)}٪ خروج‌ها زودهنگام (بازده کمتر از ۳۵٪ حرکت مطلوب) بوده است. قاعده خروج پله‌ای/تریلینگ با هدف‌های مبتنی بر ساختار را آزمایش کن.`});
+  if(runsZ!==null&&runsZ<-1.96)recs.push({type:"استراتژیک",text:`نتایج به‌صورت خوشه‌ای رخ می‌دهد (Runs Test: z = ${nmFmN(runsZ,2)}) که نشانه اثر احساسی پس از باخت/برد است. بعد از ۲ باخت متوالی توقف کوتاه و کاهش ریسک را قانون کن.`});
+  if(top3Share!==null&&top3Share>0.6)recs.push({type:"استراتژیک",text:`${nmFmN(top3Share*100,0)}٪ سود کل از ۳ معامله برتر آمده است؛ نتیجه به معاملات پرت وابسته است. قبل از افزایش ریسک، تکرارپذیری ستاپ را در نمونه بزرگ‌تر تأیید کن.`});
+  if(mean>0&&out.reliable&&pPos!==null&&pPos>=0.9&&!(drift&&drift.decay)&&recs.length===0)recs.push({type:"استراتژیک",text:`Edge معنادار است (SQN = ${nmFmN(sqn,2)}، ${nmFmSqnLabel(sqn)}). برای مقیاس‌دهی، ریسک را پله‌ای${kellyPct?` تا حداکثر Half-Kelly (≈ ${nmFmN(Math.min(kellyPct/2,2),2)}٪)`:""} و نه بیش از ۲٪ افزایش بده و سقف افت را رعایت کن.`});
+  if(!recs.length)recs.push({type:"تکنیکال",text:"عملکرد در محدوده قابل‌قبول است؛ با ثبت منظم MFE/MAE و ارزیابی هفتگی، کیفیت خروج و پایداری Edge را زیر نظر نگه دار."});
+  const evidence=[`SQN = ${nmFmN(sqn,2)} (${nmFmSqnLabel(sqn)})`,`احتمال مثبت‌بودن Edge ≈ ${pPos===null?"—":Math.round(pPos*100)+"٪"}`,`مونت‌کارلو: احتمال سود در ${H} معامله آینده ≈ ${Math.round(mc.probProfit*100)}٪`];
+  return Object.assign(out,{start,useR,unit,nx,mean,sd,sqn,tStat,pPos,ci,winRate,winCI,payoff,breakeven,kelly,p5,p95,cvar,skew,kurt,tailRatio,maxDD,maxDDPct,curDD,curDDPct,slope,r2,maxL,maxW,expMaxL,runsZ,ac1,drift,top3Share,roundTripShare,earlyShare,mc,worstSetup,bestSetup,worstSession,score,grade,recs,primary:recs[0],extras:recs.slice(1,3),evidence,parts:{edgeScore,confScore,riskScore,consScore,procScore}});
+}
+function nmFmExportRows(fm){
+  if(!fm||!fm.ready)return[["وضعیت","داده کافی نیست (حداقل ۵ معامله بسته‌شده)"]];
+  const f=nmFmN,u=fm.unit;
+  return[
+    ["تعداد معاملات",fm.n],["امتیاز کل ارزیابی (۰ تا ۱۰۰)",fm.score],["رتبه",fm.grade.label],
+    ["SQN",f(fm.sqn,2)],["امید ریاضی هر معامله"+u,f(fm.mean,3)],["بازه اطمینان ۹۵٪ امید ریاضی",fm.ci?`${f(fm.ci[0],3)} تا ${f(fm.ci[1],3)}`:"—"],
+    ["احتمال مثبت‌بودن Edge (٪)",fm.pPos===null?"—":f(fm.pPos*100,1)],["Win Rate (٪)",f(fm.winRate*100,1)],["بازه ۹۵٪ Win Rate (Wilson)",`${f(fm.winCI[0]*100,1)} تا ${f(fm.winCI[1]*100,1)}`],
+    ["Payoff Ratio",f(fm.payoff,2)],["Win Rate سر‌به‌سر (٪)",fm.breakeven===null?"—":f(fm.breakeven*100,1)],["Kelly کامل (٪)",fm.kelly===null?"—":f(fm.kelly*100,2)],
+    ["VaR 95% هر معامله"+u,f(fm.p5,3)],["CVaR 95%"+u,f(fm.cvar,3)],["Skewness",f(fm.skew,2)],["Excess Kurtosis",f(fm.kurt,2)],["Tail Ratio",f(fm.tailRatio,2)],
+    ["Max Drawdown",f(fm.maxDD,2)],["Max Drawdown (٪)",fm.maxDDPct===null?"—":f(fm.maxDDPct,2)],["Drawdown جاری",f(fm.curDD,2)],
+    ["R² منحنی سرمایه",f(fm.r2,2)],["Runs Test (z)",f(fm.runsZ,2)],["Autocorrelation (Lag-1)",f(fm.ac1,2)],["بیشترین باخت متوالی",fm.maxL],["باخت متوالی مورد انتظار",f(fm.expMaxL,1)],["سهم ۳ معامله برتر از سود (٪)",fm.top3Share===null?"—":f(fm.top3Share*100,1)],
+    ["Monte Carlo · احتمال سود (٪)",f(fm.mc.probProfit*100,1)],["Monte Carlo · میانه نتیجه",f(fm.mc.median,2)],["Monte Carlo · صدک ۵",f(fm.mc.p5,2)],["Monte Carlo · صدک ۹۵",f(fm.mc.p95,2)],["Monte Carlo · افت ۹۵٪-ام",f(fm.mc.dd95,2)],["Monte Carlo · احتمال رسیدن به سقف افت (٪)",fm.mc.pRuin===null?"—":f(fm.mc.pRuin*100,1)],
+    ["چکیده ارزیابی ("+fm.primary.type+")",fm.primary.text]
+  ];
+}
+function NmAdvancedFinancialPanel({trades,startingBalance}){
+  const fm=React.useMemo(()=>nmAdvancedFinancialModel(trades,startingBalance),[trades,startingBalance]);
+  const tones={good:"#34D399",warn:"#F59E0B",bad:"#F87171",info:"var(--text-primary)"};
+  const box={className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #8B5CF6 6%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 32%, var(--border-1))"}};
+  if(!fm.ready)return React.createElement("div",box,
+    React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"تحلیل مالی پیشرفته"),
+    React.createElement("div",{className:"text-[10px] leading-5 mt-1",style:{color:"var(--text-muted)"}},`برای اجرای مدل‌های کمی (SQN، Kelly، Monte Carlo، VaR و ...) حداقل ۵ معامله بسته‌شده لازم است. تعداد فعلی: ${fm.n}`));
+  const mcard=(title,value,sub,tone)=>React.createElement("div",{key:title,className:"rounded-xl p-2",style:{background:"var(--bg-card2)",borderInlineStart:"3px solid "+(tones[tone||"info"]||tones.info)}},
+    React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},title),
+    React.createElement("div",{className:"text-[14px] font-bold",style:{color:tones[tone||"info"]||tones.info,fontFamily:"JetBrains Mono,monospace",direction:"ltr",textAlign:"right"}},value),
+    sub?React.createElement("div",{className:"text-[9px] leading-4 mt-0.5",style:{color:"var(--text-muted)"}},sub):null);
+  const group=(title,cards)=>React.createElement("div",{key:title,className:"mt-3"},
+    React.createElement("div",{className:"text-[11px] font-semibold mb-1.5",style:{color:"var(--accent-gold)"}},title),
+    React.createElement("div",{className:"grid grid-cols-2 gap-2"},cards));
+  const f=nmFmN,u=fm.unit,mc=fm.mc;
+  const pc=v=>v===null||v===undefined?"—":f(v*100,1)+"٪";
+  const edgeCards=[
+    mcard("SQN (کیفیت سیستم)",f(fm.sqn,2),nmFmSqnLabel(fm.sqn)+` · n=${fm.nx}`,fm.sqn===null?"info":fm.sqn>=2.5?"good":fm.sqn>=1.6?"warn":"bad"),
+    mcard("امید ریاضی / معامله",f(fm.mean,2)+u,fm.ci?`بازه ۹۵٪: ${f(fm.ci[0],2)} تا ${f(fm.ci[1],2)}`:"—",fm.ci&&fm.ci[0]>0?"good":fm.mean>0?"warn":"bad"),
+    mcard("احتمال Edge مثبت",fm.pPos===null?"—":Math.round(fm.pPos*100)+"٪",fm.tStat===null?"":`آماره t = ${f(fm.tStat,2)}`,fm.pPos===null?"info":fm.pPos>=0.95?"good":fm.pPos>=0.8?"warn":"bad"),
+    mcard("Win Rate",pc(fm.winRate),`بازه ۹۵٪ (Wilson): ${f(fm.winCI[0]*100,0)}–${f(fm.winCI[1]*100,0)}٪`+(fm.breakeven!==null?` · سر‌به‌سر ${f(fm.breakeven*100,0)}٪`:""),fm.breakeven===null?"info":fm.winRate>fm.breakeven+0.03?"good":fm.winRate>=fm.breakeven?"warn":"bad"),
+    mcard("Payoff Ratio",f(fm.payoff,2),"میانگین سود ÷ میانگین زیان",fm.payoff===null?"info":fm.payoff>=1.5?"good":fm.payoff>=1?"warn":"bad"),
+    mcard("Kelly Criterion",fm.kelly===null?"—":fm.kelly<=0?"بدون Edge":f(fm.kelly*100,1)+"٪",fm.kelly!==null&&fm.kelly>0?`Half-Kelly ${f(fm.kelly*50,1)}٪ · ¼ ${f(fm.kelly*25,1)}٪ ریسک/معامله`:"ریسک پیشنهادی صفر",fm.kelly===null?"info":fm.kelly>0.05?"good":fm.kelly>0?"warn":"bad")
+  ];
+  const riskCards=[
+    mcard("VaR 95% / CVaR",f(fm.p5,2)+u,`میانگین بدترین ۵٪: ${f(fm.cvar,2)}${u}`,fm.p5>=0?"good":"warn"),
+    mcard("چولگی (Skewness)",f(fm.skew,2),`کشیدگی اضافی ${f(fm.kurt,1)}`+(fm.tailRatio!==null?` · Tail ${f(fm.tailRatio,2)}`:""),fm.skew===null?"info":fm.skew>0.3?"good":fm.skew<-0.5?"bad":"warn"),
+    mcard("Max Drawdown",f(fm.maxDD,2),fm.maxDDPct!==null?`${f(fm.maxDDPct,1)}٪ از اوج سرمایه`:"سرمایه اولیه ثبت نشده",fm.maxDDPct===null?"info":fm.maxDDPct>20?"bad":fm.maxDDPct>10?"warn":"good"),
+    mcard("افت جاری",f(fm.curDD,2),fm.curDDPct!==null?`${f(fm.curDDPct,1)}٪ از اوج`:(fm.curDD>0?"زیر اوج منحنی":"روی اوج منحنی"),fm.curDD<=0?"good":fm.maxDD>0&&fm.curDD>0.7*fm.maxDD?"bad":"warn")
+  ];
+  const stabCards=[
+    mcard("پایداری منحنی (R²)",f(fm.r2,2),`شیب ${f(fm.slope,2)} در هر معامله`,fm.r2===null?"info":fm.slope>0&&fm.r2>=0.8?"good":fm.slope>0&&fm.r2>=0.5?"warn":"bad"),
+    mcard("روند Edge",fm.drift?`${f(fm.drift.first,2)} ← ${f(fm.drift.second,2)}`:"—",fm.drift?(fm.drift.decay?"افت در نیمه دوم":fm.drift.improve?"بهبود در نیمه دوم":"نیمه اول ← نیمه دوم"):"حداقل ۱۰ معامله لازم است",fm.drift?(fm.drift.decay?"bad":fm.drift.improve?"good":"warn"):"info"),
+    mcard("Runs Test",f(fm.runsZ,2),fm.runsZ===null?"داده کافی نیست":fm.runsZ<-1.96?"خوشه‌ای (اثر احساسی)":fm.runsZ>1.96?"متناوب":"تصادفی (سالم)",fm.runsZ===null?"info":Math.abs(fm.runsZ)>1.96?"bad":"good"),
+    mcard("باخت متوالی",String(fm.maxL),fm.expMaxL!==null?`مورد انتظار ≈ ${f(fm.expMaxL,1)}`:"—",fm.expMaxL!==null&&fm.maxL>fm.expMaxL*2&&fm.maxL>=5?"bad":fm.expMaxL!==null&&fm.maxL>fm.expMaxL*1.5?"warn":"good"),
+    mcard("تمرکز سود",fm.top3Share===null?"—":f(fm.top3Share*100,0)+"٪","سهم ۳ معامله برتر از کل سود",fm.top3Share===null?"info":fm.top3Share>0.6?"bad":fm.top3Share>0.45?"warn":"good"),
+    mcard("Round-trip",f(fm.roundTripShare*100,0)+"٪","سود دیده، با زیان بسته شد",fm.roundTripShare>0.2?"bad":fm.roundTripShare>0.1?"warn":"good")
+  ];
+  const mcCards=[
+    mcard("احتمال سود",pc(mc.probProfit),`میانه نتیجه: ${f(mc.median,2)}`,mc.probProfit>=0.8?"good":mc.probProfit>=0.55?"warn":"bad"),
+    mcard("بازه ۹۰٪ نتیجه",`${f(mc.p5,0)} تا ${f(mc.p95,0)}`,"صدک ۵ تا ۹۵",mc.p5>0?"good":mc.median>0?"warn":"bad"),
+    mcard("افت ۹۵٪-ام",f(mc.dd95,2),(mc.dd95Pct!==null?`${f(mc.dd95Pct,1)}٪ سرمایه · `:"")+`میانه ${f(mc.ddMedian,2)}`,mc.dd95Pct===null?"info":mc.dd95Pct>25?"bad":mc.dd95Pct>12?"warn":"good"),
+    mcard("احتمال سقف افت",mc.pRuin===null?"—":f(mc.pRuin*100,1)+"٪",mc.ruinBasis,mc.pRuin===null?"info":mc.pRuin>0.05?"bad":mc.pRuin>0.01?"warn":"good")
+  ];
+  const gt=tones[fm.grade.tone];
+  const sumBox={className:"rounded-2xl p-3 mt-3",style:{background:`color-mix(in srgb, ${gt} 9%, var(--bg-card))`,border:`1px solid color-mix(in srgb, ${gt} 45%, var(--border-1))`}};
+  const summary=React.createElement("div",sumBox,
+    React.createElement("div",{className:"flex items-center justify-between gap-2 mb-2"},
+      React.createElement("div",{className:"text-[14px] font-extrabold",style:{color:"var(--text-primary)"}},"چکیده ارزیابی"),
+      React.createElement("div",{className:"flex items-center gap-1.5"},
+        React.createElement("span",{className:"text-[10px] font-bold px-2 py-0.5 rounded-full",style:{background:"color-mix(in srgb, "+gt+" 18%, transparent)",color:gt}},fm.grade.label+(fm.reliable?"":" · اولیه")),
+        React.createElement("span",{className:"text-[12px] font-bold",style:{color:gt,fontFamily:"JetBrains Mono,monospace",direction:"ltr"}},`${fm.score}/100`))),
+    React.createElement("div",{className:"rounded-full overflow-hidden mb-2",style:{height:6,background:"var(--bg-card2)",direction:"ltr"}},React.createElement("div",{style:{width:fm.score+"%",height:"100%",background:gt}})),
+    React.createElement("div",{className:"flex items-center gap-1.5 mb-1"},
+      React.createElement("span",{className:"text-[9px] font-bold px-1.5 py-0.5 rounded",style:{background:"var(--bg-card2)",color:"var(--accent-gold)",border:"1px solid var(--border-2)"}},"توصیه "+fm.primary.type)),
+    React.createElement("div",{className:"text-[12px] leading-6 font-medium",style:{color:"var(--text-primary)"}},fm.primary.text),
+    fm.extras.length?React.createElement("div",{className:"mt-2 space-y-1"},fm.extras.map((r,i)=>React.createElement("div",{key:i,className:"text-[10px] leading-5",style:{color:"var(--text-secondary)"}},"• ",React.createElement("b",null,r.type+": "),r.text))):null,
+    React.createElement("div",{className:"text-[9px] leading-5 mt-2",style:{color:"var(--text-muted)"}},fm.evidence.join(" · ")),
+    React.createElement("div",{className:"text-[8px] leading-4 mt-1",style:{color:"var(--text-muted)"}},"این چکیده بر اساس مدل‌های آماری روی داده‌های ثبت‌شده شما محاسبه می‌شود و توصیه سرمایه‌گذاری نیست. شبیه‌سازی مونت‌کارلو فرض می‌کند معاملات آینده مشابه گذشته و مستقل از هم‌اند."));
+  return React.createElement("div",null,
+    React.createElement("div",box,
+      React.createElement("div",{className:"flex items-center justify-between gap-2"},
+        React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"تحلیل مالی پیشرفته"),
+        React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${fm.n} معامله · واحد ${fm.useR?"R":"پولی"}`)),
+      React.createElement("div",{className:"text-[9px] leading-5 mt-0.5",style:{color:"var(--text-muted)"}},"SQN · Kelly · بازه اطمینان · VaR/CVaR · Runs Test · Monte Carlo"),
+      group("کیفیت و معناداری Edge",edgeCards),
+      group("ریسک و دم توزیع",riskCards),
+      group("پایداری و رفتار",stabCards),
+      group(`شبیه‌سازی Monte Carlo · ${mc.H} معامله آینده، ${mc.sims} مسیر`,mcCards)),
+    summary);
+}
 function nmExitInsight(t){
  const e=Number(t?.exitEfficiency),r=nmDashR(t),m=Number(t?.mfe);if(!Number.isFinite(e))return 'داده خروج کافی نیست';
  if(e<25 && Number.isFinite(m)&&m>0) return 'خروج زودهنگام / بخش بزرگی از حرکت از دست رفته';
@@ -5988,6 +6226,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        baseAccountPanel,
        filterPanel,
        React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
+       RE(NmAdvancedFinancialPanel,{trades:filtered,startingBalance:startingBalance}),
        React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #8B5CF6 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 35%, var(--border-1))"}},
          React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی ارزیابی پیشرفته"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"فقط شاخص‌های ریسک، خروج، Edge، Discipline و Planهای ارزیابی پیشرفته")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
@@ -8620,7 +8859,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.7</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.8</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9350,7 +9589,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.7</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.8</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9428,9 +9667,9 @@ function App() {
     }
     function exportDashboardStatisticalExcel(){ nmPatchExportEngine();const d=dashboardStatExportData(),wb=XLSX.utils.book_new(),mk=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["پارامتر","سودآوری"],...a.map(x=>[x.name,x.value])]),n.slice(0,31));[["سودآوری-لات",d.byLot],["سودآوری-ریسک-دلاری",d.byRiskDollar],["سودآوری-احتمال-ذهنی",d.bySubjectiveSuccessProb],["سودآوری-احتمال-محاسباتی",d.byCalculatedSuccessProb],["سودآوری-جهت",d.byDirection],["سودآوری-نماد",d.byPair],["سودآوری-واگرایی-اصلی",d.byDivergenceMain],["سودآوری-واگرایی-ورود",d.byDivergenceEntry],["سودآوری-روزهفته",d.byWeekday],["سودآوری-سیستم",d.bySystem],["سودآوری-نشست",d.bySession],["سودآوری-روند",d.byTrend],["سودآوری-RR",d.byRR],["سودآوری-آمادگی-ستاپ",d.bySetupReadiness],["سودآوری-ارزیابی-چارت",d.byChartReadiness],["سودآوری-برنامه-روزانه",d.byDayPlanReadiness],["سودآوری-بایاس",d.byBias],["سودآوری-فراکتال",d.byFractal],["سودآوری-شرایط",d.byCondition],["سودآوری-Trig",d.byTrig],["سودآوری-Target",d.byTarget],["سودآوری-Stop",d.byStop],["سودآوری-خبر",d.byNews],["سودآوری-مدت",d.byDuration],["ترکیب-سیستم-روز",d.bySystemWeekday],["ترکیب-نشست-لات",d.bySessionLot]].forEach(x=>mk(x[0],x[1]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["حساب‌های مبنا"],...(dashboardSelectedAccounts||[]).map(c=>[c])]),"حساب‌های مبنا");XLSX.writeFile(wb,`namello-statistical-dashboard-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardStatisticalPdf(){const d=dashboardStatExportData(),sec=(n,a)=>({name:n,header:["پارامتر","سودآوری"],rows:a.map(x=>[x.name,x.value])});exportMultiTablesAsPdf("خروجی تحلیل آماری",[{name:"حساب‌های مبنا",header:["حساب"],rows:(dashboardSelectedAccounts||[]).map(c=>[c])},sec("سودآوری بر اساس لات",d.byLot),sec("سودآوری بر اساس ریسک دلاری",d.byRiskDollar),sec("سودآوری بر اساس احتمال موفقیت ذهنی",d.bySubjectiveSuccessProb),sec("سودآوری بر اساس احتمال موفقیت محاسباتی",d.byCalculatedSuccessProb),sec("سودآوری بر اساس جهت معامله",d.byDirection),sec("سودآوری بر اساس نماد",d.byPair),sec("سودآوری بر اساس واگرایی تایم اصلی",d.byDivergenceMain),sec("سودآوری بر اساس واگرایی تایم ورود",d.byDivergenceEntry),sec("سودآوری بر اساس روز هفته",d.byWeekday),sec("سودآوری بر اساس سیستم",d.bySystem),sec("سودآوری بر اساس نشست",d.bySession),sec("سودآوری بر اساس روند",d.byTrend),sec("سودآوری بر اساس R:R",d.byRR),sec("سودآوری بر اساس آمادگی ستاپ",d.bySetupReadiness),sec("سودآوری بر اساس ارزیابی چارت",d.byChartReadiness),sec("سودآوری بر اساس آمادگی برنامه روزانه",d.byDayPlanReadiness),sec("سودآوری بر اساس بایاس",d.byBias),sec("سودآوری بر اساس فراکتال",d.byFractal),sec("سودآوری بر اساس شرایط بازار",d.byCondition),sec("سودآوری بر اساس ورود/TP/SL",d.byTrig.concat(d.byTarget,d.byStop)),sec("سودآوری بر اساس خبر",d.byNews),sec("سودآوری بر اساس مدت معامله",d.byDuration)])}
-    function dashboardAdvancedExportData(){const src=(dashboardSelectedTrades||[]).filter(t=>t.status==="closed"),m=nmDashMetrics(src,dashboardStartingBalance),a=nmAdvancedStats(src,dashboardStartingBalance),x=src.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae))),eff=src.filter(t=>Number.isFinite(Number(t.exitEfficiency))),mistakes={};src.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>mistakes[k]=(mistakes[k]||0)+1));const edge=fn=>{const map={};src.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return[name,ts.length,mm.pnl,mm.winRate,mm.expectancy]})};return{src,m,a,avgM:x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA:x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null,mistakes,session:edge(nmDashSession),setup:edge(nmDashSetup)}}
-    function exportDashboardAdvancedExcel(){ nmPatchExportEngine();const d=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("شاخص‌های ارزیابی",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Ulcer",d.a.ulcer],["Avg Hold (min)",d.a.avgHold??"—"],["میانگین آمادگی ستاپ (%)",d.a.avgSetupReadiness??"—"],["میانگین ارزیابی چارت (%)",d.a.avgChartReadiness??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"],["Early Exit",d.a.exits.early],["Round-trip",d.a.exits.roundTrip],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]);add("Session Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.session]);add("Setup Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(d.mistakes)]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Chart Plans",[["Chart Plan","تعداد شروط"],...(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات ارزیابی",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...d.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-advanced-evaluation-${activeAccount}-${todayStr}.xlsx`)}
-    function exportDashboardAdvancedPdf(){const d=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی ارزیابی پیشرفته",[{name:"شاخص‌های ریسک و خروج",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"]]},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(d.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
+    function dashboardAdvancedExportData(){const src=(dashboardSelectedTrades||[]).filter(t=>t.status==="closed"),m=nmDashMetrics(src,dashboardStartingBalance),a=nmAdvancedStats(src,dashboardStartingBalance),x=src.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae))),eff=src.filter(t=>Number.isFinite(Number(t.exitEfficiency))),mistakes={};src.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>mistakes[k]=(mistakes[k]||0)+1));const edge=fn=>{const map={};src.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return[name,ts.length,mm.pnl,mm.winRate,mm.expectancy]})};return{src,m,a,fm:nmAdvancedFinancialModel(src,dashboardStartingBalance),avgM:x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA:x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null,mistakes,session:edge(nmDashSession),setup:edge(nmDashSetup)}}
+    function exportDashboardAdvancedExcel(){ nmPatchExportEngine();const d=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("شاخص‌های ارزیابی",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Ulcer",d.a.ulcer],["Avg Hold (min)",d.a.avgHold??"—"],["میانگین آمادگی ستاپ (%)",d.a.avgSetupReadiness??"—"],["میانگین ارزیابی چارت (%)",d.a.avgChartReadiness??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"],["Early Exit",d.a.exits.early],["Round-trip",d.a.exits.roundTrip],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"]]);add("تحلیل مالی پیشرفته",[["شاخص","مقدار"],...nmFmExportRows(d.fm)]);add("Session Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.session]);add("Setup Edge",[["نام","تعداد","P&L","Win Rate","Expectancy"],...d.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(d.mistakes)]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Chart Plans",[["Chart Plan","تعداد شروط"],...(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات ارزیابی",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...d.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-advanced-evaluation-${activeAccount}-${todayStr}.xlsx`)}
+    function exportDashboardAdvancedPdf(){const d=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی ارزیابی پیشرفته",[{name:"شاخص‌های ریسک و خروج",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",d.m.closed.length],["P&L",d.m.pnl],["Win Rate",d.m.winRate],["Profit Factor",d.m.pf===Infinity?"∞":d.m.pf],["Expectancy",d.m.expectancy??"—"],["Avg R",d.m.avgR??"—"],["Max DD",d.m.maxDD],["Sharpe",d.a.sharpe??"—"],["Sortino",d.a.sortino??"—"],["Calmar",d.a.calmar??"—"],["Recovery",d.a.recovery??"—"],["Avg MFE",d.avgM??"—"],["Avg MAE",d.avgA??"—"],["Avg Exit Efficiency",d.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",d.a.avgDayPlanReadiness??"—"]]},{name:"تحلیل مالی پیشرفته",header:["شاخص","مقدار"],rows:nmFmExportRows(d.fm)},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:d.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(d.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
     function exportDashboardComprehensiveExcel(){ nmPatchExportEngine();const st=dashboardStatExportData(),ad=dashboardAdvancedExportData(),wb=XLSX.utils.book_new(),add=(n,r)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),n.slice(0,31));add("خلاصه داشبورد",[["شاخص","مقدار"],["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"]]);add("ارزیابی پیشرفته",[["Session","تعداد","P&L","Win Rate","Expectancy"],...ad.session]);add("Edge Setup",[["Setup","تعداد","P&L","Win Rate","Expectancy"],...ad.setup]);add("Discipline",[["اشتباه","تعداد"],...Object.entries(ad.mistakes)]);add("تحلیل-سیستم",[["پارامتر","سودآوری"],...st.bySystem.map(x=>[x.name,x.value])]);add("تحلیل-نشست",[["پارامتر","سودآوری"],...st.bySession.map(x=>[x.name,x.value])]);add("تحلیل-RR",[["پارامتر","سودآوری"],...st.byRR.map(x=>[x.name,x.value])]);add("تحلیل-آمادگی-ستاپ",[["پارامتر","سودآوری"],...st.bySetupReadiness.map(x=>[x.name,x.value])]);add("تحلیل-ارزیابی-چارت",[["پارامتر","سودآوری"],...st.byChartReadiness.map(x=>[x.name,x.value])]);add("تحلیل-روند",[["پارامتر","سودآوری"],...st.byTrend.map(x=>[x.name,x.value])]);add("تحلیل-لات",[["پارامتر","سودآوری"],...st.byLot.map(x=>[x.name,x.value])]);add("تحلیل-روز",[["پارامتر","سودآوری"],...st.byWeekday.map(x=>[x.name,x.value])]);add("Trade Plans",[["Plan","تعداد شروط"],...(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("Day Plans",[["Day Plan","تعداد شروط"],...(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])]);add("معاملات داشبورد",[["تاریخ","نماد","جهت","P&L","MFE","MAE","Exit Efficiency","Session","Setup"],...ad.src.map(t=>[t.date,t.pair,t.direction==="sell"?"فروش":"خرید",t.pnl,t.mfe??"",t.mae??"",t.exitEfficiency??"",nmDashSession(t),nmDashSetup(t)])]);XLSX.writeFile(wb,`namello-comprehensive-dashboard-${activeAccount}-${todayStr}.xlsx`)}
     function exportDashboardComprehensivePdf(){const st=dashboardStatExportData(),ad=dashboardAdvancedExportData();exportMultiTablesAsPdf("خروجی جامع داشبورد",[{name:"خلاصه داشبورد",header:["شاخص","مقدار"],rows:[["حساب‌های مبنا",(dashboardSelectedAccounts||[]).join("، ")],["تعداد معاملات",ad.m.closed.length],["P&L",ad.m.pnl],["Win Rate",ad.m.winRate],["Profit Factor",ad.m.pf===Infinity?"∞":ad.m.pf],["Expectancy",ad.m.expectancy??"—"],["Avg R",ad.m.avgR??"—"],["Max DD",ad.m.maxDD],["Sharpe",ad.a.sharpe??"—"],["Sortino",ad.a.sortino??"—"],["Calmar",ad.a.calmar??"—"],["Recovery",ad.a.recovery??"—"],["Avg MFE",ad.avgM??"—"],["Avg MAE",ad.avgA??"—"],["Avg Exit Efficiency",ad.avgEff??"—"],["میانگین آمادگی برنامه روزانه (%)",ad.a.avgDayPlanReadiness??"—"]]},{name:"تحلیل آماری - سیستم",header:["پارامتر","سودآوری"],rows:st.bySystem.map(x=>[x.name,x.value])},{name:"تحلیل آماری - نشست",header:["پارامتر","سودآوری"],rows:st.bySession.map(x=>[x.name,x.value])},{name:"تحلیل آماری - R:R",header:["پارامتر","سودآوری"],rows:st.byRR.map(x=>[x.name,x.value])},{name:"تحلیل آماری - روند",header:["پارامتر","سودآوری"],rows:st.byTrend.map(x=>[x.name,x.value])},{name:"Session Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.session},{name:"Setup Edge",header:["نام","تعداد","P&L","Win Rate","Expectancy"],rows:ad.setup},{name:"Discipline",header:["اشتباه","تعداد"],rows:Object.entries(ad.mistakes)},{name:"Trade Plans",header:["Plan","تعداد شروط"],rows:(tradePlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Chart Plans",header:["Chart Plan","تعداد شروط"],rows:(chartPlans||[]).map(p=>[p.name,(p.conditions||[]).length])},{name:"Day Plans",header:["Day Plan","تعداد شروط"],rows:(dayPlans||[]).map(p=>[p.name,(p.conditions||[]).length])}])}
     /* ---------------- combined full export ---------------- */
@@ -9745,14 +9984,13 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.7", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.7"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.8", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.8"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
                     React.createElement("span", { id: "nm-player-mini-slot", className: "inline-flex" }),
-                    tab === "live" && (React.createElement("button", { onClick: openSessionSettings, className: "p-2 rounded-lg", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": t("live_session_settings") },
-                        React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" }))))),
+                    null)),
             React.createElement("div", { className: "flex items-baseline gap-2" },
                 React.createElement("span", { className: "text-3xl font-bold tabular-nums", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } },
                     pad2(now.hh),
@@ -9775,7 +10013,7 @@ function App() {
         RE(NmGlobalPlayer, { tab }),
         tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, chartPlans: chartPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, setChartPlans: persistChartPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades, psychologyDataSource: psychologyDataSource, setPsychologyDataSource: setPsychologyDataSource, psychOptions: psychOptions, accountTradesMap: Object.fromEntries(accounts.map(c=>[c,c===activeAccount?trades:(multiAccountTradesCache[c]||[])])), accountTypes: accountTypes }))),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement(NmLayerHeading, { title: appLanguage === "en" ? "Sessions" : "نشست‌ها", image: "icon-sessions.png" }),
+            React.createElement(NmLayerHeading, { title: appLanguage === "en" ? "Sessions" : "نشست‌ها", image: "icon-sessions.png", action: React.createElement("button", { type: "button", onClick: openSessionSettings, className: "nm-layer-heading-settings", "aria-label": t("live_session_settings") }, React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" })) }),
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, seconds: now.ss, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
                 config.sessions.map(s => (React.createElement("span", { key: s.key, className: "flex items-center gap-1" },
@@ -9818,21 +10056,17 @@ function App() {
                     React.createElement("span", { className: "text-sm font-medium", style: { color: "var(--text-primary)" } }, g.label)),
                 React.createElement("p", { className: "text-[12px] leading-5", style: { color: "var(--text-secondary)" } }, g.note)))))))),
         tab === "news" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement("div", { className: "flex items-center justify-between mb-3" },
-                React.createElement("div", { className: "flex items-center gap-3" },
-                    React.createElement("button", { onClick: refreshNewsFromWeb, disabled: newsLoading, className: "rounded-2xl flex items-center justify-center shrink-0", "aria-label": "بروزرسانی اخبار",
-                        style: { width: 56, height: 56, border: "1px solid var(--border-1)", background: newsRefreshState === "ok" ? "#22C55E" : newsRefreshState === "fail" ? "#EF4444" : "var(--bg-card)", animation: newsRefreshState === "loading" ? "namelloNewsBg 0.9s ease-in-out infinite" : "none", transition: "background 0.3s" } },
-                        React.createElement("svg", { width: 30, height: 30, viewBox: "0 0 24 24", fill: "none", stroke: newsRefreshState === "ok" || newsRefreshState === "fail" ? "#FFFFFF" : newsRefreshState === "loading" ? "#0B0E11" : "var(--accent-gold)", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round", style: { animation: newsRefreshState === "loading" ? "namelloNewsSpin 0.9s linear infinite" : "none" } },
-                            React.createElement("path", { d: "M21 12a9 9 0 0 0-15.5-6.2L3 8" }),
-                            React.createElement("path", { d: "M3 3v5h5" }),
-                            React.createElement("path", { d: "M3 12a9 9 0 0 0 15.5 6.2L21 16" }),
-                            React.createElement("path", { d: "M16 16h5v5" }))),
-                    React.createElement("h2", { className: "text-sm font-semibold flex items-center gap-1.5", style: { color: "var(--text-primary)" } },
-                        React.createElement(Newspaper, { size: 16 }),
-                        " \u0627\u062E\u0628\u0627\u0631 \u0627\u0642\u062A\u0635\u0627\u062F\u06CC")),
-                    RE(NmHeaderDots,{title:"اخبار اقتصادی"}),
-                React.createElement("button", { onClick: () => setShowNewsSettings(s => !s), className: "p-2 rounded-lg", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" }, "aria-label": "\u062A\u0646\u0638\u06CC\u0645\u0627\u062A" },
-                    React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" }))),            React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "\u0628\u0627 \u0632\u062F\u0646 \uD83D\uDD04 \u0622\u062E\u0631\u06CC\u0646 \u0627\u062E\u0628\u0627\u0631 \u067E\u0631\u062A\u0623\u062B\u06CC\u0631 \u0647\u0641\u062A\u0647 \u0627\u0632 \u06CC\u06A9 \u062A\u0642\u0648\u06CC\u0645 \u0627\u0642\u062A\u0635\u0627\u062F\u06CC \u0639\u0645\u0648\u0645\u06CC \u0645\u06CC\u200C\u0622\u062F. \u0627\u06AF\u0647 \u0627\u06CC\u0646\u062A\u0631\u0646\u062A\u062A \u0628\u0647 \u0627\u0648\u0646 \u0633\u0631\u0648\u06CC\u0633 \u062F\u0633\u062A\u0631\u0633\u06CC \u0646\u062F\u0627\u0634\u062A\u060C \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u062E\u0628\u0631\u0647\u0627 \u0631\u0648 \u062F\u0633\u062A\u06CC \u0647\u0645 \u0627\u0636\u0627\u0641\u0647 \u06A9\u0646\u06CC. \u0627\u06AF\u0647 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u062A\u0627 \u06F3\u06F0 \u062F\u0642\u06CC\u0642\u0647 \u0642\u0628\u0644 \u06CC\u0627 \u0628\u0639\u062F \u0627\u0632 \u06CC\u0647 \u062E\u0628\u0631 (\u0645\u0631\u062A\u0628\u0637 \u0628\u0627 \u062C\u0641\u062A\u200C\u0627\u0631\u0632 \u0647\u0645\u0648\u0646 \u0645\u0639\u0627\u0645\u0644\u0647) \u062B\u0628\u062A \u0628\u0634\u0647\u060C \u0627\u0633\u0645 \u062E\u0628\u0631 \u062E\u0648\u062F\u06A9\u0627\u0631 \u062A\u0648 \u0698\u0648\u0631\u0646\u0627\u0644 \u062B\u0628\u062A \u0645\u06CC\u200C\u0634\u0647."),
+            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+                React.createElement("button", { onClick: refreshNewsFromWeb, disabled: newsLoading, className: "rounded-2xl flex items-center justify-center shrink-0", "aria-label": "بروزرسانی اخبار",
+                    style: { width: 56, height: 56, border: "1px solid var(--border-1)", background: newsRefreshState === "ok" ? "#22C55E" : newsRefreshState === "fail" ? "#EF4444" : "var(--bg-card)", animation: newsRefreshState === "loading" ? "namelloNewsBg 0.9s ease-in-out infinite" : "none", transition: "background 0.3s" } },
+                    React.createElement("svg", { width: 30, height: 30, viewBox: "0 0 24 24", fill: "none", stroke: newsRefreshState === "ok" || newsRefreshState === "fail" ? "#FFFFFF" : newsRefreshState === "loading" ? "#0B0E11" : "var(--accent-gold)", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round", style: { animation: newsRefreshState === "loading" ? "namelloNewsSpin 0.9s linear infinite" : "none" } },
+                        React.createElement("path", { d: "M21 12a9 9 0 0 0-15.5-6.2L3 8" }),
+                        React.createElement("path", { d: "M3 3v5h5" }),
+                        React.createElement("path", { d: "M3 12a9 9 0 0 0 15.5 6.2L21 16" }),
+                        React.createElement("path", { d: "M16 16h5v5" }))),
+                React.createElement("div", { className: "flex-1 min-w-0" },
+                    RE(NmLayerHeading, { title: "اخبار اقتصادی", Icon: Newspaper, style: { marginBottom: 0, minHeight: 56 }, action: React.createElement("button", { type: "button", onClick: () => setShowNewsSettings(s => !s), className: "nm-layer-heading-settings", "aria-label": "\u062A\u0646\u0638\u06CC\u0645\u0627\u062A" },
+                        React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" })) }))),            React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "\u0628\u0627 \u0632\u062F\u0646 \uD83D\uDD04 \u0622\u062E\u0631\u06CC\u0646 \u0627\u062E\u0628\u0627\u0631 \u067E\u0631\u062A\u0623\u062B\u06CC\u0631 \u0647\u0641\u062A\u0647 \u0627\u0632 \u06CC\u06A9 \u062A\u0642\u0648\u06CC\u0645 \u0627\u0642\u062A\u0635\u0627\u062F\u06CC \u0639\u0645\u0648\u0645\u06CC \u0645\u06CC\u200C\u0622\u062F. \u0627\u06AF\u0647 \u0627\u06CC\u0646\u062A\u0631\u0646\u062A\u062A \u0628\u0647 \u0627\u0648\u0646 \u0633\u0631\u0648\u06CC\u0633 \u062F\u0633\u062A\u0631\u0633\u06CC \u0646\u062F\u0627\u0634\u062A\u060C \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u062E\u0628\u0631\u0647\u0627 \u0631\u0648 \u062F\u0633\u062A\u06CC \u0647\u0645 \u0627\u0636\u0627\u0641\u0647 \u06A9\u0646\u06CC. \u0627\u06AF\u0647 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u062A\u0627 \u06F3\u06F0 \u062F\u0642\u06CC\u0642\u0647 \u0642\u0628\u0644 \u06CC\u0627 \u0628\u0639\u062F \u0627\u0632 \u06CC\u0647 \u062E\u0628\u0631 (\u0645\u0631\u062A\u0628\u0637 \u0628\u0627 \u062C\u0641\u062A\u200C\u0627\u0631\u0632 \u0647\u0645\u0648\u0646 \u0645\u0639\u0627\u0645\u0644\u0647) \u062B\u0628\u062A \u0628\u0634\u0647\u060C \u0627\u0633\u0645 \u062E\u0628\u0631 \u062E\u0648\u062F\u06A9\u0627\u0631 \u062A\u0648 \u0698\u0648\u0631\u0646\u0627\u0644 \u062B\u0628\u062A \u0645\u06CC\u200C\u0634\u0647."),
             React.createElement("div", { className: "flex gap-2 mb-4" },
                 React.createElement("a", { href: "https://www.forexfactory.com/calendar", target: "_blank", rel: "noopener noreferrer", className: "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px]", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", color: "var(--text-secondary)" } }, "ForexFactory"),
                 React.createElement("a", { href: "https://www.fxstreet.com/economic-calendar", target: "_blank", rel: "noopener noreferrer", className: "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px]", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", color: "var(--text-secondary)" } }, "FXStreet"),
@@ -9993,13 +10227,9 @@ function App() {
                     (appLanguage === "en" ? "Next lot: " : "\u0644\u0627\u062A \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC \u0628\u0639\u062F\u06CC: "),
                     derived.nextLot))),
             React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "color-mix(in srgb, #F59E0B 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #F59E0B 30%, var(--border-1))" } },
-                React.createElement("div", { className: "flex items-center justify-between gap-3" },
-                    React.createElement("div", { className: "min-w-0" },
-                        React.createElement("div", { className: "text-sm font-bold", style: { color: "var(--text-primary)" } }, "ثبت ورود"),
-                        React.createElement("div", { className: "text-[10px] leading-5 mt-0.5", style: { color: "var(--text-muted)" } }, "اطلاعات معامله را پیش از ورود ثبت کن تا تصمیم و شرایط اولیه معامله مستند بماند.")),
-                    React.createElement("button", { type: "button", onClick: openNewTradeForm, className: "shrink-0 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-bold", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
-                        React.createElement(Plus, { size: 15 }),
-                        "ثبت ورود"))),
+                React.createElement("button", { type: "button", onClick: openNewTradeForm, className: "w-full flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-[12px] font-bold", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
+                    React.createElement(Plus, { size: 16 }),
+                    "ثبت ورود")),
             openTrades.length > 0 && (React.createElement("div", { className: "mb-4" },
                 React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } },
                     t("journal_open_trades"),
