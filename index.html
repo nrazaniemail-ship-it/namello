@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.8</title>
+<title>Namello 1.0.7</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -106,7 +106,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.8…</div>
+<div id="boot-status">Loading Namello 1.0.7…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -2904,7 +2904,9 @@ function CalendarLayer({ trades, calendarSettings, onChangeSystem, cursorY, curs
     return (React.createElement("div", { className: "px-4 mt-4" },
         topSlot,
         React.createElement("div", { className: "flex items-center justify-between mb-2" },
-            RE(NmLayerHeadingSettings,{title:(lang === "en" ? "Trading Calendar" : "تقویم معاملاتی"),Icon:CalendarIcon,settings:React.createElement("button",{type:"button",onClick:()=>setShowSettings(true),className:"p-2 rounded-lg shrink-0",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"},"aria-label":lang==="en"?"Calendar Settings":"تنظیمات تقویم"},React.createElement(SettingsIcon,{size:14,color:"var(--text-secondary)"}))})),
+            RE(NmLayerHeading,{title:(lang === "en" ? "Trading Calendar" : "تقویم معاملاتی"),Icon:CalendarIcon}),
+            React.createElement("button", { onClick: () => setShowSettings(true), className: "p-2 rounded-lg", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": lang === "en" ? "Calendar Settings" : "تنظیمات تقویم" },
+                React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" }))),
         sourceSlot,
         React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
             React.createElement("div", { className: "flex items-center justify-between mb-3" },
@@ -3002,12 +3004,11 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.8";
-const NM_VERSION_CODE = 9;
+const NM_VERSION_NAME = "1.0.7";
+const NM_VERSION_CODE = 8;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_DATE = "اصلاح چیدمان لایه‌ها، ثبت ورود و ارزیابی پیشرفته";
+const NM_VERSION_DATE = "بازطراحی لایه ژورنال و اصلاح چیدمان ثبت ورود";
 const NM_CHANGELOG = [
-    "نسخه 1.0.8: اصلاح چیدمان عنوان نشست‌ها، اخبار اقتصادی و تقویم معاملاتی؛ بازطراحی باکس ثبت ورود و تقویت ارزیابی پیشرفته داشبورد.",
     "نسخه 1.0.7: تکمیل اعتبارسنجی CSV با تشخیص Mapping، خطاهای فیلدی و Duplicate Detection؛ بهبود Virtual List و کنترل Replay؛ تقویت وضعیت Conflict و تست‌های واحد قابلیت‌های پیشرفته.",
     "نسخه 1.0.4: برای لایه‌ها و قابلیت‌های اصلی برنامه دکمه «راهنما» با آموزش مرحله‌ای، اصطلاحات تخصصی و نکات حرفه‌ای اضافه شد.",
     "نسخه 1.0.3: قالب‌های استاندارد CSV بروکرهای رایج، راهنمای Import و Virtual List برای داده‌های حجیم اضافه شدند.",
@@ -4600,14 +4601,6 @@ function NmLayerHeading({ title, Icon, image, helpKey, hideHelp=false }) {
     );
 }
 
-
-function NmLayerHeadingSettings({ title, Icon, image, helpKey, hideHelp=false, settings=null, className="" }) {
-    return React.createElement("div", { className: "flex items-center justify-between gap-2 " + className },
-        React.createElement(NmLayerHeading, { title, Icon, image, helpKey, hideHelp }),
-        settings
-    );
-}
-
 const NM_NAV_LABELS = {dashboard:"داشبورد",live:"نشست‌ها",news:"اخبار",journal:"ژورنال",marketeval:"ارزیابی بازار",calendar:"تقویم",finance:"مالی",systems:"سیستم‌ها",strategy:"استراتژی",goals:"اهداف معامله‌گری",lifegoals:"اهداف زندگی",gratitude:"شکرگزاری",exportall:"خروجی جامع",library:"کتابخانه",settings:"تنظیمات",about:"درباره برنامه"};
 function nmNormalizeNavOrder(value){
  const raw=Array.isArray(value)?value:[];
@@ -5553,57 +5546,6 @@ function nmAdvancedStats(trades, startingBalance=0){
  a.forEach(t=>{const e=Number(t.exitEfficiency);const m=Number(t.mfe);const r=nmDashR(t);if(Number.isFinite(e)&&e<35)exits.early++;if(Number.isFinite(e)&&e>=70)exits.efficient++;if(Number.isFinite(m)&&m>0&&Number.isFinite(r)&&r<0)exits.roundTrip++;});
  return {count:a.length,mean,sd,sharpe:rf,sortino,calmar,recovery,ulcer,maxDD,totalReturn,avgHold,avgSetupReadiness,avgChartReadiness,avgDayPlanReadiness,exits,rs};
 }
-function nmAdvancedRecommendation(trades, startingBalance=0){
-    const src=(trades||[]).filter(t=>t.status==="closed"&&Number.isFinite(Number(t.pnl)));
-    const n=src.length;
-    if(!n) return {status:"insufficient",headline:"داده کافی برای چکیده ارزیابی وجود ندارد.",summary:"حداقل چند معامله بسته‌شده با P&L معتبر ثبت کن تا مدل ترکیبی ریسک، Edge و کیفیت خروج فعال شود.",actions:["فعلاً ریسک را افزایش نده.","نمونه معاملات را افزایش بده.","MFE/MAE و خروج را برای معاملات بعدی ثبت کن."],score:null,metrics:{}};
-    const m=nmDashMetrics(src,startingBalance), a=nmAdvancedStats(src,startingBalance);
-    const wins=src.filter(t=>Number(t.pnl)>0).length, losses=n-wins;
-    const avgWin=wins?src.filter(t=>Number(t.pnl)>0).reduce((x,t)=>x+Number(t.pnl),0)/wins:0;
-    const avgLoss=losses?Math.abs(src.filter(t=>Number(t.pnl)<0).reduce((x,t)=>x+Number(t.pnl),0)/losses):0;
-    const b=avgLoss>0?avgWin/avgLoss:null;
-    const bayesP=(wins+1)/(n+2);
-    const kelly=(b&&b>0)?(bayesP-(1-bayesP)/b):null;
-    const kellyCapped=kelly==null?null:Math.max(0,Math.min(0.25,kelly));
-    const edgeRows=(rows)=>rows.filter(r=>Number(r[1])>=3&&Number.isFinite(Number(r[4]))).sort((x,y)=>Number(y[4])-Number(x[4]));
-    const bestSession=edgeRows(a.session||[])[0], bestSetup=edgeRows(a.setup||[])[0];
-    const earlyRate=n?(a.exits.early/n*100):0, roundRate=n?(a.exits.roundTrip/n*100):0;
-    const eff=src.map(t=>Number(t.exitEfficiency)).filter(Number.isFinite);
-    const avgEff=eff.length?eff.reduce((x,y)=>x+y,0)/eff.length:null;
-    const readiness=[a.avgSetupReadiness,a.avgChartReadiness,a.avgDayPlanReadiness].filter(Number.isFinite);
-    const avgReady=readiness.length?readiness.reduce((x,y)=>x+y,0)/readiness.length:null;
-    let score=50;
-    if(m.expectancy>0) score+=12; else if(m.expectancy<0) score-=15;
-    if(m.pf>=1.5) score+=12; else if(m.pf<1) score-=15;
-    if(Number.isFinite(a.sharpe)&&a.sharpe>1) score+=8; else if(Number.isFinite(a.sharpe)&&a.sharpe<0) score-=8;
-    if(earlyRate>25) score-=8; else if(avgEff!=null&&avgEff>=70) score+=6;
-    if(roundRate>10) score-=10;
-    if(avgReady!=null&&avgReady>=75) score+=5; else if(avgReady!=null&&avgReady<55) score-=7;
-    score=Math.max(0,Math.min(100,Math.round(score)));
-    const actions=[];
-    let headline;
-    if(m.expectancy<=0 || m.pf<1){
-        headline="Edge فعلی پایدار نیست؛ اولویت با فیلترکردن معاملات ضعیف است.";
-        actions.push(bestSession?`تمرکز آزمایشی روی نشست «${bestSession[0]}» با Expectancy بالاتر.`:"فقط ستاپ‌های A+ و شرایط هم‌جهت را معامله کن.");
-        actions.push("تا تأیید مثبت‌شدن Expectancy و Profit Factor، حجم/ریسک را افزایش نده.");
-    } else if(roundRate>10){
-        headline="مشکل اصلی بیشتر در مدیریت معامله است تا تولید سیگنال.";
-        actions.push("Round-trip را کاهش بده: حدضرر را پس از تأیید ساختار جابه‌جا کن و خروج را بر اساس ساختار/هدف برنامه‌ریزی کن.");
-    } else if(earlyRate>25){
-        headline="بخشی از Edge در خروج زودهنگام از بین می‌رود.";
-        actions.push("خروج مرحله‌ای و نگه‌داشتن بخشی از پوزیشن تا هدف ساختاری را آزمایش کن.");
-    } else if(bestSetup){
-        headline=`Edge مثبت دیده می‌شود؛ «${bestSetup[0]}» نامزد اصلی تمرکز است.`;
-        actions.push(`معاملات ${bestSetup[0]} را جداگانه تست و با سایر ستاپ‌ها مقایسه کن.`);
-    } else {
-        headline="عملکرد کلی قابل قبول است؛ اکنون بهینه‌سازی کیفیت اجرا مهم‌تر از افزایش تعداد معاملات است.";
-        actions.push("فرکانس معامله را افزایش نده؛ کیفیت انتخاب و مدیریت را ثابت نگه دار.");
-    }
-    if(bestSession) actions.push(`بهترین Edge نشست: ${bestSession[0]} · Expectancy ${nmDashNum(Number(bestSession[4]),2)}`);
-    if(avgReady!=null&&avgReady<65) actions.push("آمادگی پیش از معامله زیر سطح مطلوب است؛ چک‌لیست Plan را کامل‌تر کن.");
-    if(kellyCapped!=null) actions.push(`Kelly محافظه‌کارانه بر پایه نمونه فعلی حدود ${(kellyCapped*100).toFixed(1)}% از سرمایه در معرض ریسک است؛ این عدد سقف نظری است، نه پیشنهاد ریسک واقعی.`);
-    return {status:"ok",headline,summary:`امتیاز ترکیبی ${score}/100 بر اساس Expectancy، Profit Factor، Sharpe/Sortino، Drawdown، کیفیت خروج، Edge نشست/ستاپ و آمادگی اجرا.`,actions:actions.slice(0,4),score,metrics:{n,expectancy:m.expectancy,pf:m.pf,sharpe:a.sharpe,sortino:a.sortino,maxDD:a.maxDD,avgEff,earlyRate,roundRate,avgReady,bayesP,kelly:kellyCapped}};
-}
 function nmTagStats(trades){
  const map={};(trades||[]).forEach(t=>(t.tags||[]).forEach(tag=>{const k=typeof tag==='string'?tag:(tag?.label||'');if(!k)return;map[k]??={count:0,pnl:0,wins:0};map[k].count++;map[k].pnl+=Number(t.pnl)||0;if(Number(t.pnl)>0)map[k].wins++;}));
  return Object.entries(map).map(([name,v])=>({...v,name,win:v.count?v.wins/v.count*100:0})).sort((a,b)=>b.pnl-a.pnl);
@@ -5972,7 +5914,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  const edge=React.useMemo(()=>{const make=fn=>{const map={};filtered.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return{name,count:ts.length,pnl:mm.pnl,win:mm.winRate,exp:mm.expectancy}}).sort((a,b)=>b.pnl-a.pnl)};return{session:make(nmDashSession),setup:make(nmDashSetup)}},[filtered]);
  const excursionStats=React.useMemo(()=>{const x=filtered.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae)));const avgM=x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA=x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,eff=x.filter(t=>Number.isFinite(Number(t.exitEfficiency)));return{count:x.length,avgM,avgA,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null}} , [filtered]);
  const mistakes=React.useMemo(()=>{const map={};filtered.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>{map[k]??={count:0,pnl:0};map[k].count++;map[k].pnl+=Number(t.pnl)||0}));return Object.entries(map).map(([key,v])=>({key,label:(NM_DISCIPLINE_OPTIONS.find(x=>x[0]===key)||NM_REVIEW_MISTAKES.find(x=>x[0]===key)||[key,key])[1],...v})).sort((a,b)=>a.pnl-b.pnl)},[filtered]);
- const advanced=React.useMemo(()=>nmAdvancedStats(filtered,startingBalance),[filtered,startingBalance]); const advancedInsight=React.useMemo(()=>nmAdvancedRecommendation(filtered,startingBalance),[filtered,startingBalance]);
+ const advanced=React.useMemo(()=>nmAdvancedStats(filtered,startingBalance),[filtered,startingBalance]);
  const tagStats=React.useMemo(()=>nmTagStats(filtered),[filtered]);
  const saveExc=(x)=>{const next=trades.map(t=>t.id===excursion.id?{...t,mfe:x.mfe,mae:x.mae,bestExit:x.bestExit,exitEfficiency:x.exitEfficiency,excursion:x}:t);onPersistTrades(next);setExcursion(null);setSelected({...excursion,...x,excursion:x});};
  const card=(title,value,sub)=>React.createElement("div",{className:"rounded-xl p-2",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[9px]",style:{color:"var(--text-muted)"}},title),React.createElement("div",{className:"text-base font-bold mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono,monospace",direction:"ltr",textAlign:"right"}},value),React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},sub||""));
@@ -6046,19 +5988,6 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        baseAccountPanel,
        filterPanel,
        React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id]))),
-       React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #10B981 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #10B981 30%, var(--border-1))"}},
-         React.createElement("div",{className:"flex items-center justify-between gap-2 mb-2"},
-           React.createElement("div",{className:"text-[13px] font-bold",style:{color:"var(--text-primary)"}},"چکیده ارزیابی تکنیکال / استراتژیک"),
-           React.createElement("span",{className:"text-[10px] px-2 py-1 rounded-full",style:{background:"var(--bg-card2)",color:"var(--accent-gold)"}} ,advancedInsight.status==="ok"?`${advancedInsight.score}/100`:"داده ناکافی")),
-         React.createElement("div",{className:"text-[12px] font-semibold leading-6 mb-2",style:{color:"var(--text-primary)"}},advancedInsight.headline),
-         React.createElement("div",{className:"grid grid-cols-2 sm:grid-cols-5 gap-1.5 mb-2"},
-           React.createElement("div",{className:"rounded-lg px-2 py-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},"Bayesian Win P"),React.createElement("div",{className:"text-[10px] font-bold",style:{color:"var(--text-primary)"}},advancedInsight.metrics.bayesP!=null?`${nmDashNum(advancedInsight.metrics.bayesP*100,1)}%`:"—")),
-           React.createElement("div",{className:"rounded-lg px-2 py-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},"Kelly Cap"),React.createElement("div",{className:"text-[10px] font-bold",style:{color:"var(--text-primary)"}},advancedInsight.metrics.kelly!=null?`${nmDashNum(advancedInsight.metrics.kelly*100,1)}%`:"—")),
-           React.createElement("div",{className:"rounded-lg px-2 py-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},"PF"),React.createElement("div",{className:"text-[10px] font-bold",style:{color:"var(--text-primary)"}},advancedInsight.metrics.pf===Infinity?"∞":nmDashNum(advancedInsight.metrics.pf,2))),
-           React.createElement("div",{className:"rounded-lg px-2 py-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},"Sharpe"),React.createElement("div",{className:"text-[10px] font-bold",style:{color:"var(--text-primary)"}},Number.isFinite(advancedInsight.metrics.sharpe)?nmDashNum(advancedInsight.metrics.sharpe,2):"—")),
-           React.createElement("div",{className:"rounded-lg px-2 py-1.5",style:{background:"var(--bg-card2)"}},React.createElement("div",{className:"text-[8px]",style:{color:"var(--text-muted)"}},"Max DD"),React.createElement("div",{className:"text-[10px] font-bold",style:{color:"var(--text-primary)"}},advancedInsight.metrics.maxDD!=null?nmDashPnl(-advancedInsight.metrics.maxDD):"—"))),
-         React.createElement("div",{className:"text-[10px] leading-5 mb-2",style:{color:"var(--text-muted)"}},advancedInsight.summary),
-         React.createElement("div",{className:"space-y-1.5"},advancedInsight.actions.map((x,i)=>React.createElement("div",{key:i,className:"flex items-start gap-2 text-[10px] leading-5",style:{color:"var(--text-secondary)"}},React.createElement("span",{className:"shrink-0",style:{color:"var(--accent-gold)"}},"•"),React.createElement("span",null,x))))),
        React.createElement("div",{className:"rounded-2xl p-3 mt-3",style:{background:"color-mix(in srgb, #8B5CF6 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, #8B5CF6 35%, var(--border-1))"}},
          React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[13px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی ارزیابی پیشرفته"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"فقط شاخص‌های ریسک، خروج، Edge، Discipline و Planهای ارزیابی پیشرفته")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
          React.createElement("div",{className:"grid grid-cols-2 gap-2"},
@@ -7833,8 +7762,7 @@ function App() {
     }
     /* ---------------- journal derived ---------------- */
     const derived = useMemo(() => computeDerived(trades, accSettings), [trades, accSettings]);
-    const journalTradesSafe = Array.isArray(trades) ? trades.filter(t => t && typeof t === "object") : [];
-    const closedTrades = journalTradesSafe.filter(t => t.status === "closed");
+    const closedTrades = trades.filter(t => t.status === "closed");
     const [journalSearch, setJournalSearch] = useState(() => { try { return localStorage.getItem("namello_journal_search_v1") || ""; } catch (e) { return ""; } });
     const [journalResultFilter, setJournalResultFilter] = useState("all");
     const [journalDirectionFilter, setJournalDirectionFilter] = useState("all");
@@ -7845,11 +7773,8 @@ function App() {
         const q = journalSearch.trim().toLowerCase();
         return closedTrades.filter(t => {
             const pnl = Number(t.pnl || 0);
-            const mistakes = Array.isArray(t.disciplineMistakes) ? t.disciplineMistakes : (Array.isArray(t.review?.mistakes) ? t.review.mistakes : []);
-            const systems = Array.isArray(t.systems) ? t.systems : (t.systems ? [String(t.systems)] : []);
-            const tags = Array.isArray(t.tags) ? t.tags : [];
-            const tagText = tags.map(x => typeof x === "string" ? x : (x?.label || ""));
-            const hay = [t.pair, t.date, t.time, t.note, t.system, ...systems, ...tagText, ...mistakes].filter(Boolean).join(" ").toLowerCase();
+            const mistakes = (t.disciplineMistakes || t.review?.mistakes || []);
+            const hay = [t.pair, t.date, t.time, t.note, t.system, ...(t.systems || []), ...(t.tags || []).map(x => x.label), ...mistakes].filter(Boolean).join(" ").toLowerCase();
             return (!q || hay.includes(q)) &&
                 (journalResultFilter === "all" || (journalResultFilter === "win" ? pnl > 0 : journalResultFilter === "loss" ? pnl < 0 : pnl === 0)) &&
                 (journalDirectionFilter === "all" || t.direction === journalDirectionFilter) &&
@@ -7870,7 +7795,7 @@ function App() {
         asc.forEach((t, i) => { map[t.id] = i + 1; });
         return map;
     }, [trades]);
-    const openTrades = journalTradesSafe.filter(t => t.status === "open");
+    const openTrades = trades.filter(t => t.status === "open");
     const customFieldDefsForStats = useCustomFieldDefs();
     const calcProbParams = useMemo(() => buildCalcProbParams(config, now.dst, customFieldDefsForStats), [config, now.dst, customFieldDefsForStats]);
     const [calAccountSelection, setCalAccountSelection] = useState(null);
@@ -8695,7 +8620,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.8</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.7</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9425,7 +9350,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.8</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.7</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -9820,8 +9745,8 @@ function App() {
             React.createElement("div", { className: "flex items-center justify-between mb-1" },
                 React.createElement("h1", { className: "text-lg font-bold flex items-center gap-2", style: { color: "var(--text-primary)" } },
                     React.createElement("button", { type: "button", onClick: () => { if (navLayout === "vertical") setNavMenuOpen(o => !o); }, style: { cursor: navLayout === "vertical" ? "pointer" : "default", lineHeight: 0, background: "none", border: "none", padding: 0 }, "aria-label": "منوی لایه‌ها" },
-                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.8", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
-                    "Namello 1.0.8"),
+                        React.createElement("img", { src: iconTheme === "default" ? APP_LOGO : nmIconThemeInfo(iconTheme).icon192, alt: "Namello 1.0.7", className: "w-7 h-7 rounded-full object-cover", style: { border: "1px solid var(--border-2)" } })),
+                    "Namello 1.0.7"),
                 React.createElement("div", { className: "flex items-center gap-2" },
                     React.createElement("button", { onClick: () => persistThemeMode(themeMode === "dark" ? "light" : "dark"), className: "w-8 h-8 rounded-full flex items-center justify-center", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": themeMode === "dark" ? "تغییر به زمینه‌ی روشن" : "تغییر به زمینه‌ی تیره" },
                         themeMode === "dark" ? React.createElement(Sun, { size: 14, color: "var(--accent-gold)" }) : React.createElement(Moon, { size: 14, color: "var(--accent-gold)" })),
@@ -9850,7 +9775,7 @@ function App() {
         RE(NmGlobalPlayer, { tab }),
         tab === "dashboard" && (RE(NmDashboardRootBoundary, null, RE(NmDashboard, { trades: dashboardSelectedTrades, startingBalance: dashboardStartingBalance, todayStr: todayStr, activeAccount: activeAccount, onEditTrade: openEditTrade, onPersistTrades: persistTrades, plans: tradePlans, dayPlans: dayPlans, chartPlans: chartPlans, setPlans: persistTradePlans, setDayPlans: persistDayPlans, setChartPlans: persistChartPlans, statisticalAnalysisSection: nmStatisticalAnalysisSection, baseAccounts: accounts, selectedBaseAccounts: dashboardSelectedAccounts, onToggleBaseAccount: toggleStatsAccount, onSelectBaseType: selectStatsAccountsByType, onToggleAllBaseAccounts: toggleAllStatsAccounts, onOpenBasePicker: () => setShowStatsAccountPicker(v => !v), showBasePicker: showStatsAccountPicker, accountTypeOf: accTypeOf, onExportAdvancedExcel: exportDashboardAdvancedExcel, onExportAdvancedPdf: exportDashboardAdvancedPdf, onExportComprehensiveExcel: exportDashboardComprehensiveExcel, onExportComprehensivePdf: exportDashboardComprehensivePdf, dashboardDataSource: dashboardDataSource, onDashboardDataSourceChange: setDashboardDataSource, statementTrades: statementTrades, statementImporting: statementImporting, statementImportError: statementImportError, onImportDashboardStatementFiles: importStatementFiles, onClearDashboardStatement: clearStatementTrades, dashboardStatementTrades: dashboardStatementTrades, psychologyDataSource: psychologyDataSource, setPsychologyDataSource: setPsychologyDataSource, psychOptions: psychOptions, accountTradesMap: Object.fromEntries(accounts.map(c=>[c,c===activeAccount?trades:(multiAccountTradesCache[c]||[])])), accountTypes: accountTypes }))),
         tab === "live" && (React.createElement("div", { className: "px-4 mt-4" },
-            React.createElement(NmLayerHeadingSettings, { title: appLanguage === "en" ? "Sessions" : "نشست‌ها", image: "icon-sessions.png", settings: React.createElement("button", { type: "button", onClick: openSessionSettings, className: "p-2 rounded-lg shrink-0", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" }, "aria-label": appLanguage === "en" ? "Session Settings" : "تنظیمات نشست‌ها" }, React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" })) }),
+            React.createElement(NmLayerHeading, { title: appLanguage === "en" ? "Sessions" : "نشست‌ها", image: "icon-sessions.png" }),
             React.createElement(SessionClock, { minutesOfDay: now.minutesOfDay, seconds: now.ss, sessions: schedule.sessions, killzones: schedule.killzones, silverbullets: schedule.silverbullets, colors: config.colors }),
             React.createElement("div", { className: "flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[11px] mt-2 mb-5", style: { color: "var(--text-secondary)" } },
                 config.sessions.map(s => (React.createElement("span", { key: s.key, className: "flex items-center gap-1" },
@@ -9902,7 +9827,12 @@ function App() {
                             React.createElement("path", { d: "M3 3v5h5" }),
                             React.createElement("path", { d: "M3 12a9 9 0 0 0 15.5 6.2L21 16" }),
                             React.createElement("path", { d: "M16 16h5v5" }))),
-                    RE(NmLayerHeadingSettings,{title:"اخبار اقتصادی",Icon:Newspaper,className:"flex-1 min-w-0",settings:React.createElement("button",{type:"button",onClick:()=>setShowNewsSettings(v=>!v),className:"p-2 rounded-lg shrink-0",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"},"aria-label":"تنظیمات اخبار"},React.createElement(SettingsIcon,{size:14,color:"var(--text-secondary)"}))})),React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "\u0628\u0627 \u0632\u062F\u0646 \uD83D\uDD04 \u0622\u062E\u0631\u06CC\u0646 \u0627\u062E\u0628\u0627\u0631 \u067E\u0631\u062A\u0623\u062B\u06CC\u0631 \u0647\u0641\u062A\u0647 \u0627\u0632 \u06CC\u06A9 \u062A\u0642\u0648\u06CC\u0645 \u0627\u0642\u062A\u0635\u0627\u062F\u06CC \u0639\u0645\u0648\u0645\u06CC \u0645\u06CC\u200C\u0622\u062F. \u0627\u06AF\u0647 \u0627\u06CC\u0646\u062A\u0631\u0646\u062A\u062A \u0628\u0647 \u0627\u0648\u0646 \u0633\u0631\u0648\u06CC\u0633 \u062F\u0633\u062A\u0631\u0633\u06CC \u0646\u062F\u0627\u0634\u062A\u060C \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u062E\u0628\u0631\u0647\u0627 \u0631\u0648 \u062F\u0633\u062A\u06CC \u0647\u0645 \u0627\u0636\u0627\u0641\u0647 \u06A9\u0646\u06CC. \u0627\u06AF\u0647 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u062A\u0627 \u06F3\u06F0 \u062F\u0642\u06CC\u0642\u0647 \u0642\u0628\u0644 \u06CC\u0627 \u0628\u0639\u062F \u0627\u0632 \u06CC\u0647 \u062E\u0628\u0631 (\u0645\u0631\u062A\u0628\u0637 \u0628\u0627 \u062C\u0641\u062A\u200C\u0627\u0631\u0632 \u0647\u0645\u0648\u0646 \u0645\u0639\u0627\u0645\u0644\u0647) \u062B\u0628\u062A \u0628\u0634\u0647\u060C \u0627\u0633\u0645 \u062E\u0628\u0631 \u062E\u0648\u062F\u06A9\u0627\u0631 \u062A\u0648 \u0698\u0648\u0631\u0646\u0627\u0644 \u062B\u0628\u062A \u0645\u06CC\u200C\u0634\u0647."),
+                    React.createElement("h2", { className: "text-sm font-semibold flex items-center gap-1.5", style: { color: "var(--text-primary)" } },
+                        React.createElement(Newspaper, { size: 16 }),
+                        " \u0627\u062E\u0628\u0627\u0631 \u0627\u0642\u062A\u0635\u0627\u062F\u06CC")),
+                    RE(NmHeaderDots,{title:"اخبار اقتصادی"}),
+                React.createElement("button", { onClick: () => setShowNewsSettings(s => !s), className: "p-2 rounded-lg", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" }, "aria-label": "\u062A\u0646\u0638\u06CC\u0645\u0627\u062A" },
+                    React.createElement(SettingsIcon, { size: 14, color: "var(--text-secondary)" }))),            React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "\u0628\u0627 \u0632\u062F\u0646 \uD83D\uDD04 \u0622\u062E\u0631\u06CC\u0646 \u0627\u062E\u0628\u0627\u0631 \u067E\u0631\u062A\u0623\u062B\u06CC\u0631 \u0647\u0641\u062A\u0647 \u0627\u0632 \u06CC\u06A9 \u062A\u0642\u0648\u06CC\u0645 \u0627\u0642\u062A\u0635\u0627\u062F\u06CC \u0639\u0645\u0648\u0645\u06CC \u0645\u06CC\u200C\u0622\u062F. \u0627\u06AF\u0647 \u0627\u06CC\u0646\u062A\u0631\u0646\u062A\u062A \u0628\u0647 \u0627\u0648\u0646 \u0633\u0631\u0648\u06CC\u0633 \u062F\u0633\u062A\u0631\u0633\u06CC \u0646\u062F\u0627\u0634\u062A\u060C \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u062E\u0628\u0631\u0647\u0627 \u0631\u0648 \u062F\u0633\u062A\u06CC \u0647\u0645 \u0627\u0636\u0627\u0641\u0647 \u06A9\u0646\u06CC. \u0627\u06AF\u0647 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u062A\u0627 \u06F3\u06F0 \u062F\u0642\u06CC\u0642\u0647 \u0642\u0628\u0644 \u06CC\u0627 \u0628\u0639\u062F \u0627\u0632 \u06CC\u0647 \u062E\u0628\u0631 (\u0645\u0631\u062A\u0628\u0637 \u0628\u0627 \u062C\u0641\u062A\u200C\u0627\u0631\u0632 \u0647\u0645\u0648\u0646 \u0645\u0639\u0627\u0645\u0644\u0647) \u062B\u0628\u062A \u0628\u0634\u0647\u060C \u0627\u0633\u0645 \u062E\u0628\u0631 \u062E\u0648\u062F\u06A9\u0627\u0631 \u062A\u0648 \u0698\u0648\u0631\u0646\u0627\u0644 \u062B\u0628\u062A \u0645\u06CC\u200C\u0634\u0647."),
             React.createElement("div", { className: "flex gap-2 mb-4" },
                 React.createElement("a", { href: "https://www.forexfactory.com/calendar", target: "_blank", rel: "noopener noreferrer", className: "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px]", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", color: "var(--text-secondary)" } }, "ForexFactory"),
                 React.createElement("a", { href: "https://www.fxstreet.com/economic-calendar", target: "_blank", rel: "noopener noreferrer", className: "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px]", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", color: "var(--text-secondary)" } }, "FXStreet"),
@@ -10063,9 +9993,13 @@ function App() {
                     (appLanguage === "en" ? "Next lot: " : "\u0644\u0627\u062A \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC \u0628\u0639\u062F\u06CC: "),
                     derived.nextLot))),
             React.createElement("div", { className: "rounded-2xl p-3 mb-4", style: { background: "color-mix(in srgb, #F59E0B 8%, var(--bg-card))", border: "1px solid color-mix(in srgb, #F59E0B 30%, var(--border-1))" } },
-                React.createElement("button", { type: "button", onClick: openNewTradeForm, className: "w-full flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-[12px] font-bold", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
-                    React.createElement(Plus, { size: 15 }),
-                    "ثبت ورود"))),
+                React.createElement("div", { className: "flex items-center justify-between gap-3" },
+                    React.createElement("div", { className: "min-w-0" },
+                        React.createElement("div", { className: "text-sm font-bold", style: { color: "var(--text-primary)" } }, "ثبت ورود"),
+                        React.createElement("div", { className: "text-[10px] leading-5 mt-0.5", style: { color: "var(--text-muted)" } }, "اطلاعات معامله را پیش از ورود ثبت کن تا تصمیم و شرایط اولیه معامله مستند بماند.")),
+                    React.createElement("button", { type: "button", onClick: openNewTradeForm, className: "shrink-0 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-bold", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
+                        React.createElement(Plus, { size: 15 }),
+                        "ثبت ورود"))),
             openTrades.length > 0 && (React.createElement("div", { className: "mb-4" },
                 React.createElement("h2", { className: "text-sm font-semibold mb-2", style: { color: "var(--text-primary)" } },
                     t("journal_open_trades"),
