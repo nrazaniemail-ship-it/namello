@@ -3018,14 +3018,40 @@ const NM_CHANGELOG = [
     "نسخه 1.0.2: برچسب‌ها و شاخص‌های تخصصی Trading، Risk Management، Performance و ICT در گزارش‌های خروجی استانداردسازی شدند.",
     "نسخه 1.0.2: متن آزاد کاربر بدون تغییر باقی می‌ماند و عناوین و برچسب‌های گزارش‌ها به‌صورت فارسی/English نمایش داده می‌شوند."
 ];
+function nmArray(v) { return Array.isArray(v) ? v : []; }
+function nmStringArray(v) { return Array.isArray(v) ? v.filter(x => x !== null && x !== undefined).map(x => String(x)) : (v === null || v === undefined || v === "" ? [] : [String(v)]); }
+function nmObjectArray(v, defaults = {}) {
+    return Array.isArray(v) ? v.filter(x => x && typeof x === "object" && !Array.isArray(x)).map(x => ({ ...defaults, ...x })) : [];
+}
+function nmNormalizeTradeRecord(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const t = { ...raw };
+    // فیلدهای چندمقداری ژورنال در نسخه‌های قدیمی گاهی به‌صورت string ذخیره شده‌اند.
+    // همه را به آرایه‌ی امن تبدیل می‌کنیم تا هیچ .map روی مقدار غیرآرایه‌ای اجرا نشود.
+    t.trigs = nmStringArray(t.trigs);
+    t.targets = nmStringArray(t.targets);
+    t.stops = nmStringArray(t.stops);
+    t.systems = nmStringArray(t.systems);
+    t.mainGuideLevels = nmStringArray(t.mainGuideLevels);
+    t.entryGuideLevels = nmStringArray(t.entryGuideLevels);
+    t.tags = nmObjectArray(t.tags, { color: "var(--text-secondary)", label: "" }).map(x => ({ ...x, color: String(x.color || "var(--text-secondary)"), label: String(x.label || x.name || "") }));
+    t.disciplineMistakes = nmStringArray(t.disciplineMistakes);
+    if (t.review && typeof t.review === "object" && !Array.isArray(t.review)) {
+        t.review = { ...t.review, mistakes: nmStringArray(t.review.mistakes) };
+    }
+    if (Number(t.schemaVersion || 1) < 2) {
+        t.schemaVersion = 2;
+        t.review = t.review || null;
+        t.mfe = t.mfe ?? null;
+        t.mae = t.mae ?? null;
+        t.bestExit = t.bestExit ?? null;
+        t.exitEfficiency = t.exitEfficiency ?? null;
+    }
+    return t;
+}
 function nmMigrateTradeSchemaV2(list) {
-    // داده‌ی ژورنال باید همیشه یک آرایه از آبجکت‌های معتبر باشد؛ رکوردهای خراب
-    // نباید با یک map/filter پایین‌دستی کل لایه‌ی ژورنال را از رندر خارج کنند.
     if (!Array.isArray(list)) return [];
-    return list.filter(t => t && typeof t === "object" && !Array.isArray(t)).map(t => {
-        if (Number(t.schemaVersion || 1) >= 2) return t;
-        return { ...t, schemaVersion: 2, review: t.review || null, mfe: t.mfe ?? null, mae: t.mae ?? null, bestExit: t.bestExit ?? null, exitEfficiency: t.exitEfficiency ?? null };
-    });
+    return list.map(nmNormalizeTradeRecord).filter(Boolean);
 }
 function nmNormalizeNewsEvents(list) {
     if (!Array.isArray(list)) return [];
@@ -3033,13 +3059,13 @@ function nmNormalizeNewsEvents(list) {
         id: e.id || ("news-" + Date.now().toString(36) + "-" + Math.random().toString(16).slice(2)),
         title: String(e.title || "خبر بدون عنوان"),
         currency: String(e.currency || "USD"),
-        datetime: e.datetime || "",
+        datetime: e.datetime == null ? "" : String(e.datetime),
         impact: e.impact === "high" || e.impact === "medium" ? e.impact : "low",
         alarmStart: !!e.alarmStart,
-        source: e.source || "manual",
-        previous: e.previous ?? "",
-        forecast: e.forecast ?? "",
-        actual: e.actual ?? ""
+        source: String(e.source || "manual"),
+        previous: e.previous == null ? "" : String(e.previous),
+        forecast: e.forecast == null ? "" : String(e.forecast),
+        actual: e.actual == null ? "" : String(e.actual)
     }));
 }
 function nmSafeStoredJson(raw, fallback) {
@@ -6890,17 +6916,10 @@ function App() {
             catch (e) { }
             try {
                 const r = await window.storage.get("namello_news_events_v1");
-                if (r) {
-                    const parsed = nmSafeStoredJson(r.value, []);
-                    const safe = nmNormalizeNewsEvents(parsed);
-                    setNewsEvents(safe);
-                    // نسخه‌ی خام را فقط در صورت ناسازگاری نگه می‌داریم تا هیچ داده‌ای silently حذف نشود.
-                    if (!Array.isArray(parsed) || safe.length !== parsed.length) {
-                        try { await window.storage.set("namello_news_events_invalid_backup_v1", String(r.value || "")); } catch (backupErr) {}
-                    }
-                }
+                if (r)
+                    setNewsEvents(JSON.parse(r.value));
             }
-            catch (e) { setNewsEvents([]); }
+            catch (e) { }
             try {
                 const r = await window.storage.get("namello_news_pair_v1");
                 if (r)
@@ -6927,20 +6946,16 @@ function App() {
             catch (e) { }
             try {
                 const r = await window.storage.get("namello_accounts_v1");
-                if (r) {
-                    const parsed = nmSafeStoredJson(r.value, []);
-                    setAccounts(Array.isArray(parsed) ? parsed.filter(a => typeof a === "string" && a.trim()).map(a => a.trim()) : []);
-                }
+                if (r)
+                    setAccounts(JSON.parse(r.value));
             }
-            catch (e) { setAccounts([]); }
+            catch (e) { }
             try {
                 const r = await window.storage.get("namello_account_types_v1");
-                if (r) {
-                    const parsed = nmSafeStoredJson(r.value, {});
-                    setAccountTypes(parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {});
-                }
+                if (r)
+                    setAccountTypes(JSON.parse(r.value) || {});
             }
-            catch (e) { setAccountTypes({}); }
+            catch (e) { }
             try {
                 const r = await window.storage.get("namello_active_account_v1");
                 if (r)
@@ -7007,28 +7022,14 @@ function App() {
         (async () => {
             try {
                 const r = await window.storage.get(`namello_trades_${activeAccount}`);
-                if (!r) {
-                    setTrades([]);
-                } else {
-                    const parsed = nmSafeStoredJson(r.value, []);
-                    const safe = nmMigrateTradeSchemaV2(parsed);
-                    setTrades(safe);
-                    if (!Array.isArray(parsed) || safe.length !== parsed.length) {
-                        try { await window.storage.set(`namello_trades_invalid_backup_${activeAccount}_v1`, String(r.value || "")); } catch (backupErr) {}
-                    }
-                    // داده‌ی قدیمی فقط با همان schema موجود مهاجرت می‌شود؛ رکوردهای سالم حفظ می‌شوند.
-                    if (Array.isArray(parsed) && JSON.stringify(safe) !== JSON.stringify(parsed)) {
-                        try { await window.storage.set(`namello_trades_${activeAccount}`, JSON.stringify(safe)); } catch (migrationErr) {}
-                    }
-                }
+                setTrades(r ? JSON.parse(r.value) : []);
             }
             catch (e) {
                 setTrades([]);
             }
             try {
                 const r2 = await window.storage.get(`namello_statement_trades_${activeAccount}`);
-                if (!r2) setStatementTrades([]);
-                else setStatementTrades(nmMigrateTradeSchemaV2(nmSafeStoredJson(r2.value, [])));
+                setStatementTrades(r2 ? JSON.parse(r2.value) : []);
             }
             catch (e) {
                 setStatementTrades([]);
@@ -7123,12 +7124,10 @@ function App() {
         await window.storage.set("namello_manual_exit_reason_options_v1", JSON.stringify(next));
     }
     catch (e) { } }, []);
-    const persistNewsEvents = useCallback(async (next) => {
-        const safe = nmNormalizeNewsEvents(next);
-        setNewsEvents(safe);
-        try { await window.storage.set("namello_news_events_v1", JSON.stringify(safe)); }
-        catch (e) { }
-    }, []);
+    const persistNewsEvents = useCallback(async (next) => { setNewsEvents(next); try {
+        await window.storage.set("namello_news_events_v1", JSON.stringify(next));
+    }
+    catch (e) { } }, []);
     const persistNewsPair = useCallback(async (p) => { setNewsSelectedPair(p); try {
         await window.storage.set("namello_news_pair_v1", JSON.stringify(p));
     }
@@ -9937,7 +9936,7 @@ function App() {
                             React.createElement("path", { d: "M3 3v5h5" }),
                             React.createElement("path", { d: "M3 12a9 9 0 0 0 15.5 6.2L21 16" }),
                             React.createElement("path", { d: "M16 16h5v5" }))),
-                    RE(NmLayerHeading,{title:"اخبار اقتصادی",Icon:Newspaper,className:"flex-1 min-w-0",settings:React.createElement("button",{type:"button",onClick:()=>setShowNewsSettings(v=>!v),className:"p-2 rounded-lg shrink-0",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"},"aria-label":"تنظیمات اخبار"},React.createElement(SettingsIcon,{size:14,color:"var(--text-secondary)"}))})),React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "\u0628\u0627 \u0632\u062F\u0646 \uD83D\uDD04 \u0622\u062E\u0631\u06CC\u0646 \u0627\u062E\u0628\u0627\u0631 \u067E\u0631\u062A\u0623\u062B\u06CC\u0631 \u0647\u0641\u062A\u0647 \u0627\u0632 \u06CC\u06A9 \u062A\u0642\u0648\u06CC\u0645 \u0627\u0642\u062A\u0635\u0627\u062F\u06CC \u0639\u0645\u0648\u0645\u06CC \u0645\u06CC\u200C\u0622\u062F. \u0627\u06AF\u0647 \u0627\u06CC\u0646\u062A\u0631\u0646\u062A\u062A \u0628\u0647 \u0627\u0648\u0646 \u0633\u0631\u0648\u06CC\u0633 \u062F\u0633\u062A\u0631\u0633\u06CC \u0646\u062F\u0627\u0634\u062A\u060C \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u062E\u0628\u0631\u0647\u0627 \u0631\u0648 \u062F\u0633\u062A\u06CC \u0647\u0645 \u0627\u0636\u0627\u0641\u0647 \u06A9\u0646\u06CC. \u0627\u06AF\u0647 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u062A\u0627 \u06F3\u06F0 \u062F\u0642\u06CC\u0642\u0647 \u0642\u0628\u0644 \u06CC\u0627 \u0628\u0639\u062F \u0627\u0632 \u06CC\u0647 \u062E\u0628\u0631 (\u0645\u0631\u062A\u0628\u0637 \u0628\u0627 \u062C\u0641\u062A\u200C\u0627\u0631\u0632 \u0647\u0645\u0648\u0646 \u0645\u0639\u0627\u0645\u0644\u0647) \u062B\u0628\u062A \u0628\u0634\u0647\u060C \u0627\u0633\u0645 \u062E\u0628\u0631 \u062E\u0648\u062F\u06A9\u0627\u0631 \u062A\u0648 \u0698\u0648\u0631\u0646\u0627\u0644 \u062B\u0628\u062A \u0645\u06CC\u200C\u0634\u0647."),
+                    React.createElement("div", { className: "flex-1 min-w-0 text-sm font-semibold", style: { color: "var(--text-primary)" } }, "اخبار اقتصادی")),React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "\u0628\u0627 \u0632\u062F\u0646 \uD83D\uDD04 \u0622\u062E\u0631\u06CC\u0646 \u0627\u062E\u0628\u0627\u0631 \u067E\u0631\u062A\u0623\u062B\u06CC\u0631 \u0647\u0641\u062A\u0647 \u0627\u0632 \u06CC\u06A9 \u062A\u0642\u0648\u06CC\u0645 \u0627\u0642\u062A\u0635\u0627\u062F\u06CC \u0639\u0645\u0648\u0645\u06CC \u0645\u06CC\u200C\u0622\u062F. \u0627\u06AF\u0647 \u0627\u06CC\u0646\u062A\u0631\u0646\u062A\u062A \u0628\u0647 \u0627\u0648\u0646 \u0633\u0631\u0648\u06CC\u0633 \u062F\u0633\u062A\u0631\u0633\u06CC \u0646\u062F\u0627\u0634\u062A\u060C \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u062E\u0628\u0631\u0647\u0627 \u0631\u0648 \u062F\u0633\u062A\u06CC \u0647\u0645 \u0627\u0636\u0627\u0641\u0647 \u06A9\u0646\u06CC. \u0627\u06AF\u0647 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u062A\u0627 \u06F3\u06F0 \u062F\u0642\u06CC\u0642\u0647 \u0642\u0628\u0644 \u06CC\u0627 \u0628\u0639\u062F \u0627\u0632 \u06CC\u0647 \u062E\u0628\u0631 (\u0645\u0631\u062A\u0628\u0637 \u0628\u0627 \u062C\u0641\u062A\u200C\u0627\u0631\u0632 \u0647\u0645\u0648\u0646 \u0645\u0639\u0627\u0645\u0644\u0647) \u062B\u0628\u062A \u0628\u0634\u0647\u060C \u0627\u0633\u0645 \u062E\u0628\u0631 \u062E\u0648\u062F\u06A9\u0627\u0631 \u062A\u0648 \u0698\u0648\u0631\u0646\u0627\u0644 \u062B\u0628\u062A \u0645\u06CC\u200C\u0634\u0647."),
             React.createElement("div", { className: "flex gap-2 mb-4" },
                 React.createElement("a", { href: "https://www.forexfactory.com/calendar", target: "_blank", rel: "noopener noreferrer", className: "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px]", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", color: "var(--text-secondary)" } }, "ForexFactory"),
                 React.createElement("a", { href: "https://www.fxstreet.com/economic-calendar", target: "_blank", rel: "noopener noreferrer", className: "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px]", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)", color: "var(--text-secondary)" } }, "FXStreet"),
@@ -10025,7 +10024,7 @@ function App() {
                 React.createElement("div", { className: "flex gap-2" }, [["real", appLanguage === "en" ? "Real" : "واقعی"], ["demo", appLanguage === "en" ? "Demo" : "آزمایشی"]].map(([val, label]) => (React.createElement("button", { key: val, type: "button", onClick: () => setNewAccType(val), className: "flex-1 py-2 rounded-lg text-[12px] font-medium", style: { background: newAccType === val ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: newAccType === val ? "var(--accent-gold)" : "var(--text-muted)", border: newAccType === val ? "1px solid var(--accent-gold)" : "1px solid var(--border-1)" } }, label))))),
             accCodeError && React.createElement("p", { className: "text-[11px] mb-2", style: { color: "#F87171" } }, accCodeError),
             React.createElement("button", { onClick: addAccount, className: "w-full py-3 rounded-xl text-sm font-medium nm-unified-export-btn", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, appLanguage === "en" ? "Create / Switch Account" : "\u0627\u06CC\u062C\u0627\u062F / \u0648\u0631\u0648\u062F \u0628\u0647 \u062D\u0633\u0627\u0628"))) : (React.createElement(React.Fragment, null,
-            React.createElement(NmLayerHeading, { title: appLanguage === "en" ? "Journal" : "ژورنال", image: "icon-journal.png" }),
+            React.createElement("div", { className: "rounded-2xl p-1.5 mb-3 flex items-center gap-1.5", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } }, React.createElement("img", { src: "icon-journal.png", alt: "Namello Journal", className: "w-7 h-7 rounded-lg object-cover shrink-0", style: { background: "#000" } }), React.createElement("div", null, React.createElement("div", { className: "text-[12px] font-bold leading-tight", style: { color: "var(--text-primary)" } }, appLanguage === "en" ? "Journal" : "ژورنال"), React.createElement("div", { className: "text-[8px] mt-0.5 leading-tight", style: { color: "var(--text-muted)" } }, "ثبت، مرور و تحلیل معاملات"))),
         React.createElement("div", { className: "flex items-center gap-2 mb-3" },
                 React.createElement("button", { onClick: () => setDeleteAccountConfirm(activeAccount), className: "p-2.5 rounded-lg shrink-0", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" }, "aria-label": appLanguage === "en" ? "Delete Account" : "\u062D\u0630\u0641 \u062D\u0633\u0627\u0628" },
                     React.createElement(Trash2, { size: 15, color: "#F87171" })),

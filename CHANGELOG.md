@@ -1,3 +1,10 @@
+## 1.0.8 — News/Journal display hotfix
+- Hardened stored News and Journal data normalization.
+- Normalized legacy trade array fields before rendering.
+- Added safe handling for malformed stored records without deleting raw data.
+- Bumped service-worker cache from c9 to c10 to prevent stale cached UI.
+- Simplified the News/Journal layer headers to remove the shared heading component from these two layers.
+
 # Changelog
 
 ## 1.0.7 — Journal layout redesign
