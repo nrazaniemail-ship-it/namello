@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.9 — Journal checklist taps, Finance period chips, News rabbit animation
+- Journal: checklist items 6 (آمادگی برنامه روزانه), 7 (ارزیابی چارت) and 32 (آمادگی ستاپ) in «ثبت ورود» / «ویرایش معامله» now toggle when the user taps anywhere on the condition row (including its title), not only the small tick box. Keyboard (Space/Enter) supported.
+- Finance: the period chips (Daily, Weekly, Monthly, Quarterly, Yearly, All) are smaller and share the row width equally, so all of them — including Yearly — fit fully inside the screen without scrolling.
+- Economic News: refresh-button animation redesigned. The rabbit's two front arms are now separate sprites that swing alternately (in opposite directions), and the rabbit's eye blinks (open/closed) while news is updating.
+- Unified package, PWA manifests and Service Worker version to 1.0.9 / Version Code 10.
+
 ## 1.0.8 — Layer header actions & Advanced Evaluation analytics
 - News: the refresh emoji in the hint text is replaced with the Namello logo; the source box on the main News page now highlights the active news source (ForexFactory / FXStreet / Investing / custom URL) and shows «منبع فعال».
 - Settings: Profile and Template each live in one independent box (header + content together); Library, Language, Profile and Template titles are right-aligned like the other sections.
