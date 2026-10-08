@@ -9292,6 +9292,8 @@ function App() {
         }));
         if (rr)
             setNewRrText(rr);
+        if (c.riskUsd !== undefined)
+            setNewRiskText(String(c.riskUsd));
     }
     function addSuccessProbOptionInline() {
         const v = newSuccessProbText.trim();
