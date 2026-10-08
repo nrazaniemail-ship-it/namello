@@ -15,10 +15,10 @@ test('1.0.13 engine exposes persistence, change detection and rolling edge', () 
   assert.match(js, /const rollingWindow = Math\.max\(10, Math\.min\(30/);
 });
 
-test('1.0.23 version contract', () => {
+test('1.0.24 version contract', () => {
   const v = JSON.parse(fs.readFileSync('version.json','utf8'));
-  assert.equal(v.version, '1.0.23');
-  assert.equal(v.versionCode, 24);
-  assert.match(js, /NM_VERSION_NAME = "1\.0\.23"/);
-  assert.match(js, /NM_VERSION_CODE = 24/);
+  assert.equal(v.version, '1.0.24');
+  assert.equal(v.versionCode, 25);
+  assert.match(js, /NM_VERSION_NAME = "1\.0\.24"/);
+  assert.match(js, /NM_VERSION_CODE = 25/);
 });
