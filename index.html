@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.24</title>
+<title>Namello 1.0.25</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -106,7 +106,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.24…</div>
+<div id="boot-status">Loading Namello 1.0.25…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -2174,10 +2174,10 @@ function Field({ label, children }) {
 /* آپلود عکسِ اسکرین‌شات چارت به‌صورت data URL (base64) داخل خودِ رکورد معامله ذخیره می‌شود — بدون
    نیاز به سرور جدا. عکس به همان اندازه‌ی اصلی روی گوشی معمولاً چند صد کیلوبایته که برای ذخیره‌ی
    محلی مشکلی نداره؛ اگه لازم شد بعداً می‌شه قبل از ذخیره کوچیکش کرد (resize روی canvas). */
-/* ---------- Namello Chart Vision (v1.0.23) ----------
+/* ---------- Namello Chart Vision (v1.0.25) ----------
    پردازش تصویر آفلاین (بدون کتابخانه‌ی خارجی) برای اسکرین‌شات چارت MT5 موبایل: کادرهای رنگی قیمت روی
-   محور راست (آبی=ورود، سبز=TP، نارنجی/قرمز=SL) پیدا و با تطبیق قالب ارقام خوانده می‌شن؛ محور قیمت برای
-   اعتبارسنجی کالیبره می‌شه. خروجی: قیمت ورود/TP/SL، R-multiple و ریسک دلاری. */
+   محور راست (ورود: آبی=خرید / قرمز=فروش، سبز=TP، نارنجی=SL) پیدا و با تطبیق قالب ارقام خوانده می‌شن؛
+   محور قیمت برای اعتبارسنجی کالیبره می‌شه. خروجی: قیمت ورود/TP/SL، R-multiple و ریسک دلاری. */
 /* Namello Chart Vision — MT5 (mobile) price-tag reader. Pure JS, offline, no external libs. */
 var NmChartVision = (function () {
   'use strict';
@@ -2188,11 +2188,12 @@ var NmChartVision = (function () {
     if (d) { if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
     return [h, mx ? d / mx : 0, mx / 255];
   }
-  // 1 entry(blue) 2 TP(green) 3 SL(orange/red) 4 current-price(magenta)
+  // 1 entry-buy(blue) 2 TP(green) 3 SL(orange) 4 current-price(magenta) 5 entry-sell(red)
   function cls(r, g, b) {
     var c = hsv(r, g, b), h = c[0], s = c[1], v = c[2];
     if (s < 0.38 || v < 0.45) return 0;
-    if (h <= 50 || h >= 345) return 3;
+    if (h <= 14 || h >= 345) return 5;
+    if (h <= 50) return 3;
     if (h >= 80 && h <= 165) return 2;
     if (h >= 195 && h <= 250) return 1;
     if (h >= 275 && h <= 335) return 4;
@@ -2303,7 +2304,7 @@ var NmChartVision = (function () {
     var W = img.width, H = img.height, d = img.data;
     var x0 = Math.min(W - 10, sep.x + 3), w = W - x0, y0 = sep.top, h = sep.bottom - sep.top + 1;
     var res = {};
-    for (var c = 1; c <= 3; c++) {
+    [1, 2, 3, 5].forEach(function (c) {
       var mask = new Uint8Array(w * h);
       for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) { var p = ((y0 + y) * W + x0 + x) * 4; if (cls(d[p], d[p + 1], d[p + 2]) === c) mask[y * w + x] = 1; }
       var dm = new Uint8Array(w * h);
@@ -2312,10 +2313,12 @@ var NmChartVision = (function () {
       cc.comps.forEach(function (k) {
         if (k.h < Math.max(14, H * 0.008) || k.w < k.h * 2 || k.w > W * 0.4) return;
         if (k.count < 1.6 * (k.w + k.h)) return;
-        if (!best || k.w * k.h > best.w * best.h) best = k;
+        k.fill = k.count / (k.w * k.h);
+        var kOut = k.fill < 0.65, bOut = best && best.fill < 0.65;
+        if (!best || (kOut !== bOut ? kOut : k.w * k.h > best.w * best.h)) best = k;
       });
       if (best) res[c] = { x: x0 + best.x0, y: y0 + best.y0, w: best.w, h: best.h };
-    }
+    });
     return res;
   }
 
@@ -2366,20 +2369,22 @@ var NmChartVision = (function () {
     var A = (n * syv - sy * sv) / den, B = (sv - A * sy) / n;
     return { a: A, b: B, n: n };
   }
-  var NAMES = { 1: 'entry', 2: 'tp', 3: 'sl' };
+  var NAMES = { 1: 'entry', 2: 'tp', 3: 'sl', 5: 'entry' };
   function analyze(img) {
     var sep = findSeparator(img);
     if (!sep) return { ok: false, error: 'ستون قیمت سمت راست چارت MT5 پیدا نشد. اسکرین‌شات کامل صفحه‌ی چارت (با محور قیمت) لازمه.' };
-    var boxes = findBoxes(img, sep), values = {}, warnings = [], dec = null, c;
-    for (c = 1; c <= 3; c++) {
-      if (!boxes[c]) continue;
+    var boxes = findBoxes(img, sep), values = {}, warnings = [], dec = null, entryColor = null;
+    [1, 5, 2, 3].forEach(function (c) {
+      if (!boxes[c]) return;
+      if (NAMES[c] === 'entry' && values.entry) return;
       var r = readBox(img, boxes[c]);
       if (/^\d+\.\d+$/.test(r.text)) {
         values[NAMES[c]] = { value: parseFloat(r.text), text: r.text, worst: r.worst, box: boxes[c] };
         if (dec === null) dec = r.text.split('.')[1].length;
+        if (NAMES[c] === 'entry') entryColor = c === 5 ? 'red' : 'blue';
       } else warnings.push('عدد کادر ' + NAMES[c].toUpperCase() + ' خوانا نبود (' + (r.text || 'خالی') + ').');
-    }
-    if (!values.entry) return { ok: false, error: 'کادر آبی «قیمت ورود» روی محور قیمت پیدا نشد. مطمئن شو معامله‌ی بازِ خط ورود روی چارت دیده می‌شه.', warnings: warnings };
+    });
+    if (!values.entry) return { ok: false, error: 'کادر «قیمت ورود» (آبی برای خرید، قرمز برای فروش) روی محور قیمت پیدا نشد. مطمئن شو معامله‌ی بازِ خط ورود روی چارت دیده می‌شه.', warnings: warnings };
     var cal = calibrate(img, sep, dec);
     if (cal) {
       ['entry', 'tp', 'sl'].forEach(function (k) {
@@ -2389,7 +2394,7 @@ var NmChartVision = (function () {
       });
     }
     ['entry', 'tp', 'sl'].forEach(function (k) { if (values[k] && values[k].worst > 0.3) warnings.push('دقت خوندن ' + k.toUpperCase() + ' پایینه؛ مقدار رو چک کن.'); });
-    return { ok: true, values: values, warnings: warnings, calibrated: !!cal };
+    return { ok: true, values: values, warnings: warnings, calibrated: !!cal, entryColor: entryColor };
   }
   function compute(res, ctx) {
     var v = res.values, e = v.entry.value, out = { entry: e };
@@ -3303,16 +3308,14 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.24";
-const NM_VERSION_CODE = 25;
+const NM_VERSION_NAME = "1.0.25";
+const NM_VERSION_CODE = 26;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_024_NOTE = "نسخه 1.0.24: لوگوی متحرک بروزرسانی اخبار با تصویر جدید بازطراحی شد؛ راهنمای بخش‌های ارزیابی پیشرفته، هدر برنامه (نام/نسخه و تاریخ میلادی) و دکمه‌های قبلی/بعدی پلیر پادکست اصلاح شد.";
-const NM_VERSION_DATE = "لوگوی متحرک جدید اخبار، اصلاح هدر و دکمه‌های قبلی/بعدی پلیر";
+const NM_VERSION_025_NOTE = "نسخه 1.0.25: پردازش تصویر چارت در ثبت ورود، معاملات فروش (کادر و خط ورود قرمز) را هم شناسایی می‌کند.";
+const NM_VERSION_DATE = "پشتیبانی پردازش تصویر چارت از معاملات فروش";
 const NM_CHANGELOG = [
-    "نسخه 1.0.24: دکمه بروزرسانی اخبار اقتصادی با تصویر جدید لوگو بازطراحی شد؛ دست‌ها و شانه‌ی خرگوش، دم و خطوط سرعت جدا و متحرک هستند.",
-    "نسخه 1.0.24: راهنمای سه‌نقطه‌ی بخش‌های ارزیابی پیشرفته به‌صورت سه‌نقطه‌ی عمودی داخل باکس چهارگوش و دقیقاً سمت راست عنوان قرار گرفت.",
-    "نسخه 1.0.24: دکمه‌های قبلی/بعدی ویجت پلیر پادکست در لایه‌های غیر از کتابخانه اصلاح شد (بازسازی صف پخش از کتابخانه).",
-    "نسخه 1.0.24: هدر برنامه: نام برنامه با فونت 12 و عدد نسخه با فونت 6 به‌صورت توان؛ تاریخ میلادی کنار تاریخ شمسی در یک سطر.",
+    "نسخه 1.0.25: پردازش تصویر چارت (آیتم ۳۵) حالت فروش را هم می‌شناسد: کادر قیمت ورود قرمز (فروش) در کنار آبی (خرید)، با SL نارنجی و TP سبز.",
+    "نسخه 1.0.25: جهت معامله از موقعیت TP و SL نسبت به ورود تشخیص داده می‌شود و R-multiple و ریسک دلاری برای فروش هم محاسبه می‌شود.",
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -5101,7 +5104,7 @@ function NmGlobalPlayer({ tab }) {
             if (d.cmd === "stop") { try { localStorage.removeItem(NM_PLAYER_TRACK_KEY); } catch (e) {} setTrack(null); return; }
             if (d.cmd === "seek") { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(a.duration || 0, Number(d.value || 0))); return; }
             if (d.cmd === "next" || d.cmd === "previous") {
-                // v1.0.24: صف پخش در صورت نبودن (مثلاً بعد از بازکردن دوباره‌ی برنامه) از کتابخانه بازسازی می‌شه و
+                // v1.0.25: صف پخش در صورت نبودن (مثلاً بعد از بازکردن دوباره‌ی برنامه) از کتابخانه بازسازی می‌شه و
                 // «قبلی» بدون نیاز به تاریخچه، اپیزود قبل در فهرست رو پخش می‌کنه.
                 (async () => {
                     const current = trackRef.current;
@@ -9976,7 +9979,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.24</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.25</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10706,7 +10709,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.24</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.25</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -11180,7 +11183,7 @@ function App() {
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
                 React.createElement("button", { onClick: refreshNewsFromWeb, disabled: newsLoading, className: "rounded-2xl flex items-center justify-center shrink-0 relative overflow-hidden", "aria-label": "بروزرسانی اخبار", "aria-busy": newsRefreshState === "loading",
                     style: { width: 56, height: 56, border: "1px solid " + (newsRefreshState === "fail" ? "#EF4444" : newsRefreshState === "idle" ? "var(--border-1)" : "#22C55E"), background: newsRefreshState === "fail" ? "#EF4444" : newsRefreshState === "idle" ? "var(--bg-card)" : "#22C55E", transition: "background 0.3s, border-color 0.3s" } },
-                    // لوگوی متحرک (v1.0.24): لایه‌ها از تصویر جدید لوگو ساخته شده‌اند؛ خطوط سرعت، دم، دست‌ها (شانه+ساعد) و پلک جدا حرکت می‌کنن
+                    // لوگوی متحرک (v1.0.25): لایه‌ها از تصویر جدید لوگو ساخته شده‌اند؛ خطوط سرعت، دم، دست‌ها (شانه+ساعد) و پلک جدا حرکت می‌کنن
                     React.createElement("div", { className: "nm-news-run-logo", "aria-hidden": true, style: { position: "relative", width: 52, height: 42, pointerEvents: "none", transformOrigin: "50% 90%", animation: newsRefreshState === "loading" ? "namelloLogoRun 0.5s ease-in-out infinite" : "none" } },
                         React.createElement("img", { src: NM_NEWS_RUN_DASH, alt: "", draggable: false, className: "nm-news-run-dash", style: { position: "absolute", inset: 0, width: 52, height: 42, animation: newsRefreshState === "loading" ? "namelloStreak 0.5s linear infinite" : "none" } }),
                         React.createElement("img", { src: NM_NEWS_RUN_LEGS, alt: "", draggable: false, className: "nm-news-run-legs", style: { position: "absolute", inset: 0, width: 52, height: 42, transformOrigin: "47.8% 83.5%", animation: newsRefreshState === "loading" ? "namelloTailRun 0.5s ease-in-out infinite" : "none" } }),

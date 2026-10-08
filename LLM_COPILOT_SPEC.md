@@ -1,4 +1,4 @@
-# Namello 1.0.24 — Strategic LLM Copilot
+# Namello 1.0.25 — Strategic LLM Copilot
 
 ## Architecture
 The LLM is deliberately downstream of the statistical / rule-based engine.
