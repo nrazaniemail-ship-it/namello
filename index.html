@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.26</title>
+<title>Namello 1.0.27</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -146,7 +146,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.26…</div>
+<div id="boot-status">Loading Namello 1.0.27…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -1941,17 +1941,17 @@ function relFromTrend(mainTrend, direction) {
         return "with";
     return "against";
 }
-const DEFAULT_TRIG_OPTIONS = ["OTE/L", "EQ", "SF2", "SF1", "Start", "OTE/H", "OTE"];
+const DEFAULT_TRIG_OPTIONS = ["OTE/L", "EQ", "SF2", "SF1", "Start", "OTE/H", "OTE", "N-Pattern", "T/Pcross"];
 const DEFAULT_WAVE_OPTIONS = ["اول", "دوم", "سوم", "چهارم", "پنجم"];
 const DEFAULT_TARGET_OPTIONS = ["M60", "LRL", "tp3", "tp2", "tp1", "tp", "SB-main", "SB", "K", "M240", "D-key level", "K-main", "Komo switch"];
-const DEFAULT_STOP_OPTIONS = [".Disp", "OB", "IFVG", "FVG", "ITL/H", "SB", "K", "0.5FVG", "STL/H", "K-main", "SB-main", "Komo switch", "D-key level"];
+const DEFAULT_STOP_OPTIONS = [".Disp", "OB", "IFVG", "FVG", "ITL/H", "SB", "K", "0.5FVG", "STL/H", "K-main", "SB-main", "Komo switch", "D-key level", "N-Pattern", "MO240"];
 const DEFAULT_FRACTAL_OPTIONS = ["D-H1", "H4-M15", "H1-M5", "M15-M5"];
 const DEFAULT_COND_ORDER_OPTIONS = { buy: ["Buy Limit", "Buy Stop"], sell: ["Sell Limit", "Sell Stop"] };
 const DEFAULT_REVERSAL_PATTERN_OPTIONS = ["پین‌بار", "انگالفینگ", "دوجی", "هارامی", "ستاره صبحگاهی", "ستاره عصرگاهی", "چکش", "مرد آویزان", "چکش معکوس", "ستاره ثاقب", "ابر سیاه", "نفوذ", "C3", "C2"];
 const DEFAULT_RR_OPTIONS = ["0.8", "0.9", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5"];
-const DEFAULT_DIVERGENCE_OPTIONS = ["HD1/4", "RD1/4", "HDdef", "RDdef", "HD4", "RD4"];
+const DEFAULT_DIVERGENCE_OPTIONS = ["HD1/4", "RD1/4", "HDdef", "RDdef", "HD4", "RD4", ".Triangle Div"];
 const DEFAULT_RISK_OPTIONS = Array.from({ length: 20 }, (_, i) => String(i + 1));
-const DEFAULT_TRADE_MANAGEMENT_OPTIONS = ["جابجایی حد ضرر", "جابجایی حد سود", "خروج زودهنگام", "افزایش حجم", "کاهش حجم"];
+const DEFAULT_TRADE_MANAGEMENT_OPTIONS = ["Risk free", "Save profit", "خروج زودهنگام", "افزایش حجم", "کاهش حجم"];
 const DEFAULT_SYSTEMS = [
     "K&T cross", "K/P cross", "Ichimoku align", "Komo switch", "Chikou/P cross", "SB/P cross",
     "Stoch123", "MACD123", "Price123", "MSS", "Stoch align", "MACD align",
@@ -3349,13 +3349,13 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.26";
-const NM_VERSION_CODE = 27;
+const NM_VERSION_NAME = "1.0.27";
+const NM_VERSION_CODE = 28;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_026_NOTE = "نسخه 1.0.26: بهینه‌سازی رنگ‌بندی همه‌ی تم‌ها بر اساس کنتراست WCAG، رنگ‌های معنایی خوانا در تم روشن و تیره، و زمینه‌ی زرد کم‌رنگ برای دکمه «ثبت نهایی».";
-const NM_VERSION_DATE = "بهینه‌سازی رنگ‌بندی و کنتراست تم‌ها";
+const NM_VERSION_027_NOTE = "نسخه 1.0.27: اصلاحات محدود لایه ژورنال شامل چک‌لیست، گزینه‌های آیتم‌های ثبت ورود، هم‌راستایی با روند ورود و نام‌گذاری مدیریت معامله.";
+const NM_VERSION_DATE = "اصلاحات محدود لایه ژورنال";
 const NM_CHANGELOG = [
-    "نسخه 1.0.26: دکمه «ثبت نهایی» در ثبت نتیجه معامله زمینه‌ی زرد کم‌رنگ گرفت (قبلاً استایل مشترک دکمه‌های خروجی آن را تیره می‌کرد).",
+    "نسخه 1.0.27: فقط لایه ژورنال اصلاح شد؛ آیتم‌های ثبت ورود و ثبت نتیجه معامله طبق تغییرات درخواستی به‌روزرسانی شدند.",
     "نسخه 1.0.26: ارزیابی کنتراست همه‌ی ۱۶ ترکیب تم (۸ تم × تیره/روشن): متن فرعی و کم‌رنگ و رنگ تأکیدی به حداقل 4.5:1 (AA) رسید و متن اصلی بالای 11:1 است.",
     "نسخه 1.0.26: رنگ‌های معنایی (موفقیت، خطر، هشدار، اطلاع‌رسانی، تأکید دوم) به‌صورت توکن تعریف شد؛ در تم روشن متن‌های سبز/قرمز/زرد/آبی/بنفش به شید خواناتر می‌روند و در تیره بنفش و آبی کم‌کنتراست اصلاح شد.",
     "نسخه 1.0.26: حاشیه‌ی کارت‌ها در تم‌های تیره کمی پررنگ‌تر شد تا مرز ورودی‌ها و کارت‌ها واضح‌تر باشد.",
@@ -6904,8 +6904,8 @@ const NM_DEFAULT_TRADE_PLAN = {
     { id:"tp", type:"checkbox", label:"حدسود طبق پلن است" },
     { id:"session", type:"checkbox", label:"زمان/نشست مناسب است" },
     { id:"news", type:"checkbox", label:"خبر پرریسک بررسی شد" },
-    { id:"emotion", type:"category", label:"آمادگی ذهنی", options:["آماده","خنثی","نامناسب"] },
-    { id:"conviction", type:"number", label:"اعتماد به معامله (1-10)" }
+    { id:"emotion", type:"checkbox", label:"آمادگی ذهنی" },
+    { id:"conviction", type:"checkbox", label:"اعتماد به معامله" }
   ]
 };
 const NM_DEFAULT_DAY_PLAN = {
@@ -6915,7 +6915,7 @@ const NM_DEFAULT_DAY_PLAN = {
     {id:"calendar",type:"checkbox",label:"تقویم اخبار بررسی شد"},
     {id:"levels",type:"checkbox",label:"سطوح مهم مشخص شد"},
     {id:"riskbudget",type:"checkbox",label:"بودجه ریسک روز مشخص شد"},
-    {id:"goal",type:"text",label:"هدف اصلی روز"}
+    {id:"goal",type:"checkbox",label:"هدف روزانه مشخص شد"}
   ]
 };
 const NM_DEFAULT_CHART_CONDITIONS = [
@@ -9726,7 +9726,7 @@ function App() {
         const d = lastTradeDefaultsRef.current;
         setOpenForm({
             date: todayStr, time: `${pad2(now.hh)}:${pad2(now.mi)}`,
-            pair: d.pair || pairs[0] || "XAUUSD", direction: d.direction, tradeDirectionRel: d.tradeDirectionRel,
+            pair: d.pair || pairs[0] || "XAUUSD", direction: d.direction, tradeDirectionRel: d.tradeDirectionRel, tradeEntryTrendRel: d.tradeEntryTrendRel,
             system: (d.systems && d.systems[0]) || systems[0] || "", systems: d.systems || [], entryTimeSystems: d.entryTimeSystems || [], mainGuideLevels: d.mainGuideLevels || [], entryGuideLevels: d.entryGuideLevels || [], customFields: {}, fractal: d.fractal || "M15-M5",
             dailyCandleDirection: d.dailyCandleDirection, dailyTrendDirection: d.dailyTrendDirection,
             mainTrendDirection: d.mainTrendDirection, entry: "", lot: String(derived.nextLot),
@@ -9739,6 +9739,15 @@ function App() {
         });
         setShowOpenForm(true);
     }
+    useEffect(() => {
+        if (!openForm) return;
+        const wave = openForm.wave;
+        const withEntryTrend = ["اول", "سوم", "پنجم"].includes(wave);
+        const next = withEntryTrend ? "with" : "against";
+        if (openForm.tradeEntryTrendRel !== next) {
+            setOpenForm(f => f ? ({ ...f, tradeEntryTrendRel: next }) : f);
+        }
+    }, [openForm?.wave]);
     function saveOpenTrade() {
         if (!openForm.date || !openForm.time)
             return;
@@ -9765,7 +9774,7 @@ function App() {
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             status: "open", schemaVersion: 2, review: null, mfe: null, mae: null, bestExit: null, exitEfficiency: null,
             date: openForm.date, time: openForm.time,
-            pair: openForm.pair, direction: openForm.direction, tradeDirectionRel: openForm.tradeDirectionRel,
+            pair: openForm.pair, direction: openForm.direction, tradeDirectionRel: openForm.tradeDirectionRel, tradeEntryTrendRel: openForm.tradeEntryTrendRel,
             systems: openForm.systems || [], system: (openForm.systems && openForm.systems[0]) || "",
             entryTimeSystems: openForm.entryTimeSystems || [],
             mainGuideLevels: openForm.mainGuideLevels || [], entryGuideLevels: openForm.entryGuideLevels || [],
@@ -9796,7 +9805,7 @@ function App() {
             exit: null, pnl: null, pips: null, closedDate: null, closedTime: null, note: "",
         };
         lastTradeDefaultsRef.current = {
-            pair: openForm.pair, direction: openForm.direction, tradeDirectionRel: openForm.tradeDirectionRel,
+            pair: openForm.pair, direction: openForm.direction, tradeDirectionRel: openForm.tradeDirectionRel, tradeEntryTrendRel: openForm.tradeEntryTrendRel,
             systems: openForm.systems || [], entryTimeSystems: openForm.entryTimeSystems || [], fractal: openForm.fractal,
             dailyCandleDirection: openForm.dailyCandleDirection, dailyTrendDirection: openForm.dailyTrendDirection,
             mainTrendDirection: openForm.mainTrendDirection, marketBias: openForm.marketBias, marketCondition: openForm.marketCondition,
@@ -12757,10 +12766,15 @@ function App() {
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "with" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "with" ? "#60A5FA22" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "with" ? "#60A5FA" : "var(--text-muted)" } }, "\u0647\u0645 \u062C\u0647\u062A \u0628\u0627 \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC"),
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "against" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "against" ? "#FBBF2422" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "against" ? "#FBBF24" : "var(--text-muted)" } }, "\u062E\u0644\u0627\u0641 \u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC")),
                     React.createElement("p", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u00AB\u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC\u00BB \u0648 \u00AB\u062E\u0631\u06CC\u062F/\u0641\u0631\u0648\u0634\u00BB \u062E\u0648\u062F\u06A9\u0627\u0631 \u0627\u0646\u062A\u062E\u0627\u0628 \u0645\u06CC\u200C\u0634\u0647\u061B \u0627\u06AF\u0647 \u0644\u0627\u0632\u0645 \u0628\u0648\u062F \u062F\u0633\u062A\u06CC \u0647\u0645 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0639\u0648\u0636\u0634 \u06A9\u0646\u06CC.")),
-                React.createElement(Field, { label: numLabel(36, hlLabel(appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله")) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(36, appLanguage === "en" ? "Trade Alignment with Entry Trend" : RE("span", null, "هم راستایی معامله با روند ", RE("span", { style: { color: "#FBBF24" } }, "ورود")))) },
+                    React.createElement("div", { className: "flex gap-2" },
+                        React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeEntryTrendRel: "with" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeEntryTrendRel === "with" ? "#60A5FA22" : "var(--bg-card2)", color: openForm.tradeEntryTrendRel === "with" ? "#60A5FA" : "var(--text-muted)" } }, "هم جهت با روند ورود"),
+                        React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeEntryTrendRel: "against" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeEntryTrendRel === "against" ? "#FBBF2422" : "var(--bg-card2)", color: openForm.tradeEntryTrendRel === "against" ? "#FBBF24" : "var(--text-muted)" } }, "خلاف جهت روند ورود")),
+                    React.createElement("p", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, "انتخاب خودکار بر اساس «شماره موج تایم ورود»: موج اول، سوم یا پنجم = هم جهت؛ سایر حالت‌ها = خلاف جهت.")),
+                React.createElement(Field, { label: numLabel(37, hlLabel(appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله")) },
                     React.createElement(ChartImageField, { label: "چارت تایم اصلی", value: openForm.chartImageMain || "", onChange: v => setOpenForm({ ...openForm, chartImageMain: v }) }),
                     React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }), vision: { getCtx: () => ({ pair: openForm.pair, lot: openForm.lot, direction: openForm.direction, pipSize: pipSize, pipValue: pipValuePerLot }), onApply: applyChartVision } })),
-                React.createElement(Field, { label: numLabel(37, hlLabel(appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله")) },
+                React.createElement(Field, { label: numLabel(38, hlLabel(appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله")) },
                     React.createElement(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت", value: openForm.voiceNoteBefore || "", onChange: v => setOpenForm({ ...openForm, voiceNoteBefore: v }) })),
                 RE(NmCustomFieldsFormSection, { values: openForm.customFields, onChange: v => setOpenForm({ ...openForm, customFields: v }) }),
                 React.createElement("button", { onClick: saveOpenTrade, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },

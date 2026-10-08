@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Namello 1.0.26",
-  "short_name": "Namello 1.0.26",
+  "name": "Namello 1.0.27",
+  "short_name": "Namello 1.0.27",
   "description": "ساعت زنده نشست‌ها و کیل‌زون‌های ICT به‌وقت نیویورک، همراه با ژورنال معاملات، مدیریت مالی و تحلیل آماری",
   "start_url": "./index.html?v=1000",
   "scope": "./",
