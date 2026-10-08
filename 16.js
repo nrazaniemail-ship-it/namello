@@ -1523,6 +1523,7 @@ const DEFAULT_WAVE_OPTIONS = ["اول", "دوم", "سوم", "چهارم", "پن�
 const DEFAULT_TARGET_OPTIONS = ["M60", "LRL", "tp3", "tp2", "tp1", "tp", "SB-main", "SB", "K", "M240", "D-key level", "K-main", "Komo switch"];
 const DEFAULT_STOP_OPTIONS = [".Disp", "OB", "IFVG", "FVG", "ITL/H", "SB", "K", "0.5FVG", "STL/H", "K-main", "SB-main", "Komo switch", "D-key level"];
 const DEFAULT_FRACTAL_OPTIONS = ["D-H1", "H4-M15", "H1-M5", "M15-M5"];
+const DEFAULT_COND_ORDER_OPTIONS = { buy: ["Buy Limit", "Buy Stop"], sell: ["Sell Limit", "Sell Stop"] };
 const DEFAULT_REVERSAL_PATTERN_OPTIONS = ["پین‌بار", "انگالفینگ", "دوجی", "هارامی", "ستاره صبحگاهی", "ستاره عصرگاهی", "چکش", "مرد آویزان", "چکش معکوس", "ستاره ثاقب", "ابر سیاه", "نفوذ", "C3", "C2"];
 const DEFAULT_RR_OPTIONS = ["0.8", "0.9", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5"];
 const DEFAULT_DIVERGENCE_OPTIONS = ["HD1/4", "RD1/4", "HDdef", "RDdef", "HD4", "RD4"];
@@ -2931,8 +2932,11 @@ const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_025_NOTE = "نسخه 1.0.25: پردازش تصویر چارت در ثبت ورود، معاملات فروش (کادر و خط ورود قرمز) را هم شناسایی می‌کند.";
 const NM_VERSION_DATE = "پشتیبانی پردازش تصویر چارت از معاملات فروش";
 const NM_CHANGELOG = [
-    "نسخه 1.0.25: پردازش تصویر چارت (آیتم ۳۵) حالت فروش را هم می‌شناسد: کادر قیمت ورود قرمز (فروش) در کنار آبی (خرید)، با SL نارنجی و TP سبز.",
+    "نسخه 1.0.25: پردازش تصویر چارت (آیتم ۳۶) حالت فروش را هم می‌شناسد: کادر قیمت ورود قرمز (فروش) در کنار آبی (خرید)، با SL نارنجی و TP سبز.",
     "نسخه 1.0.25: جهت معامله از موقعیت TP و SL نسبت به ورود تشخیص داده می‌شود و R-multiple و ریسک دلاری برای فروش هم محاسبه می‌شود.",
+    "نسخه 1.0.25: ثبت ورود: آیتم جدید «سفارش شرطی» (آیتم ۳۴) با چهار حالت Buy Limit، Buy Stop، Sell Limit و Sell Stop اضافه شد؛ فقط یک حالت انتخاب می‌شود و گزینه‌ها قابل ویرایش‌اند. شماره آیتم‌های بعدی یکی بالا رفت.",
+    "نسخه 1.0.25: ثبت ورود: کادر دکمه «خرید» سبز و «فروش» قرمز شد (آیتم ۳۳).",
+    "نسخه 1.0.25: ثبت ورود: مقدار ریسک (آیتم ۲۶) فقط داخل باکس مقدار نمایش داده می‌شود و ورودی تکراری زیر آن حذف شد.",
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -7343,6 +7347,9 @@ function App() {
     const [expandedTradingSystemId, setExpandedTradingSystemId] = useState(null);
     const [newTradingSystemName, setNewTradingSystemName] = useState("");
     const [fractalOptions, setFractalOptions] = useState(DEFAULT_FRACTAL_OPTIONS);
+    const [condOrderOptions, setCondOrderOptions] = useState(DEFAULT_COND_ORDER_OPTIONS);
+    const [condOrderEditMode, setCondOrderEditMode] = useState(false);
+    const [newCondText, setNewCondText] = useState({ buy: "", sell: "" });
     const [trigOptions, setTrigOptions] = useState(DEFAULT_TRIG_OPTIONS);
     const [waveOptions, setWaveOptions] = useState(DEFAULT_WAVE_OPTIONS);
     const [targetOptions, setTargetOptions] = useState(DEFAULT_TARGET_OPTIONS);
@@ -7613,6 +7620,15 @@ function App() {
                 const r = await window.storage.get("namello_fractal_options_v1");
                 if (r)
                     setFractalOptions(JSON.parse(r.value));
+            }
+            catch (e) { }
+            try {
+                const r = await window.storage.get("namello_cond_order_options_v1");
+                if (r) {
+                    const v = JSON.parse(r.value);
+                    if (v && Array.isArray(v.buy) && Array.isArray(v.sell))
+                        setCondOrderOptions(v);
+                }
             }
             catch (e) { }
             try {
@@ -7970,6 +7986,10 @@ function App() {
     catch (e) { } }, []);
     const persistTradingSystemsCatalog = useCallback(async (next) => { setTradingSystemsCatalog(next); try {
         await window.storage.set("namello_trading_systems_catalog_v1", JSON.stringify(next));
+    }
+    catch (e) { } }, []);
+    const persistCondOrderOptions = useCallback(async (next) => { setCondOrderOptions(next); try {
+        await window.storage.set("namello_cond_order_options_v1", JSON.stringify(next));
     }
     catch (e) { } }, []);
     const persistFractalOptions = useCallback(async (next) => { setFractalOptions(next); try {
@@ -8494,6 +8514,7 @@ function App() {
         { key: "systems", value: systems, persist: persistSystems, def: DEFAULT_SYSTEMS },
         { key: "tradingSystemsCatalog", value: tradingSystemsCatalog, persist: persistTradingSystemsCatalog, def: [] },
         { key: "fractalOptions", value: fractalOptions, persist: persistFractalOptions, def: DEFAULT_FRACTAL_OPTIONS },
+        { key: "condOrderOptions", value: condOrderOptions, persist: persistCondOrderOptions, def: DEFAULT_COND_ORDER_OPTIONS },
         { key: "trigOptions", value: trigOptions, persist: persistTrigOptions, def: DEFAULT_TRIG_OPTIONS },
         { key: "waveOptions", value: waveOptions, persist: persistWaveOptions, def: DEFAULT_WAVE_OPTIONS },
         { key: "targetOptions", value: targetOptions, persist: persistTargetOptions, def: DEFAULT_TARGET_OPTIONS },
@@ -9096,6 +9117,17 @@ function App() {
         return v;
     }
     function removePair(name) { persistPairs(pairs.filter(p => p !== name)); }
+    function removeCondOrderOption(side, name) { persistCondOrderOptions({ ...condOrderOptions, [side]: (condOrderOptions[side] || []).filter(x => x !== name) }); }
+    function addCondOrderOptionInline(side) {
+        const v = String((newCondText && newCondText[side]) || "").trim();
+        if (!v)
+            return;
+        const cur = condOrderOptions[side] || [];
+        const all = [...(condOrderOptions.buy || []), ...(condOrderOptions.sell || [])];
+        if (!all.includes(v))
+            persistCondOrderOptions({ ...condOrderOptions, [side]: [...cur, v] });
+        setNewCondText(s => ({ ...s, [side]: "" }));
+    }
     function removeFractalOption(name) { persistFractalOptions(fractalOptions.filter(x => x !== name)); }
     function removeTrigOption(name) { persistTrigOptions(trigOptions.filter(x => x !== name)); }
     function removeWaveOption(name) { persistWaveOptions(waveOptions.filter(x => x !== name)); }
@@ -9168,7 +9200,7 @@ function App() {
     function renameRiskOption(index, text) { renameOptionAt(riskOptions, persistRiskOptions, index, text); }
     function moveRiskOption(index, dir) { moveOptionAt(riskOptions, persistRiskOptions, index, dir); }
     function addRiskOptionInline() {
-        const v = newRiskText.trim();
+        const v = (String(openForm.riskDollar === undefined || openForm.riskDollar === null ? "" : openForm.riskDollar).trim()) || newRiskText.trim();
         if (!v)
             return;
         if (!riskOptions.includes(v))
@@ -9388,7 +9420,7 @@ function App() {
             mainGuideLevels: openForm.mainGuideLevels || [], entryGuideLevels: openForm.entryGuideLevels || [],
             customFields: openForm.customFields || {},
             divergenceMain: openForm.divergenceMain || [], divergenceEntry: openForm.divergenceEntry || [],
-            fractal: openForm.fractal, dailyCandleDirection: openForm.dailyCandleDirection, dailyTrendDirection: openForm.dailyTrendDirection,
+            fractal: openForm.fractal, conditionalOrder: openForm.conditionalOrder || "", dailyCandleDirection: openForm.dailyCandleDirection, dailyTrendDirection: openForm.dailyTrendDirection,
             mainTrendDirection: openForm.mainTrendDirection,
             marketBias: openForm.marketBias, marketCondition: openForm.marketCondition, wave: openForm.wave,
             trigs: openForm.trigs || [], trig: (openForm.trigs && openForm.trigs[0]) || "",
@@ -12275,10 +12307,9 @@ function App() {
                             React.createElement("button", { type: "button", onClick: () => removeRiskOption(opt) },
                                 React.createElement(X, { size: 10, color: "#F87171" })))) : (React.createElement("button", { key: i, type: "button", onClick: () => { setOpenForm({ ...openForm, riskDollar: opt }); }, className: "px-3 py-1.5 rounded-lg text-[12px] mono", style: { background: openForm.riskDollar === opt ? "color-mix(in srgb, var(--accent-gold) 13%, transparent)" : "var(--bg-card2)", color: openForm.riskDollar === opt ? "var(--accent-gold)" : "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } }, opt)))),
                         React.createElement("div", { className: "flex gap-1.5 mb-2" },
-                            React.createElement("input", { type: "text", inputMode: "decimal", value: newRiskText, onChange: e => setNewRiskText(e.target.value), onKeyDown: e => e.key === "Enter" && addRiskOptionInline(), placeholder: "\u0645\u0642\u062F\u0627\u0631 \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
+                            React.createElement("input", { type: "text", inputMode: "decimal", value: openForm.riskDollar === undefined || openForm.riskDollar === null ? "" : openForm.riskDollar, onChange: e => { const v = e.target.value; setNewRiskText(v); setOpenForm(fm => ({ ...fm, riskDollar: v })); }, onKeyDown: e => e.key === "Enter" && addRiskOptionInline(), placeholder: "\u0645\u0642\u062F\u0627\u0631 \u062C\u062F\u06CC\u062F...", className: "flex-1 rounded-lg px-2.5 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
                             React.createElement("button", { type: "button", onClick: addRiskOptionInline, className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: "var(--accent-gold)" } },
-                                React.createElement(Plus, { size: 12 }))),
-                        React.createElement("input", { type: "number", inputMode: "decimal", value: openForm.riskDollar, onChange: e => { const v=e.target.value; setOpenForm({ ...openForm, riskDollar: v }); }, placeholder: "", className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } }))),
+                                React.createElement(Plus, { size: 12 }))))),
                 openForm.riskDollar !== "" && !isNaN(parseFloat(openForm.riskDollar)) && derived.currentBalance > 0 && (React.createElement("p", { className: "text-[11px] mb-2", style: { color: "var(--text-muted)" } },
                     "= ",
                     React.createElement("b", { style: { color: "var(--accent-gold)" } },
@@ -12350,24 +12381,35 @@ function App() {
                 React.createElement("div", { className: "rounded-xl p-3 mb-2", style: { background: "#FBBF2414", border: "1px solid #FBBF2455" } },
                 React.createElement("label", { className: "text-[12px] block mb-2 font-extrabold", style: { color: "#FBBF24" } }, numLabel(33, appLanguage === "en" ? "Buy/Sell" : "خرید/فروش")),
                     React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "buy", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "buy") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { background: openForm.direction === "buy" ? "#34D39922" : "var(--bg-card2)", color: openForm.direction === "buy" ? "#34D399" : "var(--text-muted)" } },
+                        React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "buy", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "buy") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { border: "1.5px solid #34D399", background: openForm.direction === "buy" ? "#34D39922" : "var(--bg-card2)", color: openForm.direction === "buy" ? "#34D399" : "var(--text-muted)" } },
                             React.createElement(TrendingUp, { size: 14 }),
                             " ",
                             React.createElement("b", { className: "font-extrabold" }, "\u062E\u0631\u06CC\u062F")),
-                        React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "sell", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "sell") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { background: openForm.direction === "sell" ? "#F8717122" : "var(--bg-card2)", color: openForm.direction === "sell" ? "#F87171" : "var(--text-muted)" } },
+                        React.createElement("button", { onClick: () => setOpenForm(f => ({ ...f, direction: "sell", tradeDirectionRel: relFromTrend(f.mainTrendDirection, "sell") })), className: "flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1", style: { border: "1.5px solid #F87171", background: openForm.direction === "sell" ? "#F8717122" : "var(--bg-card2)", color: openForm.direction === "sell" ? "#F87171" : "var(--text-muted)" } },
                             React.createElement(TrendingDown, { size: 14 }),
                             " ",
                             React.createElement("b", { className: "font-extrabold" }, "\u0641\u0631\u0648\u0634")))),
                 ),
-                React.createElement(Field, { label: numLabel(34, hlLabel(appLanguage === "en" ? "Trade Alignment with Main Trend" : "هم راستایی معامله با روند اصلی")) },
+                React.createElement(Field, { label: RE("span", { className: "flex items-center gap-1.5" }, numLabel(34, hlLabel(appLanguage === "en" ? "Pending Order" : "\u0633\u0641\u0627\u0631\u0634 \u0634\u0631\u0637\u06CC")), JournalEditToggle({ editMode: condOrderEditMode, onToggle: () => setCondOrderEditMode(m => !m) })) },
+                    React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, direction: "rtl" } },
+                        [["buy", "#34D399"], ["sell", "#F87171"]].map(([side, col]) => React.createElement("div", { key: side, style: { display: "flex", flexDirection: "column", gap: 8, minWidth: 0 } },
+                            (condOrderOptions[side] || []).map(opt => React.createElement("div", { key: opt, style: { display: "flex", alignItems: "center", gap: 4, padding: "0 6px", borderRadius: 8, border: "1.5px solid " + col, background: openForm.conditionalOrder === opt ? col + "22" : "var(--bg-card2)" } },
+                                React.createElement("button", { type: "button", onClick: () => setOpenForm(f => ({ ...f, conditionalOrder: f.conditionalOrder === opt ? "" : opt })), className: "flex-1 py-2.5 text-[12px] mono", style: { color: openForm.conditionalOrder === opt ? col : "var(--text-muted)", fontWeight: openForm.conditionalOrder === opt ? 800 : 500, fontFamily: "JetBrains Mono, monospace", direction: "ltr" } }, opt),
+                                condOrderEditMode && (React.createElement("button", { type: "button", onClick: e => { e.stopPropagation(); removeCondOrderOption(side, opt); if (openForm.conditionalOrder === opt) setOpenForm(f => ({ ...f, conditionalOrder: "" })); } },
+                                    React.createElement(X, { size: 12, color: "#F87171" }))))),
+                            condOrderEditMode && (React.createElement("div", { className: "flex gap-1.5" },
+                                React.createElement("input", { type: "text", value: newCondText[side] || "", onChange: e => setNewCondText(s => ({ ...s, [side]: e.target.value })), onKeyDown: e => e.key === "Enter" && addCondOrderOptionInline(side), placeholder: "\u0633\u0641\u0627\u0631\u0634 \u062C\u062F\u06CC\u062F...", className: "flex-1 min-w-0 rounded-lg px-2 py-1.5 text-[12px] bg-transparent outline-none", style: { color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
+                                React.createElement("button", { type: "button", onClick: () => addCondOrderOptionInline(side), className: "flex items-center px-2.5 py-1.5 rounded-lg text-[12px]", style: { background: "var(--bg-card2)", color: col } },
+                                    React.createElement(Plus, { size: 12 })))))))),
+                React.createElement(Field, { label: numLabel(35, hlLabel(appLanguage === "en" ? "Trade Alignment with Main Trend" : "هم راستایی معامله با روند اصلی")) },
                     React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "with" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "with" ? "#60A5FA22" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "with" ? "#60A5FA" : "var(--text-muted)" } }, "\u0647\u0645 \u062C\u0647\u062A \u0628\u0627 \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC"),
                         React.createElement("button", { onClick: () => setOpenForm({ ...openForm, tradeDirectionRel: "against" }), className: "flex-1 py-2 rounded-lg text-sm", style: { background: openForm.tradeDirectionRel === "against" ? "#FBBF2422" : "var(--bg-card2)", color: openForm.tradeDirectionRel === "against" ? "#FBBF24" : "var(--text-muted)" } }, "\u062E\u0644\u0627\u0641 \u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC")),
                     React.createElement("p", { className: "text-[10px] mt-1", style: { color: "var(--text-muted)" } }, "\u0628\u0631 \u0627\u0633\u0627\u0633 \u00AB\u062C\u0647\u062A \u0631\u0648\u0646\u062F \u0627\u0635\u0644\u06CC\u00BB \u0648 \u00AB\u062E\u0631\u06CC\u062F/\u0641\u0631\u0648\u0634\u00BB \u062E\u0648\u062F\u06A9\u0627\u0631 \u0627\u0646\u062A\u062E\u0627\u0628 \u0645\u06CC\u200C\u0634\u0647\u061B \u0627\u06AF\u0647 \u0644\u0627\u0632\u0645 \u0628\u0648\u062F \u062F\u0633\u062A\u06CC \u0647\u0645 \u0645\u06CC\u200C\u062A\u0648\u0646\u06CC \u0639\u0648\u0636\u0634 \u06A9\u0646\u06CC.")),
-                React.createElement(Field, { label: numLabel(35, hlLabel(appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله")) },
+                React.createElement(Field, { label: numLabel(36, hlLabel(appLanguage === "en" ? "Pre-Trade Chart Image" : "تصویر چارت قبل از معامله")) },
                     React.createElement(ChartImageField, { label: "چارت تایم اصلی", value: openForm.chartImageMain || "", onChange: v => setOpenForm({ ...openForm, chartImageMain: v }) }),
                     React.createElement(ChartImageField, { label: "چارت تایم ورود - شروع", value: openForm.chartImageEntryStart || "", onChange: v => setOpenForm({ ...openForm, chartImageEntryStart: v }), vision: { getCtx: () => ({ pair: openForm.pair, lot: openForm.lot, direction: openForm.direction, pipSize: pipSize, pipValue: pipValuePerLot }), onApply: applyChartVision } })),
-                React.createElement(Field, { label: numLabel(36, hlLabel(appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله")) },
+                React.createElement(Field, { label: numLabel(37, hlLabel(appLanguage === "en" ? "Pre-Trade Voice Chart Review" : "ارزیابی صوتی چارت قبل از معامله")) },
                     React.createElement(VoiceNoteField, { label: "ضبط رویت صوتی از وضعیت چارت", value: openForm.voiceNoteBefore || "", onChange: v => setOpenForm({ ...openForm, voiceNoteBefore: v }) })),
                 RE(NmCustomFieldsFormSection, { values: openForm.customFields, onChange: v => setOpenForm({ ...openForm, customFields: v }) }),
                 React.createElement("button", { onClick: saveOpenTrade, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2", style: { background: "#FFEDD5", color: "#C2410C", border: "1px solid #FDBA74", boxShadow: "0 0 0 1px rgba(251,146,60,.10)" } },
