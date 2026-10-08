@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.27</title>
+<title>Namello 1.0.28</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -146,7 +146,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.27…</div>
+<div id="boot-status">Loading Namello 1.0.28…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -2930,6 +2930,56 @@ function NmPsychologyMetricsCard({trades}){
  );
 }
 
+function NmDashboardAIArm({ mode, trades }) {
+    const [expanded, setExpanded] = React.useState(false);
+    const [refresh, setRefresh] = React.useState(0);
+    const closed = (trades || []).filter(t => t && t.status === "closed");
+    const nums = closed.map(t => Number(t.pnl ?? t.profit ?? t.netProfit ?? 0)).filter(Number.isFinite);
+    const wins = nums.filter(n => n > 0), losses = nums.filter(n => n < 0);
+    const total = nums.reduce((a,b)=>a+b,0), winRate = nums.length ? wins.length/nums.length*100 : 0;
+    const avgWin = wins.length ? wins.reduce((a,b)=>a+b,0)/wins.length : 0;
+    const avgLoss = losses.length ? losses.reduce((a,b)=>a+b,0)/losses.length : 0;
+    const enough = nums.length >= 20;
+    let headline, findings=[], actions=[];
+    if (!nums.length) {
+      headline = "برای تولید تحلیل، معامله بسته‌شده‌ای در منبع انتخاب‌شده پیدا نشد.";
+      findings.push("ابتدا منبع و حساب‌های مبنا را بررسی و داده‌های معاملاتی را ثبت یا وارد کن.");
+      actions.push("پس از جمع‌شدن داده، تحلیل را دوباره اجرا کن.");
+    } else if (mode === "stats") {
+      headline = total > 0 ? "خروجی فعلی از نظر مجموع سود مثبت است." : total < 0 ? "مجموع نتیجه در نمونه فعلی منفی است." : "مجموع نتیجه نمونه فعلی نزدیک به صفر است.";
+      findings.push(`نمونه بررسی‌شده: ${nums.length} معامله بسته‌شده؛ نرخ برد ${winRate.toFixed(1)}٪؛ مجموع P&L: ${total.toFixed(2)}.`);
+      if (avgWin && avgLoss) findings.push(`میانگین برد ${avgWin.toFixed(2)} و میانگین باخت ${avgLoss.toFixed(2)} است.`);
+      actions.push(winRate < 45 ? "گروه‌های معاملاتی را بر اساس سیستم، نشست و روند تفکیک کن؛ نرخ برد به‌تنهایی برای تصمیم کافی نیست." : "گروه‌های سودآور را با تعداد نمونه و میانگین سود/زیان مقایسه کن.");
+      actions.push(enough ? "برای بررسی پایداری، نتیجه را در بازه‌های زمانی جداگانه و با هزینه‌های معامله مقایسه کن." : "نمونه هنوز محدود است؛ از نتیجه‌گیری قطعی و تغییر بزرگ در سیستم خودداری کن.");
+    } else if (mode === "advanced") {
+      headline = total > 0 && winRate >= 45 ? "کیفیت نتیجه امیدوارکننده است؛ پایداری اجرا باید تأیید شود." : "اولویت فعلی، کنترل ریسک و پیدا کردن علت عملکرد نمونه است.";
+      findings.push(`P&L: ${total.toFixed(2)}؛ نرخ برد: ${winRate.toFixed(1)}٪؛ معاملات بسته‌شده: ${nums.length}.`);
+      findings.push(avgWin > 0 && Math.abs(avgLoss) > 0 ? `نسبت میانگین برد به باخت: ${(avgWin/Math.abs(avgLoss)).toFixed(2)}.` : "برای محاسبه نسبت میانگین برد به باخت، نمونه باید هر دو نتیجه مثبت و منفی را داشته باشد.");
+      actions.push("معاملات خارج از Plan و موارد نقض حد ریسک را جداگانه بازبینی کن.");
+      actions.push(enough ? "قبل از افزایش حجم، افت سرمایه و Expectancy را در چند زیرنمونه بررسی کن." : "تا افزایش حجم نمونه، اندازه ریسک را ثابت و محافظه‌کارانه نگه دار.");
+    } else {
+      const streak = nums.slice(-5).every(n=>n<0);
+      headline = streak ? "پنج معامله آخر زیان‌ده‌اند؛ پیش از معامله بعدی مکث و اجرای قواعد را بازبینی کن." : "نشانه‌های رفتاری را کنار نتیجه مالی و یادداشت‌های ژورنال بررسی کن.";
+      findings.push(`در نمونه ${nums.length} معامله‌ای، ${wins.length} برد و ${losses.length} باخت ثبت شده است.`);
+      findings.push("از سود و زیان به‌تنهایی نمی‌توان وضعیت روانی یا علت رفتار را قطعی تشخیص داد.");
+      actions.push(streak ? "قانون توقف موقت و بازبینی چک‌لیست را اجرا کن؛ برای جبران زیان حجم را افزایش نده." : "معاملات پس از باخت، تغییرات لات و موارد عدم پایبندی به برنامه را با یادداشت‌ها تطبیق بده.");
+      actions.push("یک اقدام رفتاری قابل‌اندازه‌گیری برای چند معامله بعدی انتخاب و نتیجه را ثبت کن.");
+    }
+    return React.createElement("section", { className:"rounded-2xl p-3 mb-3", style:{background:"color-mix(in srgb, #A78BFA 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #A78BFA 35%, var(--border-2))"} },
+      React.createElement("button", {type:"button", onClick:()=>setExpanded(v=>!v), className:"w-full flex items-center justify-between", "aria-expanded":expanded},
+        React.createElement("span", {className:"flex items-center gap-2 text-[12px] font-extrabold",style:{color:"var(--text-primary)"}}, "✨", "هوش مصنوعی", React.createElement("span",{className:"text-[9px] font-medium px-2 py-0.5 rounded-full",style:{background:"#A78BFA22",color:"#A78BFA"}}, mode === "stats" ? "تحلیل آماری" : mode === "advanced" ? "توصیه اجرایی" : "بینش رفتاری")),
+        React.createElement("span",{className:"text-[10px]",style:{color:"#A78BFA"}}, expanded ? "بستن ▲" : "مشاهده تحلیل ▼")),
+      expanded && React.createElement("div",{className:"mt-3"},
+        React.createElement("div",{className:"text-[11px] font-semibold leading-6 mb-2",style:{color:"var(--text-primary)"}},headline),
+        React.createElement("div",{className:"text-[10px] font-bold mb-1",style:{color:"#A78BFA"}},"یافته‌ها"),
+        findings.map((x,i)=>React.createElement("div",{key:"f"+i,className:"text-[10px] leading-6",style:{color:"var(--text-secondary)"}},"• ",x)),
+        React.createElement("div",{className:"text-[10px] font-bold mt-2 mb-1",style:{color:"#34D399"}}, mode === "psych" ? "اقدام پیشنهادی" : "توصیه‌ها"),
+        actions.map((x,i)=>React.createElement("div",{key:"a"+i,className:"text-[10px] leading-6",style:{color:"var(--text-secondary)"}},"• ",x)),
+        React.createElement("button",{type:"button",onClick:()=>setRefresh(v=>v+1),className:"mt-3 px-3 py-2 rounded-lg text-[10px] font-semibold",style:{background:"#A78BFA20",color:"#C4B5FD",border:"1px solid #A78BFA55"}},"به‌روزرسانی تحلیل"),
+        React.createElement("div",{className:"text-[9px] leading-5 mt-2",style:{color:"var(--text-muted)"}},`تحلیل قاعده‌محور محلی بر اساس داده‌های فعلی · ${nums.length} معامله · نوبت تحلیل ${refresh+1}. این خروجی پیش‌بینی قطعی یا توصیه مالی تضمین‌شده نیست.`))
+    );
+}
+
 function PsychologyLayer({ journalTrades, statementTrades, source, setSource, psychOptions, activeAccount, statementImporting, statementImportError, onImportDashboardStatementFiles, onClearDashboardStatement, dashboardStatementTrades, baseAccounts, selectedBaseAccounts, onToggleBaseAccount, onSelectBaseType, onToggleAllBaseAccounts, accountTypeOf }) {
     const [showPsychology, setShowPsychology] = React.useState(false);
     const [showPsychBasePicker, setShowPsychBasePicker] = React.useState(false);
@@ -2987,6 +3037,7 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
         showPsychology && React.createElement("div", { className: "p-3" },
             React.createElement("div", { className: "text-[9px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "منبع داده‌ای روانشناسی: ", source === "statement" ? "ارزیابی استیتمنت" : "معاملات ژورنال"),
             sourcePanel,
+            RE(NmDashboardAIArm, { mode:"psych", trades }),
             results
         )
     );
@@ -3349,13 +3400,13 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.27";
-const NM_VERSION_CODE = 28;
+const NM_VERSION_NAME = "1.0.28";
+const NM_VERSION_CODE = 29;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_027_NOTE = "نسخه 1.0.27: اصلاحات محدود لایه ژورنال شامل چک‌لیست، گزینه‌های آیتم‌های ثبت ورود، هم‌راستایی با روند ورود و نام‌گذاری مدیریت معامله.";
+const NM_VERSION_028_NOTE = "نسخه 1.0.28: افزودن سه بازوی مستقل هوش مصنوعی قاعده‌محور برای تحلیل آماری، ارزیابی پیشرفته و روانشناسی ترید در داشبورد.";
 const NM_VERSION_DATE = "اصلاحات محدود لایه ژورنال";
 const NM_CHANGELOG = [
-    "نسخه 1.0.27: فقط لایه ژورنال اصلاح شد؛ آیتم‌های ثبت ورود و ثبت نتیجه معامله طبق تغییرات درخواستی به‌روزرسانی شدند.",
+    "نسخه 1.0.28: افزودن سه بازوی مستقل هوش مصنوعی در بخش‌های تحلیل آماری، ارزیابی پیشرفته و روانشناسی ترید داشبورد.",
     "نسخه 1.0.26: ارزیابی کنتراست همه‌ی ۱۶ ترکیب تم (۸ تم × تیره/روشن): متن فرعی و کم‌رنگ و رنگ تأکیدی به حداقل 4.5:1 (AA) رسید و متن اصلی بالای 11:1 است.",
     "نسخه 1.0.26: رنگ‌های معنایی (موفقیت، خطر، هشدار، اطلاع‌رسانی، تأکید دوم) به‌صورت توکن تعریف شد؛ در تم روشن متن‌های سبز/قرمز/زرد/آبی/بنفش به شید خواناتر می‌روند و در تیره بنفش و آبی کم‌کنتراست اصلاح شد.",
     "نسخه 1.0.26: حاشیه‌ی کارت‌ها در تم‌های تیره کمی پررنگ‌تر شد تا مرز ورودی‌ها و کارت‌ها واضح‌تر باشد.",
@@ -7366,6 +7417,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},showAdvanced?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))),
      showAdvanced&&React.createElement("div",{className:"pt-2"},
        React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},window.nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
+       RE(NmDashboardAIArm,{mode:"advanced",trades:filtered}),
        RE(NmAdvancedSection,{number:"۱",title:"منبع ارزیابی و حساب‌های مبنا",subtitle:"انتخاب Journal/Statement و دامنه حساب‌های واردشده به محاسبات",accent:"#F59E0B",help:NM_ADVANCED_SECTION_GUIDES.source},baseAccountPanel),
        RE(NmAdvancedSection,{number:"۲",title:"فیلترهای ارزیابی",subtitle:"محدودکردن نمونه بر اساس بازه، نشست، سیستم و جهت معامله",accent:"#06B6D4",help:NM_ADVANCED_SECTION_GUIDES.filters},filterPanel),
        RE(NmAdvancedSection,{number:"۳",title:"شاخص‌ها و جزئیات معاملات",subtitle:"KPI، Equity Curve، Session/Setup، Discipline، Plan و Drill-down",accent:"#10B981",help:NM_ADVANCED_SECTION_GUIDES.widgets},React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id])))),
@@ -10980,6 +11032,7 @@ function App() {
             React.createElement("div", { className: "flex items-center gap-2 min-w-0" },nmDashChip(NM_DASH_ACCENT.stats, "📈"),React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),RE(NmHeaderDots,{title:"تحلیل آماری"})),
             React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-2" },
+            RE(NmDashboardAIArm,{mode:"stats",trades:dashboardStatisticalSelectedTrades}),
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
                 React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تحلیل آماری"),
                 React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "منبع این بخش مستقل از ارزیابی پیشرفته است. انتخاب ژورنال یا استیتمنت فقط نمودارها، پارامترها و خروجی‌های همین تحلیل آماری را تغییر می‌دهد."),
