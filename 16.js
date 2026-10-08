@@ -2926,17 +2926,16 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.25";
-const NM_VERSION_CODE = 26;
+const NM_VERSION_NAME = "1.0.26";
+const NM_VERSION_CODE = 27;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_025_NOTE = "نسخه 1.0.25: پردازش تصویر چارت در ثبت ورود، معاملات فروش (کادر و خط ورود قرمز) را هم شناسایی می‌کند.";
-const NM_VERSION_DATE = "پشتیبانی پردازش تصویر چارت از معاملات فروش";
+const NM_VERSION_026_NOTE = "نسخه 1.0.26: بهینه‌سازی رنگ‌بندی همه‌ی تم‌ها بر اساس کنتراست WCAG، رنگ‌های معنایی خوانا در تم روشن و تیره، و زمینه‌ی زرد کم‌رنگ برای دکمه «ثبت نهایی».";
+const NM_VERSION_DATE = "بهینه‌سازی رنگ‌بندی و کنتراست تم‌ها";
 const NM_CHANGELOG = [
-    "نسخه 1.0.25: پردازش تصویر چارت (آیتم ۳۶) حالت فروش را هم می‌شناسد: کادر قیمت ورود قرمز (فروش) در کنار آبی (خرید)، با SL نارنجی و TP سبز.",
-    "نسخه 1.0.25: جهت معامله از موقعیت TP و SL نسبت به ورود تشخیص داده می‌شود و R-multiple و ریسک دلاری برای فروش هم محاسبه می‌شود.",
-    "نسخه 1.0.25: ثبت ورود: آیتم جدید «سفارش شرطی» (آیتم ۳۴) با چهار حالت Buy Limit، Buy Stop، Sell Limit و Sell Stop اضافه شد؛ فقط یک حالت انتخاب می‌شود و گزینه‌ها قابل ویرایش‌اند. شماره آیتم‌های بعدی یکی بالا رفت.",
-    "نسخه 1.0.25: ثبت ورود: کادر دکمه «خرید» سبز و «فروش» قرمز شد (آیتم ۳۳).",
-    "نسخه 1.0.25: ثبت ورود: مقدار ریسک (آیتم ۲۶) فقط داخل باکس مقدار نمایش داده می‌شود و ورودی تکراری زیر آن حذف شد.",
+    "نسخه 1.0.26: دکمه «ثبت نهایی» در ثبت نتیجه معامله زمینه‌ی زرد کم‌رنگ گرفت (قبلاً استایل مشترک دکمه‌های خروجی آن را تیره می‌کرد).",
+    "نسخه 1.0.26: ارزیابی کنتراست همه‌ی ۱۶ ترکیب تم (۸ تم × تیره/روشن): متن فرعی و کم‌رنگ و رنگ تأکیدی به حداقل 4.5:1 (AA) رسید و متن اصلی بالای 11:1 است.",
+    "نسخه 1.0.26: رنگ‌های معنایی (موفقیت، خطر، هشدار، اطلاع‌رسانی، تأکید دوم) به‌صورت توکن تعریف شد؛ در تم روشن متن‌های سبز/قرمز/زرد/آبی/بنفش به شید خواناتر می‌روند و در تیره بنفش و آبی کم‌کنتراست اصلاح شد.",
+    "نسخه 1.0.26: حاشیه‌ی کارت‌ها در تم‌های تیره کمی پررنگ‌تر شد تا مرز ورودی‌ها و کارت‌ها واضح‌تر باشد.",
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -2980,13 +2979,13 @@ function useBackClose(open, close) {
 /* ---------------- تم‌های برنامه و آیکون ---------------- */
 const NM_APP_THEMES = [
     { key: "classic", name: "طلایی کلاسیک (پیش‌فرض)", desc: "تم اصلی Namello با هایلایت طلایی و زمینه‌ی خاکستریِ تیره", page: "#0B0E11", card2: "#1A1F27", b2: "#262C36", accent: "#D4A64A" },
-    { key: "pureblack", name: "مشکی حرفه‌ای (Pure Black Pro)", desc: "طراحی عمیق و اولد پریمیوم با سطوح مشکی لایه‌بندی‌شده و هایلایت بنفش الکتریک", page: "#000000", card2: "#16161B", b2: "#2A2A33", accent: "#8B5CF6" },
+    { key: "pureblack", name: "مشکی حرفه‌ای (Pure Black Pro)", desc: "طراحی عمیق و اولد پریمیوم با سطوح مشکی لایه‌بندی‌شده و هایلایت بنفش الکتریک", page: "#000000", card2: "#16161B", b2: "#2E2E38", accent: "#9266F7" },
     { key: "midnight", name: "آبی نیمه‌شب", desc: "طراحی لوکس مخصوص تمرکز و معامله‌گری حرفه‌ای", page: "#070B1A", card2: "#172041", b2: "#27345F", accent: "#60A5FA" },
     { key: "emerald", name: "سبز زمردین", desc: "تم مدرن روانشناختی متمرکز بر سوددهی و رشد حساب", page: "#07130F", card2: "#143026", b2: "#1E4A3A", accent: "#10B981" },
     { key: "royal", name: "بنفش سلطنتی", desc: "طراحی نوآورانه با الهام از ابزارهای حرفه‌ای لوکس", page: "#0B0716", card2: "#1E1638", b2: "#372A62", accent: "#A78BFA" },
-    { key: "graphite", name: "مشکی گرافیتی", desc: "ظاهر مینیمال، متین، مدرن و گرافیتی یکدست", page: "#0A0A0C", card2: "#1B1B20", b2: "#2C2C34", accent: "#E5E7EB" },
-    { key: "sunset", name: "نارنجی غروب", desc: "تم گرم و پرانرژی متمایز با کارایی بسیار جذاب", page: "#120A05", card2: "#291A0F", b2: "#40291A", accent: "#F97316" },
-    { key: "ruby", name: "یاقوت سرخ (پریمیوم)", desc: "تم سرخ و لوکس الهام‌بخش جذابیت و معامله‌گری دقیق", page: "#14060A", card2: "#2C121A", b2: "#4A1E2A", accent: "#F43F5E" },
+    { key: "graphite", name: "مشکی گرافیتی", desc: "ظاهر مینیمال، متین، مدرن و گرافیتی یکدست", page: "#0A0A0C", card2: "#1B1B20", b2: "#31313A", accent: "#E5E7EB" },
+    { key: "sunset", name: "نارنجی غروب", desc: "تم گرم و پرانرژی متمایز با کارایی بسیار جذاب", page: "#120A05", card2: "#291A0F", b2: "#472E1D", accent: "#F97316" },
+    { key: "ruby", name: "یاقوت سرخ (پریمیوم)", desc: "تم سرخ و لوکس الهام‌بخش جذابیت و معامله‌گری دقیق", page: "#14060A", card2: "#2C121A", b2: "#52212F", accent: "#F43F5E" },
 ];
 const NM_ICON_THEMES = [
     { key: "default", name: "پیش‌فرض (خرگوش و حلزون)", desc: "لوگوی اصلی Namello", icon192: "icon-192.png", manifest: "manifest.json" },
@@ -4725,7 +4724,7 @@ function NmGlobalPlayer({ tab }) {
             if (d.cmd === "stop") { try { localStorage.removeItem(NM_PLAYER_TRACK_KEY); } catch (e) {} setTrack(null); return; }
             if (d.cmd === "seek") { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(a.duration || 0, Number(d.value || 0))); return; }
             if (d.cmd === "next" || d.cmd === "previous") {
-                // v1.0.25: صف پخش در صورت نبودن (مثلاً بعد از بازکردن دوباره‌ی برنامه) از کتابخانه بازسازی می‌شه و
+                // v1.0.26: صف پخش در صورت نبودن (مثلاً بعد از بازکردن دوباره‌ی برنامه) از کتابخانه بازسازی می‌شه و
                 // «قبلی» بدون نیاز به تاریخچه، اپیزود قبل در فهرست رو پخش می‌کنه.
                 (async () => {
                     const current = trackRef.current;
@@ -9699,7 +9698,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.25</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.26</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10429,7 +10428,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.25</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.26</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10903,7 +10902,7 @@ function App() {
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
                 React.createElement("button", { onClick: refreshNewsFromWeb, disabled: newsLoading, className: "rounded-2xl flex items-center justify-center shrink-0 relative overflow-hidden", "aria-label": "بروزرسانی اخبار", "aria-busy": newsRefreshState === "loading",
                     style: { width: 56, height: 56, border: "1px solid " + (newsRefreshState === "fail" ? "#EF4444" : newsRefreshState === "idle" ? "var(--border-1)" : "#22C55E"), background: newsRefreshState === "fail" ? "#EF4444" : newsRefreshState === "idle" ? "var(--bg-card)" : "#22C55E", transition: "background 0.3s, border-color 0.3s" } },
-                    // لوگوی متحرک (v1.0.25): لایه‌ها از تصویر جدید لوگو ساخته شده‌اند؛ خطوط سرعت، دم، دست‌ها (شانه+ساعد) و پلک جدا حرکت می‌کنن
+                    // لوگوی متحرک (v1.0.26): لایه‌ها از تصویر جدید لوگو ساخته شده‌اند؛ خطوط سرعت، دم، دست‌ها (شانه+ساعد) و پلک جدا حرکت می‌کنن
                     React.createElement("div", { className: "nm-news-run-logo", "aria-hidden": true, style: { position: "relative", width: 52, height: 42, pointerEvents: "none", transformOrigin: "50% 90%", animation: newsRefreshState === "loading" ? "namelloLogoRun 0.5s ease-in-out infinite" : "none" } },
                         React.createElement("img", { src: NM_NEWS_RUN_DASH, alt: "", draggable: false, className: "nm-news-run-dash", style: { position: "absolute", inset: 0, width: 52, height: 42, animation: newsRefreshState === "loading" ? "namelloStreak 0.5s linear infinite" : "none" } }),
                         React.createElement("img", { src: NM_NEWS_RUN_LEGS, alt: "", draggable: false, className: "nm-news-run-legs", style: { position: "absolute", inset: 0, width: 52, height: 42, transformOrigin: "47.8% 83.5%", animation: newsRefreshState === "loading" ? "namelloTailRun 0.5s ease-in-out infinite" : "none" } }),
@@ -12508,7 +12507,7 @@ function App() {
                     React.createElement(ChartImageField, { label: (appLanguage === "en" ? "Entry Timeframe Chart - End" : "چارت تایم ورود - پایان"), value: closeForm.chartImageAfter || "", onChange: v => onCloseFieldChange("chartImageAfter", v) })),
                 React.createElement(Field, { label: numLabel(10, hlLabel(appLanguage === "en" ? "Post-Trade Voice Chart Review" : "ارزیابی صوتی چارت بعد از معامله")) },
                     React.createElement(VoiceNoteField, { label: (appLanguage === "en" ? "Record voice review of chart after the trade" : "ضبط رویت صوتی از وضعیت چارت بعد از معامله"), value: closeForm.voiceNoteAfter || "", onChange: v => onCloseFieldChange("voiceNoteAfter", v) })),
-                React.createElement("button", { onClick: finalizeClose, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2 nm-unified-export-btn", style: { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" } },
+                React.createElement("button", { onClick: finalizeClose, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2 nm-unified-export-btn nm-final-save-btn", style: { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" } },
                     React.createElement(Check, { size: 16 }),
                     " \u062B\u0628\u062A \u0646\u0647\u0627\u06CC\u06CC")))),
         editingTrade && editForm && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: cancelEditTrade },

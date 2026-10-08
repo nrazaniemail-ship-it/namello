@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.25</title>
+<title>Namello 1.0.26</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -20,8 +20,8 @@
      اپ به‌صورت خودکار زمینه/متن‌ش عوض می‌شه — بدون نیاز به دست‌کاریِ تک‌تک کامپوننت‌ها. */
   :root {
     --bg-page: #0B0E11; --bg-card: #12161C; --bg-card2: #1A1F27;
-    --border-1: #1F242C; --border-2: #262C36;
-    --text-primary: #E8EAED; --text-secondary: #8B93A1; --text-muted: #6B7280;
+    --border-1: #1F242C; --border-2: #2D3540;
+    --text-primary: #E8EAED; --text-secondary: #A3A9B4; --text-muted: #828997;
     --accent-gold: #D4A64A;
     --app-font: 'Vazirmatn', sans-serif;
   }
@@ -41,24 +41,64 @@
   html[data-theme="light"] {
     --bg-page: #F5F3EC; --bg-card: #FFFFFF; --bg-card2: #F1EEE4;
     --border-1: #E4E0D3; --border-2: #D8D3C3;
-    --text-primary: #24282E; --text-secondary: #565F6B; --text-muted: #6B7280;
-    --accent-gold: #A97B1F;
+    --text-primary: #24282E; --text-secondary: #4C545F; --text-muted: #636976;
+    --accent-gold: #8A6419;
   }
   /* ---- تم‌های رنگی برنامه (تنظیمات ← تم لایه‌های برنامه) — فقط متغیرهای رنگی را عوض می‌کنند ---- */
-  html[data-app-theme="pureblack"]:not([data-theme="light"]) { --bg-page: #000000; --bg-card: #0B0B0E; --bg-card2: #16161B; --border-1: #1C1C22; --border-2: #2A2A33; --text-secondary: #9A9AA8; --text-muted: #6C6C7A; --accent-gold: #8B5CF6; }
+  html[data-app-theme="pureblack"]:not([data-theme="light"]) { --bg-page: #000000; --bg-card: #0B0B0E; --bg-card2: #16161B; --border-1: #1C1C22; --border-2: #2E2E38; --text-secondary: #A1A1AE; --text-muted: #818190; --accent-gold: #9266F7; }
   html[data-app-theme="pureblack"][data-theme="light"] { --accent-gold: #7C3AED; }
-  html[data-app-theme="midnight"]:not([data-theme="light"]) { --bg-page: #070B1A; --bg-card: #0D1326; --bg-card2: #172041; --border-1: #1A2444; --border-2: #27345F; --text-secondary: #93A3C4; --text-muted: #6B7A9C; --accent-gold: #60A5FA; }
-  html[data-app-theme="midnight"][data-theme="light"] { --accent-gold: #2563EB; }
-  html[data-app-theme="emerald"]:not([data-theme="light"]) { --bg-page: #07130F; --bg-card: #0D2019; --bg-card2: #143026; --border-1: #16382C; --border-2: #1E4A3A; --text-secondary: #8FB5A6; --text-muted: #5E8A78; --accent-gold: #10B981; }
-  html[data-app-theme="emerald"][data-theme="light"] { --accent-gold: #059669; }
-  html[data-app-theme="royal"]:not([data-theme="light"]) { --bg-page: #0B0716; --bg-card: #140E26; --bg-card2: #1E1638; --border-1: #261B45; --border-2: #372A62; --text-secondary: #A79BC7; --text-muted: #7C6FA3; --accent-gold: #A78BFA; }
+  html[data-app-theme="midnight"]:not([data-theme="light"]) { --bg-page: #070B1A; --bg-card: #0D1326; --bg-card2: #172041; --border-1: #1A2444; --border-2: #27345F; --text-secondary: #9FADCA; --text-muted: #7F8CA9; --accent-gold: #60A5FA; }
+  html[data-app-theme="midnight"][data-theme="light"] { --accent-gold: #1F5FEA; }
+  html[data-app-theme="emerald"]:not([data-theme="light"]) { --bg-page: #07130F; --bg-card: #0D2019; --bg-card2: #143026; --border-1: #16382C; --border-2: #1E4A3A; --text-secondary: #9CBEB0; --text-muted: #719E8C; --accent-gold: #10B981; }
+  html[data-app-theme="emerald"][data-theme="light"] { --accent-gold: #047A55; }
+  html[data-app-theme="royal"]:not([data-theme="light"]) { --bg-page: #0B0716; --bg-card: #140E26; --bg-card2: #1E1638; --border-1: #261B45; --border-2: #372A62; --text-secondary: #ABA0CA; --text-muted: #8C80AE; --accent-gold: #A78BFA; }
   html[data-app-theme="royal"][data-theme="light"] { --accent-gold: #7C3AED; }
-  html[data-app-theme="graphite"]:not([data-theme="light"]) { --bg-page: #0A0A0C; --bg-card: #121215; --bg-card2: #1B1B20; --border-1: #202026; --border-2: #2C2C34; --text-secondary: #9CA3AF; --text-muted: #6B7280; --accent-gold: #E5E7EB; }
+  html[data-app-theme="graphite"]:not([data-theme="light"]) { --bg-page: #0A0A0C; --bg-card: #121215; --bg-card2: #1B1B20; --border-1: #202026; --border-2: #31313A; --text-secondary: #A0A6B2; --text-muted: #808795; --accent-gold: #E5E7EB; }
   html[data-app-theme="graphite"][data-theme="light"] { --accent-gold: #374151; }
-  html[data-app-theme="sunset"]:not([data-theme="light"]) { --bg-page: #120A05; --bg-card: #1D120A; --bg-card2: #291A0F; --border-1: #2C1B10; --border-2: #40291A; --text-secondary: #C2A58E; --text-muted: #8F7460; --accent-gold: #F97316; }
-  html[data-app-theme="sunset"][data-theme="light"] { --accent-gold: #EA580C; }
-  html[data-app-theme="ruby"]:not([data-theme="light"]) { --bg-page: #14060A; --bg-card: #1F0B11; --bg-card2: #2C121A; --border-1: #34141D; --border-2: #4A1E2A; --text-secondary: #C99AA5; --text-muted: #94636E; --accent-gold: #F43F5E; }
-  html[data-app-theme="ruby"][data-theme="light"] { --accent-gold: #E11D48; }
+  html[data-app-theme="sunset"]:not([data-theme="light"]) { --bg-page: #120A05; --bg-card: #1D120A; --bg-card2: #291A0F; --border-1: #2C1B10; --border-2: #472E1D; --text-secondary: #C2A58E; --text-muted: #9E836E; --accent-gold: #F97316; }
+  html[data-app-theme="sunset"][data-theme="light"] { --accent-gold: #B84509; }
+  html[data-app-theme="ruby"]:not([data-theme="light"]) { --bg-page: #14060A; --bg-card: #1F0B11; --bg-card2: #2C121A; --border-1: #34141D; --border-2: #52212F; --text-secondary: #C99AA5; --text-muted: #A67A84; --accent-gold: #F43F5E; }
+  html[data-app-theme="ruby"][data-theme="light"] { --accent-gold: #D01B43; }
+  /* ---- رنگ‌های معنایی و اصلاح کنتراست (v1.0.26) ----
+     ۱) توکن‌های معنایی: موفقیت/خطر/هشدار/اطلاع‌رسانی/تأکید دوم؛ در تم تیره شیدهای ۳۰۰–۴۰۰ و در تم روشن شیدهای ۷۰۰ (کنتراست ≥ 4.5:1 روی سفید و کرم).
+     ۲) رنگ‌های متنی که در کد با hex ثابت نوشته شده‌اند (مثلاً #34D399) روی زمینه‌ی روشن کنتراست ۱.۷–۲.۸ دارند؛ این قاعده‌ها فقط «رنگ متن» را
+        بسته به تم به شید خوانا می‌برند و رنگ پس‌زمینه‌ها/نشان‌ها (تینت‌های کم‌رنگ) را تغییر نمی‌دهند. */
+  :root { --c-success: #34D399; --c-danger: #F87171; --c-warning: #FBBF24; --c-info: #60A5FA; --c-accent2: #A78BFA; }
+  html[data-theme="light"] { --c-success: #047857; --c-danger: #B91C1C; --c-warning: #92400E; --c-info: #1D4ED8; --c-accent2: #6D28D9; }
+  html[data-theme="light"] [style^="color: rgb(248, 113, 113)"], html[data-theme="light"] [style*="; color: rgb(248, 113, 113)"] { color: #B91C1C !important; }
+  html[data-theme="light"] [style^="color: rgb(239, 68, 68)"], html[data-theme="light"] [style*="; color: rgb(239, 68, 68)"] { color: #B91C1C !important; }
+  html[data-theme="light"] [style^="color: rgb(244, 63, 94)"], html[data-theme="light"] [style*="; color: rgb(244, 63, 94)"] { color: #BE123C !important; }
+  html[data-theme="light"] [style^="color: rgb(52, 211, 153)"], html[data-theme="light"] [style*="; color: rgb(52, 211, 153)"] { color: #047857 !important; }
+  html[data-theme="light"] [style^="color: rgb(16, 185, 129)"], html[data-theme="light"] [style*="; color: rgb(16, 185, 129)"] { color: #047857 !important; }
+  html[data-theme="light"] [style^="color: rgb(34, 197, 94)"], html[data-theme="light"] [style*="; color: rgb(34, 197, 94)"] { color: #15803D !important; }
+  html[data-theme="light"] [style^="color: rgb(74, 222, 128)"], html[data-theme="light"] [style*="; color: rgb(74, 222, 128)"] { color: #15803D !important; }
+  html[data-theme="light"] [style^="color: rgb(57, 255, 110)"], html[data-theme="light"] [style*="; color: rgb(57, 255, 110)"] { color: #15803D !important; }
+  html[data-theme="light"] [style^="color: rgb(20, 184, 166)"], html[data-theme="light"] [style*="; color: rgb(20, 184, 166)"] { color: #0F766E !important; }
+  html[data-theme="light"] [style^="color: rgb(96, 165, 250)"], html[data-theme="light"] [style*="; color: rgb(96, 165, 250)"] { color: #1D4ED8 !important; }
+  html[data-theme="light"] [style^="color: rgb(59, 130, 246)"], html[data-theme="light"] [style*="; color: rgb(59, 130, 246)"] { color: #1D4ED8 !important; }
+  html[data-theme="light"] [style^="color: rgb(6, 182, 212)"], html[data-theme="light"] [style*="; color: rgb(6, 182, 212)"] { color: #0E7490 !important; }
+  html[data-theme="light"] [style^="color: rgb(56, 189, 248)"], html[data-theme="light"] [style*="; color: rgb(56, 189, 248)"] { color: #0369A1 !important; }
+  html[data-theme="light"] [style^="color: rgb(245, 158, 11)"], html[data-theme="light"] [style*="; color: rgb(245, 158, 11)"] { color: #92400E !important; }
+  html[data-theme="light"] [style^="color: rgb(251, 191, 36)"], html[data-theme="light"] [style*="; color: rgb(251, 191, 36)"] { color: #92400E !important; }
+  html[data-theme="light"] [style^="color: rgb(250, 204, 21)"], html[data-theme="light"] [style*="; color: rgb(250, 204, 21)"] { color: #854D0E !important; }
+  html[data-theme="light"] [style^="color: rgb(252, 211, 77)"], html[data-theme="light"] [style*="; color: rgb(252, 211, 77)"] { color: #92400E !important; }
+  html[data-theme="light"] [style^="color: rgb(212, 166, 74)"], html[data-theme="light"] [style*="; color: rgb(212, 166, 74)"] { color: #8A6419 !important; }
+  html[data-theme="light"] [style^="color: rgb(251, 146, 60)"], html[data-theme="light"] [style*="; color: rgb(251, 146, 60)"] { color: #C2410C !important; }
+  html[data-theme="light"] [style^="color: rgb(249, 115, 22)"], html[data-theme="light"] [style*="; color: rgb(249, 115, 22)"] { color: #C2410C !important; }
+  html[data-theme="light"] [style^="color: rgb(253, 186, 116)"], html[data-theme="light"] [style*="; color: rgb(253, 186, 116)"] { color: #C2410C !important; }
+  html[data-theme="light"] [style^="color: rgb(167, 139, 250)"], html[data-theme="light"] [style*="; color: rgb(167, 139, 250)"] { color: #6D28D9 !important; }
+  html[data-theme="light"] [style^="color: rgb(139, 92, 246)"], html[data-theme="light"] [style*="; color: rgb(139, 92, 246)"] { color: #6D28D9 !important; }
+  html[data-theme="light"] [style^="color: rgb(168, 85, 247)"], html[data-theme="light"] [style*="; color: rgb(168, 85, 247)"] { color: #6D28D9 !important; }
+  html[data-theme="light"] [style^="color: rgb(107, 114, 128)"], html[data-theme="light"] [style*="; color: rgb(107, 114, 128)"] { color: var(--text-muted) !important; }
+  html:not([data-theme="light"]) [style^="color: rgb(139, 92, 246)"], html:not([data-theme="light"]) [style*="; color: rgb(139, 92, 246)"] { color: #A78BFA !important; }
+  html:not([data-theme="light"]) [style^="color: rgb(124, 58, 237)"], html:not([data-theme="light"]) [style*="; color: rgb(124, 58, 237)"] { color: #A78BFA !important; }
+  html:not([data-theme="light"]) [style^="color: rgb(168, 85, 247)"], html:not([data-theme="light"]) [style*="; color: rgb(168, 85, 247)"] { color: #C084FC !important; }
+  html:not([data-theme="light"]) [style^="color: rgb(59, 130, 246)"], html:not([data-theme="light"]) [style*="; color: rgb(59, 130, 246)"] { color: #60A5FA !important; }
+  html:not([data-theme="light"]) [style^="color: rgb(239, 68, 68)"], html:not([data-theme="light"]) [style*="; color: rgb(239, 68, 68)"] { color: #F87171 !important; }
+  html:not([data-theme="light"]) [style^="color: rgb(107, 114, 128)"], html:not([data-theme="light"]) [style*="; color: rgb(107, 114, 128)"] { color: var(--text-muted) !important; }
+  /* دکمه‌ی «ثبت نهایی» در ثبت نتیجه‌ی معامله: زمینه‌ی زرد کم‌رنگ (از استایل یکسانِ دکمه‌های خروجی بالاتر می‌ایستد) */
+  .nm-unified-export-btn.nm-final-save-btn { background: #FEF3C7 !important; color: #92400E !important; border: 1px solid #FDE68A !important; font-weight: 600; }
+  .nm-unified-export-btn.nm-final-save-btn:hover { background: #FDE68A !important; }
   html, body { background: var(--bg-page); margin: 0; padding: 0; }
   * { font-family: var(--app-font); box-sizing: border-box; }
   #root { min-height: 100vh; }
@@ -106,7 +146,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.25…</div>
+<div id="boot-status">Loading Namello 1.0.26…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -3309,17 +3349,16 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.25";
-const NM_VERSION_CODE = 26;
+const NM_VERSION_NAME = "1.0.26";
+const NM_VERSION_CODE = 27;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_025_NOTE = "نسخه 1.0.25: پردازش تصویر چارت در ثبت ورود، معاملات فروش (کادر و خط ورود قرمز) را هم شناسایی می‌کند.";
-const NM_VERSION_DATE = "پشتیبانی پردازش تصویر چارت از معاملات فروش";
+const NM_VERSION_026_NOTE = "نسخه 1.0.26: بهینه‌سازی رنگ‌بندی همه‌ی تم‌ها بر اساس کنتراست WCAG، رنگ‌های معنایی خوانا در تم روشن و تیره، و زمینه‌ی زرد کم‌رنگ برای دکمه «ثبت نهایی».";
+const NM_VERSION_DATE = "بهینه‌سازی رنگ‌بندی و کنتراست تم‌ها";
 const NM_CHANGELOG = [
-    "نسخه 1.0.25: پردازش تصویر چارت (آیتم ۳۶) حالت فروش را هم می‌شناسد: کادر قیمت ورود قرمز (فروش) در کنار آبی (خرید)، با SL نارنجی و TP سبز.",
-    "نسخه 1.0.25: جهت معامله از موقعیت TP و SL نسبت به ورود تشخیص داده می‌شود و R-multiple و ریسک دلاری برای فروش هم محاسبه می‌شود.",
-    "نسخه 1.0.25: ثبت ورود: آیتم جدید «سفارش شرطی» (آیتم ۳۴) با چهار حالت Buy Limit، Buy Stop، Sell Limit و Sell Stop اضافه شد؛ فقط یک حالت انتخاب می‌شود و گزینه‌ها قابل ویرایش‌اند. شماره آیتم‌های بعدی یکی بالا رفت.",
-    "نسخه 1.0.25: ثبت ورود: کادر دکمه «خرید» سبز و «فروش» قرمز شد (آیتم ۳۳).",
-    "نسخه 1.0.25: ثبت ورود: مقدار ریسک (آیتم ۲۶) فقط داخل باکس مقدار نمایش داده می‌شود و ورودی تکراری زیر آن حذف شد.",
+    "نسخه 1.0.26: دکمه «ثبت نهایی» در ثبت نتیجه معامله زمینه‌ی زرد کم‌رنگ گرفت (قبلاً استایل مشترک دکمه‌های خروجی آن را تیره می‌کرد).",
+    "نسخه 1.0.26: ارزیابی کنتراست همه‌ی ۱۶ ترکیب تم (۸ تم × تیره/روشن): متن فرعی و کم‌رنگ و رنگ تأکیدی به حداقل 4.5:1 (AA) رسید و متن اصلی بالای 11:1 است.",
+    "نسخه 1.0.26: رنگ‌های معنایی (موفقیت، خطر، هشدار، اطلاع‌رسانی، تأکید دوم) به‌صورت توکن تعریف شد؛ در تم روشن متن‌های سبز/قرمز/زرد/آبی/بنفش به شید خواناتر می‌روند و در تیره بنفش و آبی کم‌کنتراست اصلاح شد.",
+    "نسخه 1.0.26: حاشیه‌ی کارت‌ها در تم‌های تیره کمی پررنگ‌تر شد تا مرز ورودی‌ها و کارت‌ها واضح‌تر باشد.",
 ];
 function nmMigrateTradeSchemaV2(list) {
     if (!Array.isArray(list)) return [];
@@ -3363,13 +3402,13 @@ function useBackClose(open, close) {
 /* ---------------- تم‌های برنامه و آیکون ---------------- */
 const NM_APP_THEMES = [
     { key: "classic", name: "طلایی کلاسیک (پیش‌فرض)", desc: "تم اصلی Namello با هایلایت طلایی و زمینه‌ی خاکستریِ تیره", page: "#0B0E11", card2: "#1A1F27", b2: "#262C36", accent: "#D4A64A" },
-    { key: "pureblack", name: "مشکی حرفه‌ای (Pure Black Pro)", desc: "طراحی عمیق و اولد پریمیوم با سطوح مشکی لایه‌بندی‌شده و هایلایت بنفش الکتریک", page: "#000000", card2: "#16161B", b2: "#2A2A33", accent: "#8B5CF6" },
+    { key: "pureblack", name: "مشکی حرفه‌ای (Pure Black Pro)", desc: "طراحی عمیق و اولد پریمیوم با سطوح مشکی لایه‌بندی‌شده و هایلایت بنفش الکتریک", page: "#000000", card2: "#16161B", b2: "#2E2E38", accent: "#9266F7" },
     { key: "midnight", name: "آبی نیمه‌شب", desc: "طراحی لوکس مخصوص تمرکز و معامله‌گری حرفه‌ای", page: "#070B1A", card2: "#172041", b2: "#27345F", accent: "#60A5FA" },
     { key: "emerald", name: "سبز زمردین", desc: "تم مدرن روانشناختی متمرکز بر سوددهی و رشد حساب", page: "#07130F", card2: "#143026", b2: "#1E4A3A", accent: "#10B981" },
     { key: "royal", name: "بنفش سلطنتی", desc: "طراحی نوآورانه با الهام از ابزارهای حرفه‌ای لوکس", page: "#0B0716", card2: "#1E1638", b2: "#372A62", accent: "#A78BFA" },
-    { key: "graphite", name: "مشکی گرافیتی", desc: "ظاهر مینیمال، متین، مدرن و گرافیتی یکدست", page: "#0A0A0C", card2: "#1B1B20", b2: "#2C2C34", accent: "#E5E7EB" },
-    { key: "sunset", name: "نارنجی غروب", desc: "تم گرم و پرانرژی متمایز با کارایی بسیار جذاب", page: "#120A05", card2: "#291A0F", b2: "#40291A", accent: "#F97316" },
-    { key: "ruby", name: "یاقوت سرخ (پریمیوم)", desc: "تم سرخ و لوکس الهام‌بخش جذابیت و معامله‌گری دقیق", page: "#14060A", card2: "#2C121A", b2: "#4A1E2A", accent: "#F43F5E" },
+    { key: "graphite", name: "مشکی گرافیتی", desc: "ظاهر مینیمال، متین، مدرن و گرافیتی یکدست", page: "#0A0A0C", card2: "#1B1B20", b2: "#31313A", accent: "#E5E7EB" },
+    { key: "sunset", name: "نارنجی غروب", desc: "تم گرم و پرانرژی متمایز با کارایی بسیار جذاب", page: "#120A05", card2: "#291A0F", b2: "#472E1D", accent: "#F97316" },
+    { key: "ruby", name: "یاقوت سرخ (پریمیوم)", desc: "تم سرخ و لوکس الهام‌بخش جذابیت و معامله‌گری دقیق", page: "#14060A", card2: "#2C121A", b2: "#52212F", accent: "#F43F5E" },
 ];
 const NM_ICON_THEMES = [
     { key: "default", name: "پیش‌فرض (خرگوش و حلزون)", desc: "لوگوی اصلی Namello", icon192: "icon-192.png", manifest: "manifest.json" },
@@ -5108,7 +5147,7 @@ function NmGlobalPlayer({ tab }) {
             if (d.cmd === "stop") { try { localStorage.removeItem(NM_PLAYER_TRACK_KEY); } catch (e) {} setTrack(null); return; }
             if (d.cmd === "seek") { const a = audioRef.current; if (a) a.currentTime = Math.max(0, Math.min(a.duration || 0, Number(d.value || 0))); return; }
             if (d.cmd === "next" || d.cmd === "previous") {
-                // v1.0.25: صف پخش در صورت نبودن (مثلاً بعد از بازکردن دوباره‌ی برنامه) از کتابخانه بازسازی می‌شه و
+                // v1.0.26: صف پخش در صورت نبودن (مثلاً بعد از بازکردن دوباره‌ی برنامه) از کتابخانه بازسازی می‌شه و
                 // «قبلی» بدون نیاز به تاریخچه، اپیزود قبل در فهرست رو پخش می‌کنه.
                 (async () => {
                     const current = trackRef.current;
@@ -10011,7 +10050,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.25</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.26</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -10741,7 +10780,7 @@ function App() {
                 }
             </style></head>
             <body>
-                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.25</span></div>
+                <div class="nm-header"><img src="icon-192.png" alt="" /><span class="nm-brand">Namello 1.0.26</span></div>
                 <div class="nm-body">
                     <h1>${esc(title)}</h1>
                     <div class="meta">تاریخ تهیه / Prepared Date: ${esc(new Date().toLocaleDateString("fa-IR"))}</div>
@@ -11215,7 +11254,7 @@ function App() {
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
                 React.createElement("button", { onClick: refreshNewsFromWeb, disabled: newsLoading, className: "rounded-2xl flex items-center justify-center shrink-0 relative overflow-hidden", "aria-label": "بروزرسانی اخبار", "aria-busy": newsRefreshState === "loading",
                     style: { width: 56, height: 56, border: "1px solid " + (newsRefreshState === "fail" ? "#EF4444" : newsRefreshState === "idle" ? "var(--border-1)" : "#22C55E"), background: newsRefreshState === "fail" ? "#EF4444" : newsRefreshState === "idle" ? "var(--bg-card)" : "#22C55E", transition: "background 0.3s, border-color 0.3s" } },
-                    // لوگوی متحرک (v1.0.25): لایه‌ها از تصویر جدید لوگو ساخته شده‌اند؛ خطوط سرعت، دم، دست‌ها (شانه+ساعد) و پلک جدا حرکت می‌کنن
+                    // لوگوی متحرک (v1.0.26): لایه‌ها از تصویر جدید لوگو ساخته شده‌اند؛ خطوط سرعت، دم، دست‌ها (شانه+ساعد) و پلک جدا حرکت می‌کنن
                     React.createElement("div", { className: "nm-news-run-logo", "aria-hidden": true, style: { position: "relative", width: 52, height: 42, pointerEvents: "none", transformOrigin: "50% 90%", animation: newsRefreshState === "loading" ? "namelloLogoRun 0.5s ease-in-out infinite" : "none" } },
                         React.createElement("img", { src: NM_NEWS_RUN_DASH, alt: "", draggable: false, className: "nm-news-run-dash", style: { position: "absolute", inset: 0, width: 52, height: 42, animation: newsRefreshState === "loading" ? "namelloStreak 0.5s linear infinite" : "none" } }),
                         React.createElement("img", { src: NM_NEWS_RUN_LEGS, alt: "", draggable: false, className: "nm-news-run-legs", style: { position: "absolute", inset: 0, width: 52, height: 42, transformOrigin: "47.8% 83.5%", animation: newsRefreshState === "loading" ? "namelloTailRun 0.5s ease-in-out infinite" : "none" } }),
@@ -12820,7 +12859,7 @@ function App() {
                     React.createElement(ChartImageField, { label: (appLanguage === "en" ? "Entry Timeframe Chart - End" : "چارت تایم ورود - پایان"), value: closeForm.chartImageAfter || "", onChange: v => onCloseFieldChange("chartImageAfter", v) })),
                 React.createElement(Field, { label: numLabel(10, hlLabel(appLanguage === "en" ? "Post-Trade Voice Chart Review" : "ارزیابی صوتی چارت بعد از معامله")) },
                     React.createElement(VoiceNoteField, { label: (appLanguage === "en" ? "Record voice review of chart after the trade" : "ضبط رویت صوتی از وضعیت چارت بعد از معامله"), value: closeForm.voiceNoteAfter || "", onChange: v => onCloseFieldChange("voiceNoteAfter", v) })),
-                React.createElement("button", { onClick: finalizeClose, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2 nm-unified-export-btn", style: { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" } },
+                React.createElement("button", { onClick: finalizeClose, className: "w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 mb-2 nm-unified-export-btn nm-final-save-btn", style: { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" } },
                     React.createElement(Check, { size: 16 }),
                     " \u062B\u0628\u062A \u0646\u0647\u0627\u06CC\u06CC")))),
         editingTrade && editForm && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: cancelEditTrade },
