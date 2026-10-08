@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.28</title>
+<title>Namello 1.0.29</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -146,7 +146,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.28…</div>
+<div id="boot-status">Loading Namello 1.0.29…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -3400,12 +3400,13 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.28";
-const NM_VERSION_CODE = 29;
+const NM_VERSION_NAME = "1.0.29";
+const NM_VERSION_CODE = 30;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
-const NM_VERSION_028_NOTE = "نسخه 1.0.28: افزودن سه بازوی مستقل هوش مصنوعی قاعده‌محور برای تحلیل آماری، ارزیابی پیشرفته و روانشناسی ترید در داشبورد.";
-const NM_VERSION_DATE = "اصلاحات محدود لایه ژورنال";
+const NM_VERSION_029_NOTE = "نسخه 1.0.29: یکدست‌سازی شماره نسخه، کد نسخه و کش آفلاین در بسته PWA؛ قابلیت‌های هوش مصنوعی نسخه قبل حفظ شده‌اند.";
+const NM_VERSION_DATE = "یکدست‌سازی نسخه و کش آفلاین";
 const NM_CHANGELOG = [
+    "نسخه 1.0.29: یکدست‌سازی شماره نسخه و کد نسخه در PWA و اصلاح نام کش آفلاین برای جلوگیری از باقی‌ماندن نسخه قبلی.",
     "نسخه 1.0.28: افزودن سه بازوی مستقل هوش مصنوعی در بخش‌های تحلیل آماری، ارزیابی پیشرفته و روانشناسی ترید داشبورد.",
     "نسخه 1.0.26: ارزیابی کنتراست همه‌ی ۱۶ ترکیب تم (۸ تم × تیره/روشن): متن فرعی و کم‌رنگ و رنگ تأکیدی به حداقل 4.5:1 (AA) رسید و متن اصلی بالای 11:1 است.",
     "نسخه 1.0.26: رنگ‌های معنایی (موفقیت، خطر، هشدار، اطلاع‌رسانی، تأکید دوم) به‌صورت توکن تعریف شد؛ در تم روشن متن‌های سبز/قرمز/زرد/آبی/بنفش به شید خواناتر می‌روند و در تیره بنفش و آبی کم‌کنتراست اصلاح شد.",
