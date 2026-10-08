@@ -35,8 +35,7 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
