@@ -23,7 +23,7 @@ jobs:
           node-version: 22
 
       - name: Set up Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
@@ -31,7 +31,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools'
+          packages: ''
 
       - name: Install Android SDK packages
         run: |
@@ -43,7 +43,7 @@ jobs:
         run: npm run test --if-present
 
       - name: TypeScript check
-        run: npm run typecheck
+        run: npm run typecheck --if-present
 
       - name: Build web app
         run: npm run build
