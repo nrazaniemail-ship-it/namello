@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
-const VERSION = '1.0.30';
+const VERSION = '1.0.31';
 const VERSION_CODE = 31;
 const file = 'android/app/build.gradle';
 
