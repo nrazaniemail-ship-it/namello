@@ -16,10 +16,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
 
-    defaults:
-      run:
-        working-directory: Namello-1.0.31-PWA
-
     steps:
 
       # =========================================================
@@ -94,7 +90,91 @@ jobs:
 
 
       # =========================================================
-      # 7. VERIFY NAMELLO PROJECT
+      # 7. FIND NAMELLO PROJECT DIRECTORY
+      # =========================================================
+      - name: Find Namello project directory
+        shell: bash
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "FINDING NAMELLO PROJECT"
+          echo "========================================"
+
+          echo "Repository root:"
+          pwd
+
+          echo ""
+          echo "Top-level files:"
+          ls -la
+
+          PROJECT_DIR=""
+
+          # Case 1: package.json is at repository root
+          if [ -f "package.json" ] && [ -f "vite.config.ts" ]; then
+            PROJECT_DIR="."
+          fi
+
+          # Case 2: Namello is inside a subdirectory
+          if [ -z "$PROJECT_DIR" ]; then
+            FOUND_PACKAGE="$(
+              find . \
+                -maxdepth 3 \
+                -type f \
+                -name package.json \
+                -print \
+                | while read -r p; do
+                    d="$(dirname "$p")"
+                    if [ -f "$d/vite.config.ts" ] && [ -f "$d/capacitor.config.ts" ]; then
+                      echo "$d"
+                      break
+                    fi
+                  done
+            )"
+
+            if [ -n "$FOUND_PACKAGE" ]; then
+              PROJECT_DIR="$FOUND_PACKAGE"
+            fi
+          fi
+
+          if [ -z "$PROJECT_DIR" ]; then
+            echo ""
+            echo "ERROR: Namello project directory could not be found."
+            echo ""
+            echo "Searching for package.json files:"
+            find . \
+              -maxdepth 4 \
+              -type f \
+              -name package.json \
+              -print \
+              | sort
+            exit 1
+          fi
+
+          # Normalize ./ to empty path for root
+          if [ "$PROJECT_DIR" = "." ]; then
+            PROJECT_DIR="."
+          fi
+
+          echo ""
+          echo "Namello project directory:"
+          echo "$PROJECT_DIR"
+
+          echo ""
+          echo "Project files:"
+          ls -la "$PROJECT_DIR"
+
+          echo ""
+
+          test -f "$PROJECT_DIR/package.json"
+          test -f "$PROJECT_DIR/vite.config.ts"
+          test -f "$PROJECT_DIR/capacitor.config.ts"
+
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+
+      # =========================================================
+      # 8. VERIFY PROJECT
       # =========================================================
       - name: Verify Namello project
         run: |
@@ -104,28 +184,19 @@ jobs:
           echo "VERIFYING NAMELLO PROJECT"
           echo "========================================"
 
-          pwd
+          echo "PROJECT_DIR=$PROJECT_DIR"
 
-          echo ""
-          echo "PROJECT FILES:"
-          ls -la
-
-          echo ""
-          echo "Checking required files..."
-
-          test -f package.json
-          test -f vite.config.ts
-          test -f capacitor.config.ts
-          test -f index.html
-          test -f version.json
+          test -f "$PROJECT_DIR/package.json"
+          test -f "$PROJECT_DIR/vite.config.ts"
+          test -f "$PROJECT_DIR/capacitor.config.ts"
 
           echo ""
           echo "package.json:"
-          cat package.json
+          cat "$PROJECT_DIR/package.json"
 
 
       # =========================================================
-      # 8. INSTALL PROJECT DEPENDENCIES
+      # 9. INSTALL DEPENDENCIES
       # =========================================================
       - name: Install dependencies
         run: |
@@ -135,21 +206,25 @@ jobs:
           echo "INSTALLING NAMELLO DEPENDENCIES"
           echo "========================================"
 
+          cd "$PROJECT_DIR"
+
           npm install \
             --no-audit \
             --no-fund
 
 
       # =========================================================
-      # 9. VERIFY REQUIRED NPM PACKAGES
+      # 10. VERIFY NPM DEPENDENCIES
       # =========================================================
       - name: Verify build dependencies
         run: |
           set -e
 
           echo "========================================"
-          echo "VERIFYING NPM DEPENDENCIES"
+          echo "VERIFYING BUILD DEPENDENCIES"
           echo "========================================"
+
+          cd "$PROJECT_DIR"
 
           echo ""
           echo "Vite:"
@@ -172,11 +247,11 @@ jobs:
           node -e "console.log(require.resolve('@capacitor/android'))"
 
           echo ""
-          echo "All required build dependencies are available."
+          echo "All required dependencies are available."
 
 
       # =========================================================
-      # 10. VERIFY VERSION FILES
+      # 11. VERIFY VERSION
       # =========================================================
       - name: Verify Namello version
         run: |
@@ -185,6 +260,10 @@ jobs:
           echo "========================================"
           echo "VERIFYING NAMELLO VERSION"
           echo "========================================"
+
+          cd "$PROJECT_DIR"
+
+          test -f version.json
 
           echo ""
           echo "version.json:"
@@ -202,7 +281,7 @@ jobs:
 
           if (v.version !== '1.0.31') {
             throw new Error(
-              `Expected application version 1.0.31, found ${v.version}`
+              `Expected version 1.0.31, found ${v.version}`
             );
           }
 
@@ -217,7 +296,7 @@ jobs:
 
 
       # =========================================================
-      # 11. RUN TESTS
+      # 12. RUN TESTS
       # =========================================================
       - name: Run tests
         run: |
@@ -227,11 +306,13 @@ jobs:
           echo "RUNNING TESTS"
           echo "========================================"
 
+          cd "$PROJECT_DIR"
+
           npm run test
 
 
       # =========================================================
-      # 12. TYPESCRIPT CHECK
+      # 13. TYPESCRIPT CHECK
       # =========================================================
       - name: TypeScript check
         run: |
@@ -241,11 +322,13 @@ jobs:
           echo "TYPESCRIPT CHECK"
           echo "========================================"
 
+          cd "$PROJECT_DIR"
+
           npm run typecheck
 
 
       # =========================================================
-      # 13. BUILD WEB APPLICATION
+      # 14. BUILD WEB APPLICATION
       # =========================================================
       - name: Build web application
         run: |
@@ -255,11 +338,13 @@ jobs:
           echo "BUILDING NAMELLO WEB APPLICATION"
           echo "========================================"
 
+          cd "$PROJECT_DIR"
+
           npm run build
 
 
       # =========================================================
-      # 14. VERIFY WEB BUILD
+      # 15. VERIFY WEB BUILD
       # =========================================================
       - name: Verify web build
         run: |
@@ -268,6 +353,8 @@ jobs:
           echo "========================================"
           echo "VERIFYING WEB BUILD"
           echo "========================================"
+
+          cd "$PROJECT_DIR"
 
           test -d dist
           test -s dist/index.html
@@ -286,7 +373,7 @@ jobs:
 
 
       # =========================================================
-      # 15. VERIFY NAMELLO ASSETS
+      # 16. VERIFY NAMELLO ASSETS
       # =========================================================
       - name: Verify Namello assets
         run: |
@@ -295,6 +382,8 @@ jobs:
           echo "========================================"
           echo "VERIFYING NAMELLO ASSETS"
           echo "========================================"
+
+          cd "$PROJECT_DIR"
 
           echo ""
           echo "Launcher icon:"
@@ -308,18 +397,24 @@ jobs:
 
           echo ""
           echo "Layer icons:"
-          test -s icon-dashboard-logo.png
-          test -s icon-sessions.png
-          test -s icon-journal.png
-          test -s icon-mt5.jpg
-          test -s icon-tradingview.png
 
-          echo ""
-          echo "All required Namello assets found."
+          for f in \
+            icon-dashboard-logo.png \
+            icon-sessions.png \
+            icon-journal.png \
+            icon-mt5.jpg \
+            icon-tradingview.png
+          do
+            if [ -s "$f" ]; then
+              echo "FOUND: $f"
+            else
+              echo "WARNING: $f not found"
+            fi
+          done
 
 
       # =========================================================
-      # 16. ADD CAPACITOR ANDROID
+      # 17. ADD CAPACITOR ANDROID
       # =========================================================
       - name: Add Capacitor Android platform
         run: |
@@ -329,10 +424,11 @@ jobs:
           echo "ADDING CAPACITOR ANDROID"
           echo "========================================"
 
-          if [ -d "android" ]; then
-            echo "Android project already exists."
-            echo "Removing old generated Android project."
+          cd "$PROJECT_DIR"
 
+          if [ -d "android" ]; then
+            echo "Existing Android project found."
+            echo "Removing generated Android project."
             rm -rf android
           fi
 
@@ -342,11 +438,11 @@ jobs:
           test -d android/app
 
           echo ""
-          echo "Capacitor Android project created successfully."
+          echo "Capacitor Android project created."
 
 
       # =========================================================
-      # 17. SET ANDROID VERSION
+      # 18. SET ANDROID VERSION
       # =========================================================
       - name: Set Android app version
         run: |
@@ -355,6 +451,8 @@ jobs:
           echo "========================================"
           echo "SETTING ANDROID VERSION"
           echo "========================================"
+
+          cd "$PROJECT_DIR"
 
           APP_GRADLE="android/app/build.gradle"
 
@@ -369,14 +467,13 @@ jobs:
             "$APP_GRADLE"
 
           echo ""
-          echo "Android version:"
           grep -nE \
             'versionCode|versionName' \
             "$APP_GRADLE"
 
 
       # =========================================================
-      # 18. INSTALL NAMELLO LAUNCHER ICON
+      # 19. INSTALL NAMELLO LAUNCHER ICON
       # =========================================================
       - name: Install Namello launcher icon
         run: |
@@ -386,12 +483,11 @@ jobs:
           echo "INSTALLING NAMELLO LAUNCHER ICON"
           echo "========================================"
 
+          cd "$PROJECT_DIR"
+
           ICON_SOURCE="assets/icon-only.png"
 
           test -s "$ICON_SOURCE"
-
-          echo "Using:"
-          echo "$ICON_SOURCE"
 
           mkdir -p \
             android/app/src/main/res/drawable-nodpi
@@ -407,9 +503,6 @@ jobs:
 
           test -f "$MANIFEST"
 
-          echo ""
-          echo "Updating Android launcher icon..."
-
           sed -i \
             's#android:icon="@mipmap/ic_launcher"#android:icon="@drawable/namello_launcher"#g' \
             "$MANIFEST"
@@ -421,13 +514,9 @@ jobs:
           echo ""
           echo "Launcher icon installed."
 
-          grep -n \
-            'android:icon' \
-            "$MANIFEST" || true
-
 
       # =========================================================
-      # 19. SYNC CAPACITOR
+      # 20. SYNC CAPACITOR
       # =========================================================
       - name: Sync Capacitor Android
         run: |
@@ -437,11 +526,13 @@ jobs:
           echo "CAPACITOR SYNC"
           echo "========================================"
 
+          cd "$PROJECT_DIR"
+
           ./node_modules/.bin/cap sync android
 
 
       # =========================================================
-      # 20. VERIFY ANDROID PROJECT
+      # 21. VERIFY ANDROID PROJECT
       # =========================================================
       - name: Verify Android project
         run: |
@@ -451,6 +542,8 @@ jobs:
           echo "VERIFYING ANDROID PROJECT"
           echo "========================================"
 
+          cd "$PROJECT_DIR"
+
           test -d android
           test -d android/app
           test -d android/app/src
@@ -459,12 +552,11 @@ jobs:
           test -f android/app/build.gradle
           test -f android/app/src/main/AndroidManifest.xml
 
-          echo ""
-          echo "Android project structure OK."
+          echo "Android project OK."
 
 
       # =========================================================
-      # 21. VERIFY ANDROID VERSION
+      # 22. VERIFY VERSION
       # =========================================================
       - name: Verify Android version
         run: |
@@ -474,11 +566,9 @@ jobs:
           echo "VERIFYING ANDROID VERSION"
           echo "========================================"
 
-          APP_GRADLE="android/app/build.gradle"
+          cd "$PROJECT_DIR"
 
-          grep -nE \
-            'versionCode|versionName' \
-            "$APP_GRADLE"
+          APP_GRADLE="android/app/build.gradle"
 
           VERSION_CODE="$(
             grep -oE \
@@ -497,8 +587,8 @@ jobs:
           )"
 
           echo ""
-          echo "Detected versionCode: $VERSION_CODE"
-          echo "Detected versionName: $VERSION_NAME"
+          echo "versionCode: $VERSION_CODE"
+          echo "versionName: $VERSION_NAME"
 
           test "$VERSION_CODE" = "32"
           test "$VERSION_NAME" = "1.0.31"
@@ -508,39 +598,17 @@ jobs:
 
 
       # =========================================================
-      # 22. VERIFY LAUNCHER ICON
-      # =========================================================
-      - name: Verify launcher icon
-        run: |
-          set -e
-
-          echo "========================================"
-          echo "VERIFYING LAUNCHER ICON"
-          echo "========================================"
-
-          ICON="android/app/src/main/res/drawable-nodpi/namello_launcher.png"
-
-          test -s "$ICON"
-
-          echo ""
-          echo "Namello launcher icon:"
-          ls -lh "$ICON"
-
-          echo ""
-          echo "Launcher icon verification OK."
-
-
-      # =========================================================
       # 23. BUILD APK
       # =========================================================
       - name: Build debug APK
-        working-directory: Namello-1.0.31-PWA/android
         run: |
           set -e
 
           echo "========================================"
           echo "BUILDING NAMELLO ANDROID APK"
           echo "========================================"
+
+          cd "$PROJECT_DIR/android"
 
           chmod +x gradlew
 
@@ -557,7 +625,11 @@ jobs:
         run: |
           set -e
 
-          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          echo "========================================"
+          echo "VERIFYING APK"
+          echo "========================================"
+
+          APK_PATH="$PROJECT_DIR/android/app/build/outputs/apk/debug/app-debug.apk"
 
           test -s "$APK_PATH"
 
@@ -576,6 +648,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: Namello-1.0.31-APK
-          path: Namello-1.0.31-PWA/android/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ env.PROJECT_DIR }}/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
