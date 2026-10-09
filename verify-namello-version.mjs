@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 
-const expectedVersion = "1.0.29";
-const expectedCode = 30;
+const expectedVersion = "1.0.30";
+const expectedCode = 31;
 
 const version = JSON.parse(await readFile("version.json", "utf8"));
 if (version.version !== expectedVersion || version.versionCode !== expectedCode) {
@@ -10,7 +10,7 @@ if (version.version !== expectedVersion || version.versionCode !== expectedCode)
 
 const index = await readFile("index.html", "utf8");
 if (!index.includes(`<title>Namello ${expectedVersion}</title>`)) {
-  throw new Error("index.html title is not 1.0.29");
+  throw new Error("index.html title is not 1.0.30");
 }
 
 for (const file of [
@@ -29,8 +29,8 @@ for (const file of [
 }
 
 const sw = await readFile("sw.js", "utf8");
-if (!sw.includes("namello-1.0.29-c30")) {
-  throw new Error("Service-worker cache is not 1.0.29-c30");
+if (!sw.includes("namello-1.0.30-c31")) {
+  throw new Error("Service-worker cache is not 1.0.30-c30");
 }
 
 console.log(`Namello version verified: ${expectedVersion} (versionCode ${expectedCode})`);
