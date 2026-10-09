@@ -58,17 +58,17 @@ jobs:
       - name: Build web app
         run: npm run build
 
-        - name: Add Android platform
-          run: npx cap add android
+      - name: Add Android platform
+        run: npx cap add android
 
-        - name: Set Android app version
-           working-directory: android
-            run: |
-            sed -i 's/versionCode [0-9]*/versionCode 31/' app/build.gradle
-            sed -i 's/versionName "[^"]*"/versionName "1.0.30"/' app/build.gradle
+      - name: Set Android app version
+        working-directory: android
+        run: |
+          sed -i 's/versionCode [0-9]*/versionCode 31/' app/build.gradle
+          sed -i 's/versionName "[^"]*"/versionName "1.0.30"/' app/build.gradle
 
-        - name: Sync web assets to Android
-          run: npx cap sync android
+      - name: Sync web assets to Android
+        run: npx cap sync android
 
       - name: Verify Android version
         run: |
