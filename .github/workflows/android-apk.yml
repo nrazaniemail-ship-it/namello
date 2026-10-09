@@ -39,6 +39,13 @@ jobs:
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
+      - name: Verify toolchain
+        run: |
+          node --version
+          npm --version
+          java -version
+          adb version
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
@@ -53,9 +60,6 @@ jobs:
 
       - name: Add Android platform
         run: npx cap add android
-
-      - name: Set Android app version
-        run: node scripts/set-android-version.mjs
 
       - name: Sync web assets to Android
         run: npx cap sync android
