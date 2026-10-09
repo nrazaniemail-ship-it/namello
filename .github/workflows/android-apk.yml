@@ -40,7 +40,13 @@ jobs:
       - name: Install Android SDK packages
         run: |
           set -e
+
+          echo "========================================"
+          echo "ANDROID SDK"
+          echo "========================================"
+
           yes | sdkmanager --licenses >/dev/null || true
+
           sdkmanager \
             "platform-tools" \
             "platforms;android-35" \
@@ -49,215 +55,227 @@ jobs:
       - name: Verify toolchain
         run: |
           set -e
+
+          echo "========================================"
+          echo "TOOLCHAIN"
+          echo "========================================"
+
           node --version
           npm --version
           java -version
           adb version
 
-      - name: Find Namello project directory
+      - name: Locate Namello PWA project
         shell: bash
         run: |
           set -e
 
           echo "========================================"
-          echo "FINDING NAMELLO PROJECT"
+          echo "LOCATING NAMELLO PWA"
           echo "========================================"
 
-          pwd
           echo ""
+          echo "Repository:"
+          pwd
 
-          echo "Repository root:"
-          ls -la
+          echo ""
+          echo "Repository tree:"
+          find . \
+            -maxdepth 4 \
+            -type f \
+            \( \
+              -name "package.json" \
+              -o -name "vite.config.ts" \
+              -o -name "capacitor.config.ts" \
+            \) \
+            -print \
+            | sort
 
           PROJECT_DIR=""
 
-          # Case 1: Namello is directly in repository root
-          if [ -f "package.json" ] && \
-             [ -f "vite.config.ts" ] && \
-             [ -f "capacitor.config.ts" ]; then
-            PROJECT_DIR="."
-          fi
+          while IFS= read -r PACKAGE_FILE; do
 
-          # Case 2: Namello is inside a subdirectory
-          if [ -z "$PROJECT_DIR" ]; then
-            while IFS= read -r PACKAGE_FILE; do
+            DIR="$(dirname "$PACKAGE_FILE")"
 
-              DIR="$(dirname "$PACKAGE_FILE")"
-
-              if [ -f "$DIR/vite.config.ts" ] && \
-                 [ -f "$DIR/capacitor.config.ts" ]; then
-
-                PROJECT_DIR="$DIR"
-                break
-
-              fi
-
-            done < <(
-              find . \
-                -maxdepth 5 \
-                -type f \
-                -name package.json \
-                -print \
-                | sort
-            )
-          fi
-
-          if [ -z "$PROJECT_DIR" ]; then
             echo ""
-            echo "ERROR: Namello project directory not found."
+            echo "Checking:"
+            echo "$DIR/package.json"
+
+            if [ ! -f "$DIR/package.json" ]; then
+              continue
+            fi
+
+            if [ ! -f "$DIR/vite.config.ts" ]; then
+              continue
+            fi
+
+            if [ ! -f "$DIR/capacitor.config.ts" ]; then
+              continue
+            fi
+
+            IS_NAMELLO_PWA="$(
+              node - "$DIR/package.json" <<'NODE'
+          const fs = require('fs');
+
+          const file = process.argv[2];
+
+          try {
+            const p = JSON.parse(
+              fs.readFileSync(file, 'utf8')
+            );
+
+            const isPwa =
+              p.name === 'namello-pwa' &&
+              p.version === '1.0.31' &&
+              p.scripts &&
+              p.scripts.build === 'vite build';
+
+            process.stdout.write(isPwa ? 'YES' : 'NO');
+          } catch {
+            process.stdout.write('NO');
+          }
+          NODE
+            )"
+
+            if [ "$IS_NAMELLO_PWA" = "YES" ]; then
+              PROJECT_DIR="$DIR"
+              break
+            fi
+
+          done < <(
+            find . \
+              -maxdepth 5 \
+              -type f \
+              -name package.json \
+              -print \
+              | sort
+          )
+
+          if [ -z "$PROJECT_DIR" ]; then
+
             echo ""
-            echo "Available package.json files:"
+            echo "========================================"
+            echo "ERROR: NAMELLO PWA NOT FOUND"
+            echo "========================================"
+
+            echo ""
+            echo "All package.json files:"
+
             find . \
               -maxdepth 6 \
               -type f \
               -name package.json \
               -print \
               | sort
+
+            echo ""
+            echo "Their package names and versions:"
+
+            while IFS= read -r PACKAGE_FILE; do
+              node - "$PACKAGE_FILE" <<'NODE'
+          const fs = require('fs');
+
+          const file = process.argv[2];
+
+          try {
+            const p = JSON.parse(
+              fs.readFileSync(file, 'utf8')
+            );
+
+            console.log(
+              `${file} -> name=${p.name || 'unknown'}, version=${p.version || 'unknown'}, build=${p.scripts?.build || 'none'}`
+            );
+          } catch (e) {
+            console.log(`${file} -> INVALID JSON`);
+          }
+          NODE
+            done < <(
+              find . \
+                -maxdepth 6 \
+                -type f \
+                -name package.json \
+                -print \
+                | sort
+            )
+
             exit 1
           fi
 
           echo ""
+          echo "========================================"
+          echo "NAMELLO PWA FOUND"
+          echo "========================================"
+
           echo "PROJECT_DIR=$PROJECT_DIR"
 
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
           echo ""
-          echo "Project contents:"
+          echo "Project files:"
           ls -la "$PROJECT_DIR"
 
-      - name: Verify Namello project
+      - name: Verify Namello PWA package
         run: |
           set -e
 
           echo "========================================"
-          echo "VERIFYING NAMELLO PROJECT"
-          echo "========================================"
-
-          echo "PROJECT_DIR=$PROJECT_DIR"
-
-          test -f "$PROJECT_DIR/package.json"
-          test -f "$PROJECT_DIR/vite.config.ts"
-          test -f "$PROJECT_DIR/capacitor.config.ts"
-
-          echo ""
-          echo "package.json:"
-          cat "$PROJECT_DIR/package.json"
-
-      - name: Check package manager files
-        run: |
-          set -e
-
-          echo "========================================"
-          echo "CHECKING PACKAGE MANAGER FILES"
+          echo "VERIFYING NAMELLO PWA PACKAGE"
           echo "========================================"
 
           cd "$PROJECT_DIR"
 
-          if [ -f package-lock.json ]; then
-            echo "FOUND: package-lock.json"
-            ls -lh package-lock.json
-          else
-            echo "WARNING: package-lock.json not found"
-          fi
+          test -f package.json
+          test -f vite.config.ts
+          test -f capacitor.config.ts
 
-          if [ -f npm-shrinkwrap.json ]; then
-            echo "FOUND: npm-shrinkwrap.json"
-          fi
+          node - <<'NODE'
+          const fs = require('fs');
 
-          if [ -f yarn.lock ]; then
-            echo "FOUND: yarn.lock"
-          fi
+          const p = JSON.parse(
+            fs.readFileSync('package.json', 'utf8')
+          );
 
-          if [ -f pnpm-lock.yaml ]; then
-            echo "FOUND: pnpm-lock.yaml"
-          fi
+          console.log('name:', p.name);
+          console.log('version:', p.version);
+          console.log('build:', p.scripts?.build);
 
-      - name: Install dependencies
+          if (p.name !== 'namello-pwa') {
+            throw new Error(
+              `Wrong package selected: ${p.name}`
+            );
+          }
+
+          if (p.version !== '1.0.31') {
+            throw new Error(
+              `Expected Namello PWA 1.0.31, found ${p.version}`
+            );
+          }
+
+          if (p.scripts?.build !== 'vite build') {
+            throw new Error(
+              'Namello PWA build script is not "vite build"'
+            );
+          }
+
+          console.log('Namello PWA package verified.');
+          NODE
+
+      - name: Install Namello PWA dependencies
         run: |
           set -e
 
           echo "========================================"
-          echo "INSTALLING NAMELLO DEPENDENCIES"
+          echo "INSTALLING NAMELLO PWA DEPENDENCIES"
           echo "========================================"
 
           cd "$PROJECT_DIR"
-
-          echo ""
-          echo "Node:"
-          node --version
-
-          echo ""
-          echo "NPM:"
-          npm --version
-
-          echo ""
-          echo "Installing dependencies..."
 
           npm install \
             --include=dev \
             --no-audit \
             --no-fund
 
-          echo ""
-          echo "npm install completed."
-
-      - name: Verify installed node_modules
-        run: |
-          set -e
-
-          echo "========================================"
-          echo "VERIFYING NODE_MODULES"
-          echo "========================================"
-
-          cd "$PROJECT_DIR"
-
-          test -d node_modules
-
-          echo ""
-          echo "Checking Vite package..."
-
-          if [ ! -d "node_modules/vite" ]; then
-            echo ""
-            echo "ERROR: Vite package was NOT installed."
-            echo ""
-            echo "npm dependency tree:"
-            npm ls vite --depth=0 || true
-            echo ""
-            echo "package.json devDependencies:"
-            node -e "
-              const p=require('./package.json');
-              console.log(JSON.stringify(p.devDependencies || {}, null, 2));
-            "
-            exit 1
-          fi
-
-          echo "Vite package found."
-
-          echo ""
-          echo "Checking TypeScript..."
-
-          test -d node_modules/typescript
-          echo "TypeScript package found."
-
-          echo ""
-          echo "Checking Capacitor CLI..."
-
-          test -d node_modules/@capacitor/cli
-          echo "Capacitor CLI package found."
-
-          echo ""
-          echo "Checking Capacitor Core..."
-
-          test -d node_modules/@capacitor/core
-          echo "Capacitor Core package found."
-
-          echo ""
-          echo "Checking Capacitor Android..."
-
-          test -d node_modules/@capacitor/android
-          echo "Capacitor Android package found."
-
-      - name: Verify build dependencies
+      - name: Verify Vite and Capacitor dependencies
         run: |
           set -e
 
@@ -288,7 +306,7 @@ jobs:
           node -e "console.log(require.resolve('@capacitor/android'))"
 
           echo ""
-          echo "All required dependencies are available."
+          echo "All Namello PWA dependencies are installed."
 
       - name: Verify Namello version
         run: |
@@ -311,9 +329,6 @@ jobs:
             fs.readFileSync('version.json', 'utf8')
           );
 
-          console.log('Application version:', v.version);
-          console.log('Application versionCode:', v.versionCode);
-
           if (v.version !== '1.0.31') {
             throw new Error(
               `Expected version 1.0.31, found ${v.version}`
@@ -326,7 +341,9 @@ jobs:
             );
           }
 
-          console.log('Namello version contract OK.');
+          console.log('Namello version:', v.version);
+          console.log('Namello versionCode:', v.versionCode);
+          console.log('Version contract OK.');
           NODE
 
       - name: Run tests
@@ -358,7 +375,7 @@ jobs:
           set -e
 
           echo "========================================"
-          echo "BUILDING NAMELLO WEB APPLICATION"
+          echo "BUILDING NAMELLO PWA"
           echo "========================================"
 
           cd "$PROJECT_DIR"
@@ -384,13 +401,14 @@ jobs:
 
           echo ""
           echo "DIST CONTENT:"
+
           find dist \
             -maxdepth 5 \
             -type f \
             | sort \
             | head -500
 
-      - name: Verify Namello assets
+      - name: Verify launcher assets
         run: |
           set -e
 
@@ -400,18 +418,18 @@ jobs:
 
           cd "$PROJECT_DIR"
 
-          echo ""
-          echo "Launcher icon:"
           test -s assets/icon-only.png
-          ls -lh assets/icon-only.png
-
-          echo ""
-          echo "PWA icons:"
           test -s icon-192.png
           test -s icon-512.png
 
           echo ""
-          echo "Asset verification completed."
+          echo "Launcher icon:"
+          ls -lh assets/icon-only.png
+
+          echo ""
+          echo "PWA icons:"
+          ls -lh icon-192.png
+          ls -lh icon-512.png
 
       - name: Add Capacitor Android platform
         run: |
@@ -423,18 +441,13 @@ jobs:
 
           cd "$PROJECT_DIR"
 
-          if [ -d "android" ]; then
-            echo "Existing Android project found."
-            echo "Removing generated Android project."
-            rm -rf android
-          fi
+          rm -rf android
 
           ./node_modules/.bin/cap add android
 
           test -d android
           test -d android/app
 
-          echo ""
           echo "Capacitor Android project created."
 
       - name: Set Android app version
@@ -459,7 +472,6 @@ jobs:
             's/versionName "[^"]*"/versionName "1.0.31"/' \
             "$APP_GRADLE"
 
-          echo ""
           grep -nE \
             'versionCode|versionName' \
             "$APP_GRADLE"
@@ -474,15 +486,11 @@ jobs:
 
           cd "$PROJECT_DIR"
 
-          ICON_SOURCE="assets/icon-only.png"
-
-          test -s "$ICON_SOURCE"
-
           mkdir -p \
             android/app/src/main/res/drawable-nodpi
 
           cp \
-            "$ICON_SOURCE" \
+            assets/icon-only.png \
             android/app/src/main/res/drawable-nodpi/namello_launcher.png
 
           test -s \
@@ -500,8 +508,7 @@ jobs:
             's#android:roundIcon="@mipmap/ic_launcher_round"#android:roundIcon="@drawable/namello_launcher"#g' \
             "$MANIFEST"
 
-          echo ""
-          echo "Launcher icon installed."
+          echo "Namello launcher icon installed."
 
       - name: Sync Capacitor Android
         run: |
@@ -514,25 +521,6 @@ jobs:
           cd "$PROJECT_DIR"
 
           ./node_modules/.bin/cap sync android
-
-      - name: Verify Android project
-        run: |
-          set -e
-
-          echo "========================================"
-          echo "VERIFYING ANDROID PROJECT"
-          echo "========================================"
-
-          cd "$PROJECT_DIR"
-
-          test -d android
-          test -d android/app
-          test -d android/app/src
-          test -d android/app/src/main
-          test -f android/app/build.gradle
-          test -f android/app/src/main/AndroidManifest.xml
-
-          echo "Android project OK."
 
       - name: Verify Android version
         run: |
@@ -562,15 +550,11 @@ jobs:
               | sed 's/versionName //;s/"//g'
           )"
 
-          echo ""
           echo "versionCode: $VERSION_CODE"
           echo "versionName: $VERSION_NAME"
 
           test "$VERSION_CODE" = "32"
           test "$VERSION_NAME" = "1.0.31"
-
-          echo ""
-          echo "Namello 1.0.31 / versionCode 32 verified."
 
       - name: Build debug APK
         run: |
@@ -589,7 +573,7 @@ jobs:
             --stacktrace \
             assembleDebug
 
-      - name: Verify APK exists
+      - name: Verify APK
         run: |
           set -e
 
@@ -601,30 +585,11 @@ jobs:
 
           test -s "$APK_PATH"
 
-          echo ""
-          echo "========================================"
-          echo "APK BUILD SUCCESSFUL"
-          echo "========================================"
-
-          ls -lh "$APK_PATH"
-
-      - name: Copy APK to fixed artifact path
-        run: |
-          set -e
-
-          echo "========================================"
-          echo "PREPARING APK ARTIFACT"
-          echo "========================================"
-
-          APK_PATH="$PROJECT_DIR/android/app/build/outputs/apk/debug/app-debug.apk"
-
-          test -s "$APK_PATH"
-
           mkdir -p namello-apk
 
           cp \
             "$APK_PATH" \
-            "namello-apk/Namello-1.0.31-debug.apk"
+            namello-apk/Namello-1.0.31-debug.apk
 
           ls -lh namello-apk/Namello-1.0.31-debug.apk
 
