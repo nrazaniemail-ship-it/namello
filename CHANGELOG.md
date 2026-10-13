@@ -1,3 +1,99 @@
+# Namello 1.0.3 — Version Code 70
+
+- ساعت نشست‌ها بزرگ‌تر و قطورتر شد؛ ارقام ساعت به داخل حلقه منتقل شدند و اندازهٔ دقیقه‌ها و عنوان قطاع‌ها افزایش یافت تا هم‌پوشانی کاهش یابد.
+- راهنمای فعال‌سازی پیکربندی‌های ذخیره‌شدهٔ فیلدهای سفارشی ژورنال روشن‌تر شد و دکمه‌ها برای هر فرم مستقل مشخص شدند.
+- عنوان بخش توصیه‌ها در ارزیابی پیشرفته و روانشناسی ترید یکسان شد.
+- تنظیمات مستقل نوتیفیکیشن‌های متنی، آیکون‌های پنج دسته و زمان‌بندی هشدار اخبار ۳۰ ثانیه پیش از رویداد در وب/APK حفظ و آزمون شدند.
+- آزمون‌های خودکار، بررسی نسخه، ساخت وب و TypeScript typecheck اجرا شدند. ساخت و آزمایش APK روی دستگاه واقعی هنوز لازم است.
+
+## 1.0.1 (Version Code 68) — versioned source refresh
+- Synced version metadata across the source, PWA manifests, service worker, and package metadata.
+- Preserved the existing backup/restore safeguards, Android Back handling, custom-field profiles, notification scheduling/artwork, and weekly icon assets.
+- Automated verification: 98 tests pass; TypeScript typecheck and web build pass. Real-device APK validation remains outstanding.
+
+## 1.0.0 (Version Code 67) — consolidated release
+- Includes the latest Namello working source, Android backup/restore safeguards, notification category artwork, and Android Back handling changes carried forward from the 1.0.67 development line.
+- Version Name is reset to the requested 1.0.0; Android versionCode remains incremented to 67 so Android does not treat this package as an older build.
+
+## 1.0.67 (Version Code 66)
+- A Back press consumed by a dialog or sub-page now resets the main-page double-Back exit timer, preventing an unexpected exit after closing an overlay.
+
+## 1.0.61 (Version Code 60)
+- Android Back handling now has a bounded WebView callback timeout and guards against overlapping rapid presses, so a stalled JavaScript callback does not leave the system Back button unresponsive.
+
+## 1.0.60 (Version Code 59)
+- Android backup folder selection now verifies persisted read/write SAF permissions before saving the folder; permission/provider failures are reported separately from user cancellation.
+
+## 1.0.59 (Version Code 58)
+- Explicit notification kind/category metadata now takes priority over title/body keyword matching, preventing cross-category logo selection when notification text mentions another topic.
+
+## 1.0.54 (Version Code 53)
+- Notification artwork selection now checks structured category/kind metadata and common English/Persian labels before falling back to title/body text.
+
+## 1.0.53 (Version Code 52)
+- Android SAF backup folders now prune old automatic JSON backups and retain the newest configured number (default 8), just like the default Downloads destination.
+
+## 1.0.50 (Version Code 49)
+- Added named custom-field profiles and Namello/Raw/Custom mode controls; raw mode hides custom fields without deleting historical trade values.
+- Added category-specific large notification artwork mapping for Android (evaluation, psychology, sessions, news, motivation).
+- Kept Android folder-picker backup support and ordered Back handling from 1.0.49.
+
+## 1.0.47 (versionCode 46)
+- رفع خطای Excel («Sheet name cannot contain : \\ / ? * [ ]»): نام شیت‌های دوزبانه ایمن شد (nmSafeSheetName).
+- رفع PDF در APK: تایمر روی WebView جداشده اجرا نمی‌شد → Handler اصلی؛ خطاها در صفحه نمایش داده می‌شوند.
+- پشتیبان خودکار هفتگی در APK: Download/Namello-Backups، نگه‌داری ۸ فایل، پیشنهاد فعال‌سازی و یادآوری ۱۴ روزه.
+- قفل برنامه: PIN (PBKDF2) + BiometricPrompt + زمان قفل + FLAG_SECURE.
+- ماشین‌حساب ریسک و سقف ضرر روزانه (مبلغ/درصد، حداکثر معامله، ضرر متوالی) با نوار هشدار و اعلان.
+- تصاویر جدید آیکون هفتگی.
+
+## 1.0.46 (versionCode 45)
+- دکمه‌ی شناور: تغییر نام بخش، حذف نوتیفیکیشن دائمی (سرویس معمولی بدون Foreground)، به‌روزرسانی متن‌های راهنما.
+- تم آیکون: زیربخش «تم آیکون سفارشی ثابت» + «تم آیکون متغیر هفتگی» (۷ تصویر روزهای هفته؛ 14 activity-alias؛ DailyIconReceiver برای تعویض نیمه‌شب).
+
+## 1.0.45 (versionCode 44)
+- استیتمنت: تشخیص کدگذاری UTF-16/UTF-8/Windows-1256 برای HTML (گزارش MT5).
+- APK: ورودی‌های فایل استیتمنت بدون فیلتر accept باز می‌شوند.
+
+## 1.0.44 (versionCode 43)
+- APK: دانلود blob:/data: (Excel، CSV، JSON، پشتیبان) → MediaStore Downloads + باز کردن Excel/PDF.
+- APK: خروجی PDF با PrintManager (Save as PDF).
+- سربرگ PDF: نسخه‌ی واقعی به‌جای 1.0.26.
+
+## 1.0.43 (versionCode 42)
+- دکمه‌ی شناور: حذف حلقه و padding؛ آیکون = آیکون لانچر تم انتخابی (refreshIcon).
+
+## 1.0.42 (versionCode 41)
+- APK: setLauncherIcon به MainActivity برگشت (تعویض activity-alias آیکون لانچر).
+- APK: FloatingReturnService — دکمه‌ی شناور روی سایر برنامه‌ها (SYSTEM_ALERT_WINDOW + foreground service).
+
+## 1.0.41 (versionCode 40)
+- APK: اجرای سریع MT5/TradingView با PackageManager (launchApp) + بلوک <queries> در مانیفست.
+- دکمه‌ی تیره/روشن: بالا-وسط صفحه.
+- هدر: فاصله‌ی بیشتر از نوار وضعیت (--nm-safe-top).
+- عنوان لایه‌ها: حذف باکس زمینه (background/border شفاف؛ اندازه و محتوا بدون تغییر).
+
+## 1.0.40 (versionCode 39)
+- تنظیمات ← Navigation bar: حالت «تداخل» (تمام‌صفحه) و «جدایش» (پیش‌فرض)؛ ذخیره در برنامه و اعمال بومی در MainActivity.
+
+## 1.0.37 (versionCode 38)
+- MainActivity حداقلی: فقط padding insets (چپ/راست/پایین) + CONSUMED برای رفع تداخل با Navigation bar.
+
+## 1.0.36 (versionCode 37)
+- MainActivity بازطراحی کامل: padding چپ/راست/پایین با insets سیستم + کیبورد و CONSUMED (بدون دوباره‌کاری)، edge-to-edge یکسان برای همه‌ی نسخه‌های اندروید، ارتفاع نوار وضعیت به‌صورت --nm-safe-top به صفحه.
+
+## 1.0.35 (versionCode 36)
+- APK: اعلان «بازگشت به Namello» بومی (MainActivity.onStop/onStart).
+- تنظیمات: فلش‌های «ترتیب لایه‌ها» نارنجی (#F59E0B).
+- APK: تم آیکون → تعویض آیکون لانچر با activity-alias (۷ تم).
+- ویجت: دکمه‌ی برگشت پایین‌راست + پشتیبانی از دکمه‌ی Back اندروید.
+
+## 1.0.34 (versionCode 35)
+- APK: نوار لایه‌ها دیگر زیر Navigation bar نمی‌رود (padding بومی برای insets و کیبورد).
+- APK: دکمه‌ی Back ابتدا پنجره/لایه را می‌بندد، سپس به نشست‌ها برمی‌گردد و فقط با دو بار زدن خارج می‌شود.
+- APK: اعلان‌های نشست‌ها، اخبار و پیام انگیزشی با اعلان بومی (Local Notifications)؛ زمان‌بندی ۳۶ ساعت آینده حتی وقتی برنامه بسته است.
+- APK: کتابخانه — فایل متنی داخل برنامه باز می‌شود، سایر فایل‌ها با منوی «باز کردن با…».
+- Build: `verify-namello-version.mjs` و تست‌ها از `version.json` می‌خوانند؛ `bump-version.mjs` اضافه شد؛ build وب بدون bundler؛ `configure-android.mjs` جایگزین `set-android-version.mjs`.
+
 # Namello 1.0.29
 - یکدست‌سازی شماره نسخه و کد نسخه در فایل برنامه، فایل‌های PWA و اطلاعات انتشار؛ کد نسخه به 30 افزایش یافت.
 - اصلاح نام کش Service Worker به `namello-1.0.29-c30` برای جلوگیری از استفاده ناخواسته از پوسته‌ی کش‌شده‌ی قدیمی.
@@ -142,3 +238,13 @@
 - Regime Persistence: اندازه‌گیری ماندگاری و طول اجرای رژیم‌های OHLC/MT5.
 - Change Detection: شناسایی تغییرات شدید در ویژگی‌های OHLC بین معاملات متوالی.
 - Rolling Regime Edge: مقایسه Edge رژیم‌ها در پنجره جاری و پنجره قبلی برای تشخیص بهبود/افت.
+
+
+## 1.0.52 — Android folder restore
+- Added listing of JSON backup files in the persisted Android Storage Access Framework folder.
+- Added restore flow that reads the selected backup file from that folder, validates it through the existing Namello backup parser, and then uses the existing merge/replace confirmation flow.
+- The backup card now displays the user-selected folder name rather than always showing the default Download folder.
+- This is source-level implementation; actual-device SAF testing is still required.
+
+## 1.0.55 (Version Code 54)
+- بازیابی پشتیبان اکنون در صورت خطای عملیات ذخیره/حذف، تلاش می‌کند داده‌های قبل از بازیابی را به‌صورت خودکار برگرداند. خطاهای بازیابی دیگر به‌صورت بی‌صدا نادیده گرفته نمی‌شوند.
